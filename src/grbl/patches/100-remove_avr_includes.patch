@@ -1,0 +1,177 @@
+--- grbl-master/coolant_control.c	2014-03-16 20:40:00.000000000 -0700
++++ grbl-master/coolant_control.c	2014-03-16 20:40:10.000000000 -0700
+@@ -23,8 +23,6 @@
+ #include "config.h"
+ #include "planner.h"
+ 
+-#include <avr/io.h>
+-
+ static uint8_t current_coolant_mode;
+ 
+ void coolant_init()
+--- grbl-master/coolant_control.h	2014-03-16 20:50:32.000000000 -0700
++++ grbl-master/coolant_control.h	2014-03-16 20:54:38.000000000 -0700
+@@ -21,8 +21,6 @@
+ #ifndef coolant_control_h
+ #define coolant_control_h 
+ 
+-#include <avr/io.h>
+-
+ #define COOLANT_MIST_ENABLE 2
+ #define COOLANT_FLOOD_ENABLE 1
+ #define COOLANT_DISABLE 0 // Must be zero.
+@@ -31,4 +29,4 @@
+ void coolant_stop();
+ void coolant_run(uint8_t mode);
+ 
+-#endif
+\ No newline at end of file
++#endif
+--- grbl-master/gcode.h	2014-03-16 20:50:32.000000000 -0700
++++ grbl-master/gcode.h	2014-03-16 20:54:55.000000000 -0700
+@@ -21,7 +21,6 @@
+ 
+ #ifndef gcode_h
+ #define gcode_h
+-#include <avr/io.h>
+ #include "nuts_bolts.h"
+ 
+ // Define modal group internal numbers for checking multiple command violations and tracking the 
+--- grbl-master/motion_control.h	2014-03-16 20:50:32.000000000 -0700
++++ grbl-master/motion_control.h	2014-03-16 20:55:05.000000000 -0700
+@@ -22,7 +22,6 @@
+ #ifndef motion_control_h
+ #define motion_control_h
+ 
+-#include <avr/io.h>
+ #include "planner.h"
+ 
+ // Execute linear motion in absolute millimeter coordinates. Feed rate given in millimeters/second
+--- grbl-master/protocol.h	2014-03-16 20:50:32.000000000 -0700
++++ grbl-master/protocol.h	2014-03-16 20:55:16.000000000 -0700
+@@ -21,8 +21,6 @@
+ #ifndef protocol_h
+ #define protocol_h
+ 
+-#include <avr/sleep.h>
+-
+ // Line buffer size from the serial input stream to be executed.
+ // NOTE: Not a problem except for extreme cases, but the line buffer size can be too small
+ // and g-code blocks can get truncated. Officially, the g-code standards support up to 256
+--- grbl-master/spindle_control.h	2014-03-16 20:50:32.000000000 -0700
++++ grbl-master/spindle_control.h	2014-03-16 20:55:27.000000000 -0700
+@@ -22,8 +22,6 @@
+ #ifndef spindle_control_h
+ #define spindle_control_h 
+ 
+-#include <avr/io.h>
+-
+ void spindle_init();
+ void spindle_run(int8_t direction); //, uint16_t rpm);
+ void spindle_stop();
+--- grbl-master/stepper.h	2014-03-16 20:50:32.000000000 -0700
++++ grbl-master/stepper.h	2014-03-16 20:55:39.000000000 -0700
+@@ -22,8 +22,6 @@
+ #ifndef stepper_h
+ #define stepper_h 
+ 
+-#include <avr/io.h>
+-
+ // Initialize and setup the stepper motor subsystem
+ void st_init();
+ 
+--- grbl-master/limits.c	2014-03-16 20:50:32.000000000 -0700
++++ grbl-master/limits.c	2014-03-16 20:56:34.000000000 -0700
+@@ -19,9 +19,6 @@
+   along with Grbl.  If not, see <http://www.gnu.org/licenses/>.
+ */
+   
+-#include <util/delay.h>
+-#include <avr/io.h>
+-#include <avr/interrupt.h>
+ #include "stepper.h"
+ #include "settings.h"
+ #include "nuts_bolts.h"
+--- grbl-master/main.c	2014-03-16 20:50:32.000000000 -0700
++++ grbl-master/main.c	2014-03-16 20:56:48.000000000 -0700
+@@ -23,8 +23,6 @@
+    been integral throughout the development of the higher level details of Grbl, as well
+    as being a consistent sounding board for the future of accessible and free CNC. */
+ 
+-#include <avr/interrupt.h>
+-#include <avr/pgmspace.h>
+ #include "config.h"
+ #include "planner.h"
+ #include "nuts_bolts.h"
+--- grbl-master/motion_control.c	2014-03-16 20:50:32.000000000 -0700
++++ grbl-master/motion_control.c	2014-03-16 20:56:58.000000000 -0700
+@@ -20,8 +20,6 @@
+   along with Grbl.  If not, see <http://www.gnu.org/licenses/>.
+ */
+ 
+-#include <avr/io.h>
+-#include <util/delay.h>
+ #include <math.h>
+ #include <stdlib.h>
+ #include "settings.h"
+--- grbl-master/print.c	2014-03-16 20:50:32.000000000 -0700
++++ grbl-master/print.c	2014-03-16 20:57:17.000000000 -0700
+@@ -23,7 +23,6 @@
+    used to be a part of the Arduino project. */ 
+ 
+ 
+-#include <avr/pgmspace.h>
+ #include "config.h"
+ #include "serial.h"
+ #include "settings.h"
+--- grbl-master/protocol.c	2014-03-16 20:50:32.000000000 -0700
++++ grbl-master/protocol.c	2014-03-16 20:57:27.000000000 -0700
+@@ -19,8 +19,6 @@
+   along with Grbl.  If not, see <http://www.gnu.org/licenses/>.
+ */
+ 
+-#include <avr/io.h>
+-#include <avr/interrupt.h>
+ #include "protocol.h"
+ #include "gcode.h"
+ #include "serial.h"
+--- grbl-master/report.c	2014-03-16 20:50:32.000000000 -0700
++++ grbl-master/report.c	2014-03-16 20:57:37.000000000 -0700
+@@ -26,7 +26,6 @@
+   methods to accomodate their needs.
+ */
+ 
+-#include <avr/pgmspace.h>
+ #include "report.h"
+ #include "print.h"
+ #include "settings.h"
+--- grbl-master/settings.c	2014-03-16 20:50:32.000000000 -0700
++++ grbl-master/settings.c	2014-03-16 20:57:56.000000000 -0700
+@@ -19,7 +19,6 @@
+   along with Grbl.  If not, see <http://www.gnu.org/licenses/>.
+ */
+ 
+-#include <avr/io.h>
+ #include "protocol.h"
+ #include "report.h"
+ #include "stepper.h"
+--- grbl-master/stepper.c	2014-03-16 20:50:32.000000000 -0700
++++ grbl-master/stepper.c	2014-03-16 20:58:14.000000000 -0700
+@@ -22,7 +22,6 @@
+ /* The timer calculations of this module informed by the 'RepRap cartesian firmware' by Zack Smith
+    and Philipp Tiefenbacher. */
+ 
+-#include <avr/interrupt.h>
+ #include "stepper.h"
+ #include "config.h"
+ #include "settings.h"
+--- grbl-master/nuts_bolts.c	2014-03-16 21:57:02.000000000 -0700
++++ grbl-master/nuts_bolts.c	2014-03-16 21:57:11.000000000 -0700
+@@ -19,7 +19,6 @@
+   along with Grbl.  If not, see <http://www.gnu.org/licenses/>.
+ */
+ 
+-#include <util/delay.h>
+ #include "nuts_bolts.h"
+ #include "gcode.h"
+ #include "planner.h"

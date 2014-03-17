@@ -1,0 +1,20 @@
+--- grbl-master/motion_control.c	2014-03-16 21:53:04.000000000 -0700
++++ grbl-master/motion_control.c	2014-03-16 21:54:09.000000000 -0700
+@@ -213,7 +213,7 @@
+ void mc_go_home()
+ {
+   sys.state = STATE_HOMING; // Set system state variable
+-  LIMIT_PCMSK &= ~LIMIT_MASK; // Disable hard limits pin change register for cycle duration
++//  LIMIT_PCMSK &= ~LIMIT_MASK; // Disable hard limits pin change register for cycle duration
+   
+   limits_go_home(); // Perform homing routine.
+ 
+@@ -252,7 +252,7 @@
+   sys_sync_current_position();
+ 
+   // If hard limits feature enabled, re-enable hard limits pin change register after homing cycle.
+-  if (bit_istrue(settings.flags,BITFLAG_HARD_LIMIT_ENABLE)) { LIMIT_PCMSK |= LIMIT_MASK; }
++//  if (bit_istrue(settings.flags,BITFLAG_HARD_LIMIT_ENABLE)) { LIMIT_PCMSK |= LIMIT_MASK; }
+   // Finished! 
+ }
+ 

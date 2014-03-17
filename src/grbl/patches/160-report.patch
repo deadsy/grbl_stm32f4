@@ -1,0 +1,10 @@
+--- grbl-master/report.c	2014-03-16 22:13:56.000000000 -0700
++++ grbl-master/report.c	2014-03-16 22:14:18.000000000 -0700
+@@ -33,6 +33,7 @@
+ #include "gcode.h"
+ #include "coolant_control.h"
+ 
++#define PSTR(x) (x)
+ 
+ // Handles the primary confirmation protocol response for streaming interfaces and human-feedback.
+ // For every incoming line, this method responds with an 'ok' for a successful command or an 

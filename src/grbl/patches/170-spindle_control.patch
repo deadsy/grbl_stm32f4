@@ -1,0 +1,35 @@
+--- grbl-master/spindle_control.c	2014-03-16 22:18:28.000000000 -0700
++++ grbl-master/spindle_control.c	2014-03-16 22:19:03.000000000 -0700
+@@ -28,14 +28,14 @@
+ void spindle_init()
+ {
+   current_direction = 0;
+-  SPINDLE_ENABLE_DDR |= (1<<SPINDLE_ENABLE_BIT);
+-  SPINDLE_DIRECTION_DDR |= (1<<SPINDLE_DIRECTION_BIT);  
++//  SPINDLE_ENABLE_DDR |= (1<<SPINDLE_ENABLE_BIT);
++//  SPINDLE_DIRECTION_DDR |= (1<<SPINDLE_DIRECTION_BIT);  
+   spindle_stop();
+ }
+ 
+ void spindle_stop()
+ {
+-  SPINDLE_ENABLE_PORT &= ~(1<<SPINDLE_ENABLE_BIT);
++ // SPINDLE_ENABLE_PORT &= ~(1<<SPINDLE_ENABLE_BIT);
+ }
+ 
+ void spindle_run(int8_t direction) //, uint16_t rpm) 
+@@ -44,11 +44,11 @@
+     plan_synchronize();
+     if (direction) {
+       if(direction > 0) {
+-        SPINDLE_DIRECTION_PORT &= ~(1<<SPINDLE_DIRECTION_BIT);
++  //      SPINDLE_DIRECTION_PORT &= ~(1<<SPINDLE_DIRECTION_BIT);
+       } else {
+-        SPINDLE_DIRECTION_PORT |= 1<<SPINDLE_DIRECTION_BIT;
++  //      SPINDLE_DIRECTION_PORT |= 1<<SPINDLE_DIRECTION_BIT;
+       }
+-      SPINDLE_ENABLE_PORT |= 1<<SPINDLE_ENABLE_BIT;
++  //    SPINDLE_ENABLE_PORT |= 1<<SPINDLE_ENABLE_BIT;
+     } else {
+       spindle_stop();     
+     }

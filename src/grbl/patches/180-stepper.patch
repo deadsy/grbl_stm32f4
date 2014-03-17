@@ -1,0 +1,26 @@
+--- grbl-master/stepper.c	2014-03-16 22:20:41.000000000 -0700
++++ grbl-master/stepper.c	2014-03-16 22:22:53.000000000 -0700
+@@ -27,6 +27,16 @@
+ #include "settings.h"
+ #include "planner.h"
+ 
++void st_init(void){}
++void st_wake_up(void){}
++void st_go_idle(void){}
++void st_reset(void){}
++void st_cycle_start(void){}
++void st_cycle_reinitialize(void){} 
++void st_feed_hold(void){}
++
++#if 0
++
+ // Some useful constants
+ #define TICKS_PER_MICROSECOND (F_CPU/1000000)
+ #define CYCLES_PER_ACCELERATION_TICK ((TICKS_PER_MICROSECOND*1000000)/ACCELERATION_TICKS_PER_SECOND)
+@@ -461,3 +471,6 @@
+     sys.state = STATE_IDLE;
+   }
+ }
++
++#endif
++

@@ -1,0 +1,55 @@
+--- grbl-master/coolant_control.c	2014-03-16 21:35:19.000000000 -0700
++++ grbl-master/coolant_control.c	2014-03-16 21:35:44.000000000 -0700
+@@ -18,6 +18,8 @@
+   along with Grbl.  If not, see <http://www.gnu.org/licenses/>.
+ */
+ 
++#include <inttypes.h>
++
+ #include "coolant_control.h"
+ #include "settings.h"
+ #include "config.h"
+--- grbl-master/main.c	2014-03-16 21:50:59.000000000 -0700
++++ grbl-master/main.c	2014-03-16 21:51:18.000000000 -0700
+@@ -23,6 +23,8 @@
+    been integral throughout the development of the higher level details of Grbl, as well
+    as being a consistent sounding board for the future of accessible and free CNC. */
+ 
++#include <inttypes.h>
++
+ #include "config.h"
+ #include "planner.h"
+ #include "nuts_bolts.h"
+--- grbl-master/protocol.c	2014-03-16 22:09:47.000000000 -0700
++++ grbl-master/protocol.c	2014-03-16 22:10:06.000000000 -0700
+@@ -19,6 +19,8 @@
+   along with Grbl.  If not, see <http://www.gnu.org/licenses/>.
+ */
+ 
++#include <inttypes.h>
++
+ #include "protocol.h"
+ #include "gcode.h"
+ #include "serial.h"
+--- grbl-master/report.c	2014-03-16 22:15:35.000000000 -0700
++++ grbl-master/report.c	2014-03-16 22:15:55.000000000 -0700
+@@ -26,6 +26,8 @@
+   methods to accomodate their needs.
+ */
+ 
++#include <inttypes.h>
++
+ #include "report.h"
+ #include "print.h"
+ #include "settings.h"
+--- grbl-master/settings.c	2014-03-16 22:16:58.000000000 -0700
++++ grbl-master/settings.c	2014-03-16 22:17:16.000000000 -0700
+@@ -19,6 +19,8 @@
+   along with Grbl.  If not, see <http://www.gnu.org/licenses/>.
+ */
+ 
++#include <inttypes.h>
++
+ #include "protocol.h"
+ #include "report.h"
+ #include "stepper.h"
