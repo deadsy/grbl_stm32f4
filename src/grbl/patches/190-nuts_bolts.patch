@@ -1,0 +1,10 @@
+--- grbl-master/nuts_bolts.c	2014-03-16 22:53:34.000000000 -0700
++++ grbl-master/nuts_bolts.c	2014-03-16 22:54:06.000000000 -0700
+@@ -19,6 +19,7 @@
+   along with Grbl.  If not, see <http://www.gnu.org/licenses/>.
+ */
+ 
++#include "delay.h"
+ #include "nuts_bolts.h"
+ #include "gcode.h"
+ #include "planner.h"

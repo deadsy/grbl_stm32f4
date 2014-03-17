@@ -1,0 +1,11 @@
+--- grbl-master/main.c	2014-03-17 07:33:45.000000000 -0700
++++ grbl-master/main.c	2014-03-17 07:34:27.000000000 -0700
+@@ -48,7 +48,7 @@
+   serial_init(); // Setup serial baud rate and interrupts
+   settings_init(); // Load grbl settings from EEPROM
+   st_init(); // Setup stepper pins and interrupt timers
+-  sei(); // Enable interrupts
++  //sei(); // Enable interrupts
+   
+   memset(&sys, 0, sizeof(sys));  // Clear all system variables
+   sys.abort = true;   // Set abort to complete initialization

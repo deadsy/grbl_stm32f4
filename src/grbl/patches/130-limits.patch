@@ -1,5 +1,5 @@
---- grbl-master/limits.c	2014-03-16 21:48:30.000000000 -0700
-+++ grbl-master/limits.c	2014-03-16 21:49:55.000000000 -0700
+--- grbl-master/limits.c	2014-03-17 07:36:13.000000000 -0700
++++ grbl-master/limits.c	2014-03-17 07:37:22.000000000 -0700
 @@ -34,6 +34,7 @@
  
  void limits_init() 
@@ -27,7 +27,7 @@
  
  
  // Moves all specified axes in same specified direction (positive=true, negative=false)
-@@ -141,12 +145,14 @@
+@@ -141,30 +145,34 @@
    uint32_t dt_min = lround(1000000*60/(ds*homing_rate)); // Cruising (usec/step)
    uint32_t dt = 1000000*60/MINIMUM_STEPS_PER_MINUTE; // Initial (usec/step)
    if (dt > dt_min) { dt = dt_min; } // Disable acceleration for very slow rates.
@@ -44,9 +44,14 @@
    // Initialize stepping variables
    int32_t counter_x = -(step_event_count >> 1); // Bresenham counters
    int32_t counter_y = counter_x;
-@@ -157,14 +163,16 @@
+   int32_t counter_z = counter_x;
+-  uint32_t step_delay = dt-settings.pulse_microseconds;  // Step delay after pulse
++  //uint32_t step_delay = dt-settings.pulse_microseconds;  // Step delay after pulse
+   uint32_t step_rate = 0;  // Tracks step rate. Initialized from 0 rate. (in step/min)
+   uint32_t trap_counter = MICROSECONDS_PER_ACCELERATION_TICK/2; // Acceleration trapezoid counter
    uint8_t out_bits;
-   uint8_t limit_state;
+-  uint8_t limit_state;
++  uint8_t limit_state = 0;
    for(;;) {
 -  
 + 
@@ -81,3 +86,12 @@
      // Track and set the next step delay, if required. This routine uses another Bresenham
      // line algorithm to follow the constant acceleration line in the velocity and time 
      // domain. This is a lite version of the same routine used in the main stepper program.
+@@ -211,7 +221,7 @@
+         step_rate += delta_rate; // Increment velocity
+         dt = (1000000*60)/step_rate; // Compute new time increment
+         if (dt < dt_min) {dt = dt_min;}  // If target rate reached, cruise.
+-        step_delay = dt-settings.pulse_microseconds;
++        //step_delay = dt-settings.pulse_microseconds;
+       }
+     }
+   }

@@ -1,0 +1,14 @@
+--- grbl_master/print.c	2014-03-16 22:59:25.000000000 -0700
++++ grbl_master/print.c	2014-03-16 22:59:59.000000000 -0700
+@@ -36,9 +36,8 @@
+ // Print a string stored in PGM-memory
+ void printPgmString(const char *s)
+ {
+-  char c;
+-  while ((c = pgm_read_byte_near(s++)))
+-    serial_write(c);
++  while (*s)
++    serial_write(*s++);
+ }
+ 
+ // void printIntegerInBase(unsigned long n, unsigned long base)

@@ -1,6 +1,14 @@
---- grbl-master/motion_control.c	2014-03-16 21:53:04.000000000 -0700
-+++ grbl-master/motion_control.c	2014-03-16 21:54:09.000000000 -0700
-@@ -213,7 +213,7 @@
+--- grbl_master/motion_control.c	2014-03-16 22:55:11.000000000 -0700
++++ grbl_master/motion_control.c	2014-03-16 22:56:02.000000000 -0700
+@@ -22,6 +22,7 @@
+ 
+ #include <math.h>
+ #include <stdlib.h>
++#include "delay.h"
+ #include "settings.h"
+ #include "config.h"
+ #include "gcode.h"
+@@ -213,7 +214,7 @@
  void mc_go_home()
  {
    sys.state = STATE_HOMING; // Set system state variable
@@ -9,7 +17,7 @@
    
    limits_go_home(); // Perform homing routine.
  
-@@ -252,7 +252,7 @@
+@@ -252,7 +253,7 @@
    sys_sync_current_position();
  
    // If hard limits feature enabled, re-enable hard limits pin change register after homing cycle.

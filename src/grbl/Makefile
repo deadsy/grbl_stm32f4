@@ -19,6 +19,7 @@ SRC = coolant_control.c \
       stepper.c \
 
 INC = .
+INC += $(TOP)/src/inc
 
 OBJ = $(patsubst %.c, $(WORK_DIR)/%.o, $(SRC))
 

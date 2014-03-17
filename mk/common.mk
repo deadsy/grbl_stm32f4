@@ -14,6 +14,10 @@ PATCH_CMD = \
 
 INCLUDE = $(addprefix -I,$(INC))
 
+CFLAGS = -Wall
+CFLAGS += -mlittle-endian -mthumb -mcpu=cortex-m4 -mthumb-interwork
+CFLAGS += -mfloat-abi=hard -mfpu=fpv4-sp-d16
+
 .c.o:
 	$(X_CC) $(INCLUDE) $(DEFINES) $(CFLAGS) -c $< -o $@
 
