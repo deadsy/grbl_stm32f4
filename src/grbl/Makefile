@@ -23,9 +23,13 @@ INC += $(TOP)/src/inc
 
 OBJ = $(patsubst %.c, $(WORK_DIR)/%.o, $(SRC))
 
-all: untar $(OBJ)
+OUT = libgrbl.a
+
+all: untar_patch_overlay $(OBJ)
+	$(X_AR) rcs $(OUT) $(OBJ)
 
 clean:
 	-rm -rf $(WORK_DIR)
+	-rm $(OUT)
 
 include $(TOP)/mk/common.mk

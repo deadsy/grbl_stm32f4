@@ -13,9 +13,13 @@ DEFINES = -DSTM32F407xx
 
 OBJ = $(patsubst %.c, %.o, $(SRC))
 
+OUT = libhal.a
+
 all: $(OBJ)
+	$(X_AR) rcs $(OUT) $(OBJ)
 
 clean:
 	-rm -rf $(OBJ)
+	-rm $(OUT)
 
 include $(TOP)/mk/common.mk
