@@ -1,6 +1,13 @@
---- grbl-master/main.c	2014-03-17 07:33:45.000000000 -0700
-+++ grbl-master/main.c	2014-03-17 07:34:27.000000000 -0700
-@@ -48,7 +48,7 @@
+--- grbl-master/main.c	2014-03-18 21:09:06.000000000 -0700
++++ grbl-master/main.c	2014-03-18 21:09:51.000000000 -0700
+@@ -42,13 +42,13 @@
+ // Declare system global variable structure
+ system_t sys; 
+ 
+-int main(void)
++int grbl_main(void)
+ {
+   // Initialize system
    serial_init(); // Setup serial baud rate and interrupts
    settings_init(); // Load grbl settings from EEPROM
    st_init(); // Setup stepper pins and interrupt timers

@@ -14,6 +14,7 @@ OUTPUT = grbl_stm32f4
 # grbl sources
 GRBL_SRC_DIR = ./grbl/grbl-master
 SRC = $(GRBL_SRC_DIR)/coolant_control.c \
+      $(GRBL_SRC_DIR)/delay.c \
       $(GRBL_SRC_DIR)/eeprom.c \
       $(GRBL_SRC_DIR)/gcode.c \
       $(GRBL_SRC_DIR)/limits.c \
@@ -68,7 +69,7 @@ CFLAGS += -mfloat-abi=hard -mfpu=fpv4-sp-d16
 LDSCRIPT = stm32f407vg_flash.ld
 LDFLAGS = --static
 LDFLAGS += -L $(X_LIBC_DIR) -L $(X_LIBGCC_DIR)
-LDFLAGS += -lc
+LDFLAGS += -lc -lm
 LDFLAGS += --gc-sections
 LDFLAGS += -T $(LDSCRIPT) -Map $(OUTPUT).map
 
