@@ -1,35 +1,20 @@
-TOP = ../..
-
 GRBL = grbl-master
 WORK_DIR = $(GRBL)
+
 TARFILE = $(GRBL).tar.bz2
 
-SRC = coolant_control.c \
-      gcode.c \
-      limits.c \
-      main.c \
-      motion_control.c \
-      nuts_bolts.c \
-      planner.c \
-      print.c \
-      protocol.c \
-      report.c \
-      settings.c \
-      spindle_control.c \
-      stepper.c \
+PATCHFILES = $(sort $(wildcard patches/*.patch))
 
-INC = .
-INC += $(TOP)/src/inc
+PATCH_CMD = \
+        for f in $(PATCHFILES); do\
+            echo $$f; \
+            patch -s -d $(WORK_DIR) -p1 -b -z .original < $$f; \
+        done
 
-OBJ = $(patsubst %.c, $(WORK_DIR)/%.o, $(SRC))
-
-OUT = libgrbl.a
-
-all: untar_patch_overlay $(OBJ)
-	$(X_AR) rcs $(OUT) $(OBJ)
+all:
+	tar jxf $(TARFILE)
+	$(PATCH_CMD)
+	cd files; tar -c -f - * | (cd ../$(WORK_DIR) ; tar xfp -)
 
 clean:
 	-rm -rf $(WORK_DIR)
-	-rm $(OUT)
-
-include $(TOP)/mk/common.mk
