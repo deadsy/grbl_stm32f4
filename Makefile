@@ -47,21 +47,24 @@ SRC += $(USB_SRC_DIR)/core/usbd_core.c \
 SRC += main.c \
        system_stm32f4xx.c \
 
+OBJ = $(patsubst %.c, %.o, $(SRC))
+OBJ += start.o
+
+# include files
 INC = .
 INC += ./cmsis
 INC += ./hal/inc
 INC += ./usb/core
 INC += ./usb/cdc
 
-OBJ = $(patsubst %.c, %.o, $(SRC))
-OBJ += start.o
-
 INCLUDE = $(addprefix -I,$(INC))
 
+# compiler flags
 CFLAGS = -Wall
 CFLAGS += -mlittle-endian -mthumb -mcpu=cortex-m4 -mthumb-interwork
 CFLAGS += -mfloat-abi=hard -mfpu=fpv4-sp-d16
 
+# linker flags
 LDSCRIPT = stm32f407vg_flash.ld
 LDFLAGS = --static
 LDFLAGS += -L $(X_LIBC_DIR) -L $(X_LIBGCC_DIR)
@@ -73,7 +76,6 @@ DEFINES = -DSTM32F407xx
 
 .S.o:
 	$(X_CC) $(INCLUDE) $(DEFINES) $(CFLAGS) -c $< -o $@
-
 .c.o:
 	$(X_CC) $(INCLUDE) $(DEFINES) $(CFLAGS) -c $< -o $@
 
