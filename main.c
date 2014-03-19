@@ -157,8 +157,6 @@ static void SystemClock_Config(void)
 
 //-----------------------------------------------------------------------------
 
-int grbl_main(void);
-
 int main(void)
 {
     HAL_Init();
@@ -170,8 +168,6 @@ int main(void)
 
     SystemClock_Config();
 
-    grbl_main();
-   
     while (1) {
         HAL_Delay(500);
         BSP_LED_Toggle(LED3);

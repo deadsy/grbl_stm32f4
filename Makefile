@@ -84,6 +84,10 @@ all: grbl_src $(OBJ)
 	$(X_LD) -o $(OUTPUT) $(X_LIBGCC_DIR)/crti.o $(OBJ) $(LDFLAGS)
 	$(X_OBJCOPY) -O binary $(OUTPUT) $(OUTPUT).bin
 
+.PHONY: program
+program: 
+	st-flash write $(OUTPUT).bin 0x08000000
+
 .PHONY: grbl_src
 grbl_src:
 	make -C grbl all
