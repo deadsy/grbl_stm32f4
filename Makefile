@@ -14,6 +14,7 @@ OUTPUT = grbl_stm32f4
 # grbl sources
 GRBL_SRC_DIR = ./grbl/grbl-master
 SRC = $(GRBL_SRC_DIR)/coolant_control.c \
+      $(GRBL_SRC_DIR)/eeprom.c \
       $(GRBL_SRC_DIR)/gcode.c \
       $(GRBL_SRC_DIR)/limits.c \
       $(GRBL_SRC_DIR)/main.c \
@@ -23,6 +24,7 @@ SRC = $(GRBL_SRC_DIR)/coolant_control.c \
       $(GRBL_SRC_DIR)/print.c \
       $(GRBL_SRC_DIR)/protocol.c \
       $(GRBL_SRC_DIR)/report.c \
+      $(GRBL_SRC_DIR)/serial.c \
       $(GRBL_SRC_DIR)/settings.c \
       $(GRBL_SRC_DIR)/spindle_control.c \
       $(GRBL_SRC_DIR)/stepper.c \
