@@ -95,7 +95,7 @@ static void BSP_LED_Off(Led_TypeDef Led)
 
 static void BSP_LED_Toggle(Led_TypeDef Led)
 {
-  HAL_GPIO_TogglePin(GPIO_PORT[Led], GPIO_PIN[Led]);
+    HAL_GPIO_TogglePin(GPIO_PORT[Led], GPIO_PIN[Led]);
 }
 
 //-----------------------------------------------------------------------------
@@ -103,15 +103,13 @@ static void BSP_LED_Toggle(Led_TypeDef Led)
 #ifdef  USE_FULL_ASSERT
 void assert_failed(uint8_t* file, uint32_t line)
 {
-    while (1) {
-    }
+    while (1);
 }
 #endif
 
 static void Error_Handler(void)
 {
-    while (1) {
-    }
+    while (1);
 }
 
 //-----------------------------------------------------------------------------
@@ -129,7 +127,7 @@ static void SystemClock_Config(void)
     // regarding system frequency refer to product datasheet.
     __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
 
-    /* Enable HSE Oscillator and activate PLL with HSE as source */
+    // Enable HSE Oscillator and activate PLL with HSE as source
     RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
     RCC_OscInitStruct.HSEState = RCC_HSE_ON;
     RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
@@ -138,8 +136,7 @@ static void SystemClock_Config(void)
     RCC_OscInitStruct.PLL.PLLN = 336;
     RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
     RCC_OscInitStruct.PLL.PLLQ = 7;
-    if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
-    {
+    if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK) {
         Error_Handler();
     }
 
@@ -149,8 +146,7 @@ static void SystemClock_Config(void)
     RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
     RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;
     RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
-    if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_5) != HAL_OK)
-    {
+    if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_5) != HAL_OK) {
         Error_Handler();
     }
 }
@@ -169,14 +165,21 @@ int main(void)
     SystemClock_Config();
 
     while (1) {
-        HAL_Delay(500);
         BSP_LED_Toggle(LED3);
         BSP_LED_Toggle(LED4);
         BSP_LED_Toggle(LED5);
         BSP_LED_Toggle(LED6);
+        HAL_Delay(500);
     }
 
     return 0;
+}
+
+//-----------------------------------------------------------------------------
+
+void _exit(int status)
+{
+    while (1);
 }
 
 //-----------------------------------------------------------------------------

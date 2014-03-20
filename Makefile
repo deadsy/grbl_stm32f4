@@ -39,14 +39,15 @@ SRC += $(HAL_SRC_DIR)/stm32f4xx_hal.c \
 
 # usb sources
 USB_SRC_DIR = ./usb
-SRC += $(USB_SRC_DIR)/core/usbd_core.c \
-       $(USB_SRC_DIR)/core/usbd_ctlreq.c \
-       $(USB_SRC_DIR)/core/usbd_ioreq.c \
-       $(USB_SRC_DIR)/cdc/usbd_cdc.c \
+#SRC += $(USB_SRC_DIR)/core/usbd_core.c \
+#       $(USB_SRC_DIR)/core/usbd_ctlreq.c \
+#       $(USB_SRC_DIR)/core/usbd_ioreq.c \
+#       $(USB_SRC_DIR)/cdc/usbd_cdc.c \
 
 # board sources
 SRC += main.c \
        system_stm32f4xx.c \
+       stm32f4xx_it.c \
 
 OBJ = $(patsubst %.c, %.o, $(SRC))
 OBJ += start.o
@@ -81,7 +82,8 @@ DEFINES = -DSTM32F407xx
 	$(X_CC) $(INCLUDE) $(DEFINES) $(CFLAGS) -c $< -o $@
 
 all: grbl_src $(OBJ)
-	$(X_LD) -o $(OUTPUT) $(X_LIBGCC_DIR)/crti.o $(OBJ) $(LDFLAGS)
+	$(X_CC) $(CFLAGS) -T$(LDSCRIPT) $(OBJ) -lm -o $(OUTPUT)
+#	$(X_LD) -o $(OUTPUT) $(X_LIBGCC_DIR)/crti.o $(OBJ) $(LDFLAGS)
 	$(X_OBJCOPY) -O binary $(OUTPUT) $(OUTPUT).bin
 
 .PHONY: program
