@@ -68,11 +68,7 @@ CFLAGS += -mfloat-abi=hard -mfpu=fpv4-sp-d16
 
 # linker flags
 LDSCRIPT = stm32f407vg_flash.ld
-LDFLAGS = --static
-LDFLAGS += -L $(X_LIBC_DIR) -L $(X_LIBGCC_DIR)
-LDFLAGS += -lc -lm
-LDFLAGS += --gc-sections
-LDFLAGS += -T $(LDSCRIPT) -Map $(OUTPUT).map
+LDFLAGS = -T$(LDSCRIPT) -Wl,-Map,$(OUTPUT).map -Wl,--gc-sections
 
 DEFINES = -DSTM32F407xx
 
@@ -82,8 +78,7 @@ DEFINES = -DSTM32F407xx
 	$(X_CC) $(INCLUDE) $(DEFINES) $(CFLAGS) -c $< -o $@
 
 all: grbl_src $(OBJ)
-	$(X_CC) $(CFLAGS) -T$(LDSCRIPT) $(OBJ) -lm -o $(OUTPUT)
-#	$(X_LD) -o $(OUTPUT) $(X_LIBGCC_DIR)/crti.o $(OBJ) $(LDFLAGS)
+	$(X_CC) $(CFLAGS) $(LDFLAGS) $(OBJ) -lm -o $(OUTPUT)
 	$(X_OBJCOPY) -O binary $(OUTPUT) $(OUTPUT).bin
 
 .PHONY: program
