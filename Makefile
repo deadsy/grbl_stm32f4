@@ -12,50 +12,51 @@ X_GDB = $(XTOOLS_DIR)/bin/arm-none-eabi-gdb
 OUTPUT = grbl_stm32f4
 
 # grbl sources
-GRBL_SRC_DIR = ./grbl/grbl-master
-SRC = $(GRBL_SRC_DIR)/coolant_control.c \
-      $(GRBL_SRC_DIR)/delay.c \
-      $(GRBL_SRC_DIR)/eeprom.c \
-      $(GRBL_SRC_DIR)/gcode.c \
-      $(GRBL_SRC_DIR)/limits.c \
-      $(GRBL_SRC_DIR)/main.c \
-      $(GRBL_SRC_DIR)/motion_control.c \
-      $(GRBL_SRC_DIR)/nuts_bolts.c \
-      $(GRBL_SRC_DIR)/planner.c \
-      $(GRBL_SRC_DIR)/print.c \
-      $(GRBL_SRC_DIR)/protocol.c \
-      $(GRBL_SRC_DIR)/report.c \
-      $(GRBL_SRC_DIR)/serial.c \
-      $(GRBL_SRC_DIR)/settings.c \
-      $(GRBL_SRC_DIR)/spindle_control.c \
-      $(GRBL_SRC_DIR)/stepper.c \
+GRBL_DIR = ./grbl/grbl-master
+SRC = $(GRBL_DIR)/coolant_control.c \
+      $(GRBL_DIR)/delay.c \
+      $(GRBL_DIR)/eeprom.c \
+      $(GRBL_DIR)/gcode.c \
+      $(GRBL_DIR)/limits.c \
+      $(GRBL_DIR)/main.c \
+      $(GRBL_DIR)/motion_control.c \
+      $(GRBL_DIR)/nuts_bolts.c \
+      $(GRBL_DIR)/planner.c \
+      $(GRBL_DIR)/print.c \
+      $(GRBL_DIR)/protocol.c \
+      $(GRBL_DIR)/report.c \
+      $(GRBL_DIR)/serial.c \
+      $(GRBL_DIR)/settings.c \
+      $(GRBL_DIR)/spindle_control.c \
+      $(GRBL_DIR)/stepper.c \
 
 # hal sources
-HAL_SRC_DIR = ./hal/src
-SRC += $(HAL_SRC_DIR)/stm32f4xx_hal.c \
-       $(HAL_SRC_DIR)/stm32f4xx_hal_rcc.c \
-       $(HAL_SRC_DIR)/stm32f4xx_hal_cortex.c \
-       $(HAL_SRC_DIR)/stm32f4xx_hal_gpio.c \
-       $(HAL_SRC_DIR)/stm32f4xx_hal_pcd.c \
-       $(HAL_SRC_DIR)/stm32f4xx_ll_usb.c \
+HAL_DIR = ./hal/src
+SRC += $(HAL_DIR)/stm32f4xx_hal.c \
+       $(HAL_DIR)/stm32f4xx_hal_rcc.c \
+       $(HAL_DIR)/stm32f4xx_hal_cortex.c \
+       $(HAL_DIR)/stm32f4xx_hal_gpio.c \
+       $(HAL_DIR)/stm32f4xx_hal_pcd.c \
+       $(HAL_DIR)/stm32f4xx_ll_usb.c \
 
 # usb sources
-USB_SRC_DIR = ./usb
-SRC += $(USB_SRC_DIR)/core/usbd_core.c \
-       $(USB_SRC_DIR)/core/usbd_ctlreq.c \
-       $(USB_SRC_DIR)/core/usbd_ioreq.c \
-       $(USB_SRC_DIR)/cdc/usbd_cdc.c \
+USB_DIR = ./usb
+SRC += $(USB_DIR)/core/usbd_core.c \
+       $(USB_DIR)/core/usbd_ctlreq.c \
+       $(USB_DIR)/core/usbd_ioreq.c \
+       $(USB_DIR)/cdc/usbd_cdc.c \
 
 # board sources
-SRC += main.c \
-       system_stm32f4xx.c \
-       stm32f4xx_it.c \
-       usbd_conf.c \
-       usbd_desc.c \
-       syscalls.c \
+BOARD_DIR = ./board
+SRC += $(BOARD_DIR)/main.c \
+       $(BOARD_DIR)/system_stm32f4xx.c \
+       $(BOARD_DIR)/stm32f4xx_it.c \
+       $(BOARD_DIR)/usbd_conf.c \
+       $(BOARD_DIR)/usbd_desc.c \
+       $(BOARD_DIR)/syscalls.c \
 
 OBJ = $(patsubst %.c, %.o, $(SRC))
-OBJ += start.o
+OBJ += $(BOARD_DIR)/start.o
 
 # include files
 INC = .
@@ -63,6 +64,7 @@ INC += ./cmsis
 INC += ./hal/inc
 INC += ./usb/core
 INC += ./usb/cdc
+INC += ./board
 
 INCLUDE = $(addprefix -I,$(INC))
 
