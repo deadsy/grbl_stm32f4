@@ -7,7 +7,7 @@
 #include "stm32f4xx_hal.h"
 #include "usbd_desc.h"
 #include "usbd_cdc.h"
-//#include "usbd_cdc_interface.h"
+#include "usbd_cdc_interface.h"
 
 //-----------------------------------------------------------------------------
 
@@ -171,6 +171,9 @@ int main(void)
     BSP_LED_Init(LED6);
 
     USBD_Init(&hUSBDDevice, &VCP_Desc, 0);
+    USBD_RegisterClass(&hUSBDDevice, &USBD_CDC);
+    USBD_CDC_RegisterInterface(&hUSBDDevice, &USBD_CDC_fops);
+    USBD_Start(&hUSBDDevice);
 
     while (1) {
         BSP_LED_Toggle(LED3);
@@ -179,6 +182,7 @@ int main(void)
         BSP_LED_Toggle(LED6);
         HAL_Delay(500);
     }
+
 
     return 0;
 }
