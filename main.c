@@ -5,6 +5,13 @@
 //-----------------------------------------------------------------------------
 
 #include "stm32f4xx_hal.h"
+#include "usbd_desc.h"
+#include "usbd_cdc.h"
+//#include "usbd_cdc_interface.h"
+
+//-----------------------------------------------------------------------------
+
+USBD_HandleTypeDef hUSBDDevice;
 
 //-----------------------------------------------------------------------------
 
@@ -156,13 +163,14 @@ static void SystemClock_Config(void)
 int main(void)
 {
     HAL_Init();
+    SystemClock_Config();
 
     BSP_LED_Init(LED3);
     BSP_LED_Init(LED4);
     BSP_LED_Init(LED5);
     BSP_LED_Init(LED6);
 
-    SystemClock_Config();
+    USBD_Init(&hUSBDDevice, &VCP_Desc, 0);
 
     while (1) {
         BSP_LED_Toggle(LED3);
@@ -173,13 +181,6 @@ int main(void)
     }
 
     return 0;
-}
-
-//-----------------------------------------------------------------------------
-
-void _exit(int status)
-{
-    while (1);
 }
 
 //-----------------------------------------------------------------------------

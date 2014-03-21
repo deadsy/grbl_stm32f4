@@ -36,18 +36,23 @@ SRC += $(HAL_SRC_DIR)/stm32f4xx_hal.c \
        $(HAL_SRC_DIR)/stm32f4xx_hal_rcc.c \
        $(HAL_SRC_DIR)/stm32f4xx_hal_cortex.c \
        $(HAL_SRC_DIR)/stm32f4xx_hal_gpio.c \
+       $(HAL_SRC_DIR)/stm32f4xx_hal_pcd.c \
+       $(HAL_SRC_DIR)/stm32f4xx_ll_usb.c \
 
 # usb sources
 USB_SRC_DIR = ./usb
-#SRC += $(USB_SRC_DIR)/core/usbd_core.c \
-#       $(USB_SRC_DIR)/core/usbd_ctlreq.c \
-#       $(USB_SRC_DIR)/core/usbd_ioreq.c \
-#       $(USB_SRC_DIR)/cdc/usbd_cdc.c \
+SRC += $(USB_SRC_DIR)/core/usbd_core.c \
+       $(USB_SRC_DIR)/core/usbd_ctlreq.c \
+       $(USB_SRC_DIR)/core/usbd_ioreq.c \
+       $(USB_SRC_DIR)/cdc/usbd_cdc.c \
 
 # board sources
 SRC += main.c \
        system_stm32f4xx.c \
        stm32f4xx_it.c \
+       usbd_conf.c \
+       usbd_desc.c \
+       syscalls.c \
 
 OBJ = $(patsubst %.c, %.o, $(SRC))
 OBJ += start.o
