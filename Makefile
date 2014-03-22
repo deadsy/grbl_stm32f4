@@ -37,11 +37,11 @@ SRC += $(HAL_DIR)/stm32f4xx_hal.c \
        $(HAL_DIR)/stm32f4xx_hal_cortex.c \
        $(HAL_DIR)/stm32f4xx_hal_gpio.c \
        $(HAL_DIR)/stm32f4xx_hal_pcd.c \
-       $(HAL_DIR)/stm32f4xx_hal_uart.c \
-       $(HAL_DIR)/stm32f4xx_hal_tim.c \
-       $(HAL_DIR)/stm32f4xx_hal_tim_ex.c \
        $(HAL_DIR)/stm32f4xx_hal_dma.c \
        $(HAL_DIR)/stm32f4xx_ll_usb.c \
+#       $(HAL_DIR)/stm32f4xx_hal_uart.c \
+#       $(HAL_DIR)/stm32f4xx_hal_tim.c \
+#       $(HAL_DIR)/stm32f4xx_hal_tim_ex.c \
 
 # usb sources
 USB_DIR = ./usb

@@ -1,3 +1,16 @@
+//-----------------------------------------------------------------------------
+/*
+
+
+*/
+//-----------------------------------------------------------------------------
+
+extern USBD_CDC_ItfTypeDef USBD_CDC_fops;
+
+//-----------------------------------------------------------------------------
+
+#if 0
+
 /**
   ******************************************************************************
   * @file    USB_Device/CDC_Standalone/Inc/usbd_cdc_interface.h
@@ -16,8 +29,8 @@
   *
   *        http://www.st.com/software_license_agreement_liberty_v2
   *
-  * Unless required by applicable law or agreed to in writing, software 
-  * distributed under the License is distributed on an "AS IS" BASIS, 
+  * Unless required by applicable law or agreed to in writing, software
+  * distributed under the License is distributed on an "AS IS" BASIS,
   * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
   * See the License for the specific language governing permissions and
   * limitations under the License.
@@ -34,24 +47,24 @@
 
 /* Exported types ------------------------------------------------------------*/
 /* Exported constants --------------------------------------------------------*/
-/* User can use this section to tailor USARTx/UARTx instance used and associated 
+/* User can use this section to tailor USARTx/UARTx instance used and associated
    resources */
 /* Definition for USARTx clock resources */
 #define USARTx                           USART3
 #define USARTx_CLK_ENABLE()              __USART3_CLK_ENABLE();
 #define DMAx_CLK_ENABLE()                __DMA1_CLK_ENABLE()
 #define USARTx_RX_GPIO_CLK_ENABLE()      __GPIOC_CLK_ENABLE()
-#define USARTx_TX_GPIO_CLK_ENABLE()      __GPIOC_CLK_ENABLE() 
+#define USARTx_TX_GPIO_CLK_ENABLE()      __GPIOC_CLK_ENABLE()
 
 #define USARTx_FORCE_RESET()             __USART3_FORCE_RESET()
 #define USARTx_RELEASE_RESET()           __USART3_RELEASE_RESET()
 
 /* Definition for USARTx Pins */
 #define USARTx_TX_PIN                    GPIO_PIN_10
-#define USARTx_TX_GPIO_PORT              GPIOC  
+#define USARTx_TX_GPIO_PORT              GPIOC
 #define USARTx_TX_AF                     GPIO_AF7_USART3
 #define USARTx_RX_PIN                    GPIO_PIN_11
-#define USARTx_RX_GPIO_PORT              GPIOC 
+#define USARTx_RX_GPIO_PORT              GPIOC
 #define USARTx_RX_AF                     GPIO_AF7_USART3
 
 /* Definition for USARTx's NVIC: used for receiving data over Rx pin */
@@ -60,7 +73,7 @@
 
 /* Definition for USARTx's DMA: used for transmitting data over Tx pin */
 #define USARTx_TX_DMA_CHANNEL            DMA_CHANNEL_4
-#define USARTx_TX_DMA_STREAM             DMA1_Stream3  
+#define USARTx_TX_DMA_STREAM             DMA1_Stream3
 #define USARTx_DMA_TX_IRQHandler         DMA1_Stream3_IRQHandler
 #define USARTx_DMA_TX_IRQn               DMA1_Stream3_IRQn
 
@@ -85,3 +98,5 @@ extern USBD_CDC_ItfTypeDef  USBD_CDC_fops;
 #endif /* __USBD_CDC_IF_H */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
+
+#endif

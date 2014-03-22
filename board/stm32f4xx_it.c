@@ -56,13 +56,15 @@ void SysTick_Handler(void)
 // STM32F4xx Peripherals Interrupt Handlers
 
 extern PCD_HandleTypeDef hpcd;
-extern UART_HandleTypeDef UartHandle;
-extern TIM_HandleTypeDef TimHandle;
+//extern UART_HandleTypeDef UartHandle;
+//extern TIM_HandleTypeDef TimHandle;
 
 void OTG_FS_IRQHandler(void)
 {
     HAL_PCD_IRQHandler(&hpcd);
 }
+
+#if 0
 
 void USARTx_DMA_TX_IRQHandler(void)
 {
@@ -78,5 +80,7 @@ void TIMx_IRQHandler(void)
 {
     HAL_TIM_IRQHandler(&TimHandle);
 }
+
+#endif
 
 //-----------------------------------------------------------------------------

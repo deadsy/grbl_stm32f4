@@ -160,6 +160,8 @@ static void SystemClock_Config(void)
 
 //-----------------------------------------------------------------------------
 
+extern void test_tx(void);
+
 int main(void)
 {
     HAL_Init();
@@ -175,14 +177,15 @@ int main(void)
     USBD_CDC_RegisterInterface(&hUSBDDevice, &USBD_CDC_fops);
     USBD_Start(&hUSBDDevice);
 
+
     while (1) {
         BSP_LED_Toggle(LED3);
         BSP_LED_Toggle(LED4);
         BSP_LED_Toggle(LED5);
         BSP_LED_Toggle(LED6);
+        test_tx();
         HAL_Delay(500);
     }
-
 
     return 0;
 }

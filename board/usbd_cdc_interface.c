@@ -1,3 +1,121 @@
+//-----------------------------------------------------------------------------
+/*
+
+
+*/
+//-----------------------------------------------------------------------------
+
+#include "stm32f4xx_hal.h"
+#include "usbd_desc.h"
+#include "usbd_cdc.h"
+#include "usbd_cdc_interface.h"
+
+//-----------------------------------------------------------------------------
+
+#define APP_RX_DATA_SIZE  2048
+#define APP_TX_DATA_SIZE  2048
+
+//-----------------------------------------------------------------------------
+
+extern USBD_HandleTypeDef  hUSBDDevice;
+
+//-----------------------------------------------------------------------------
+
+// Rx from Host USB
+static uint8_t UserRxBuffer[APP_RX_DATA_SIZE];
+
+// Tx to Host USB
+static uint8_t UserTxBuffer[APP_TX_DATA_SIZE];
+
+static USBD_CDC_LineCodingTypeDef LineCoding = {
+    115200, // baud rate
+    0x00,   // 1 stop bit
+    0x00,   // no parity
+    0x08    // 8 data bits
+};
+
+//-----------------------------------------------------------------------------
+
+static int8_t CDC_Itf_Init(void)
+{
+    USBD_CDC_SetTxBuffer(&hUSBDDevice, UserTxBuffer, 0);
+    USBD_CDC_SetRxBuffer(&hUSBDDevice, UserRxBuffer);
+    return USBD_OK;
+}
+
+static int8_t CDC_Itf_DeInit(void)
+{
+    return USBD_OK;
+}
+
+//-----------------------------------------------------------------------------
+
+static int8_t CDC_Itf_Control (uint8_t cmd, uint8_t* pbuf, uint16_t length)
+{
+    switch (cmd) {
+        case CDC_SET_LINE_CODING: {
+            LineCoding.bitrate = (uint32_t)(pbuf[0] | (pbuf[1] << 8) | (pbuf[2] << 16) | (pbuf[3] << 24));
+            LineCoding.format = pbuf[4];
+            LineCoding.paritytype = pbuf[5];
+            LineCoding.datatype = pbuf[6];
+            break;
+        }
+        case CDC_GET_LINE_CODING: {
+            pbuf[0] = (uint8_t)(LineCoding.bitrate);
+            pbuf[1] = (uint8_t)(LineCoding.bitrate >> 8);
+            pbuf[2] = (uint8_t)(LineCoding.bitrate >> 16);
+            pbuf[3] = (uint8_t)(LineCoding.bitrate >> 24);
+            pbuf[4] = LineCoding.format;
+            pbuf[5] = LineCoding.paritytype;
+            pbuf[6] = LineCoding.datatype;
+            break;
+        }
+        case CDC_SEND_ENCAPSULATED_COMMAND:
+        case CDC_GET_ENCAPSULATED_RESPONSE:
+        case CDC_SET_COMM_FEATURE:
+        case CDC_GET_COMM_FEATURE:
+        case CDC_CLEAR_COMM_FEATURE:
+        case CDC_SET_CONTROL_LINE_STATE:
+        case CDC_SEND_BREAK:
+        default:
+            break;
+  }
+  return USBD_OK;
+}
+
+//-----------------------------------------------------------------------------
+
+static int8_t CDC_Itf_Receive(uint8_t* pbuf, uint32_t *Len)
+{
+    return USBD_OK;
+}
+
+//-----------------------------------------------------------------------------
+
+USBD_CDC_ItfTypeDef USBD_CDC_fops =
+{
+  CDC_Itf_Init,
+  CDC_Itf_DeInit,
+  CDC_Itf_Control,
+  CDC_Itf_Receive
+};
+
+//-----------------------------------------------------------------------------
+
+static int count = 0;
+
+void test_tx(void)
+{
+    sprintf((char *)UserTxBuffer, "%d: it works\r\n", count);
+    USBD_CDC_SetTxBuffer(&hUSBDDevice, (uint8_t*)UserTxBuffer, strlen((char *)UserTxBuffer));
+    USBD_CDC_TransmitPacket(&hUSBDDevice);
+    count += 1;
+}
+
+//-----------------------------------------------------------------------------
+
+#if 0
+
 /**
   ******************************************************************************
   * @file    USB_Device/CDC_Standalone/Src/usbd_cdc_interface.c
@@ -455,3 +573,4 @@ static void Error_Handler(void)
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
 
+#endif
