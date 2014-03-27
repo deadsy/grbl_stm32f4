@@ -40,11 +40,13 @@ static uint32_t tx_wr;
 static uint32_t tx_rd;
 uint32_t tx_overflow;
 
-#define RX_FIFO_SIZE 128
+#define RX_FIFO_SIZE 2048
 static uint8_t rx_fifo[RX_FIFO_SIZE];
 static uint32_t rx_wr;
 static uint32_t rx_rd;
 uint32_t rx_overflow;
+
+static uint8_t rx_buffer[CDC_DATA_FS_OUT_PACKET_SIZE];
 
 //-----------------------------------------------------------------------------
 
@@ -90,7 +92,7 @@ static int8_t CDC_Itf_Init(void)
     rx_overflow = 0;
 
     USBD_CDC_SetTxBuffer(&hUSBDDevice, tx_fifo, 0);
-    USBD_CDC_SetRxBuffer(&hUSBDDevice, rx_fifo);
+    USBD_CDC_SetRxBuffer(&hUSBDDevice, rx_buffer);
 
     TIM_Config();
 
@@ -201,7 +203,7 @@ void serial_init(void)
     // do nothing
 }
 
-// insert the character into the tx fifo ring buffer
+// write a character to the tx fifo ring buffer
 void serial_write(uint8_t data)
 {
     uint32_t tx_wr_inc = (tx_wr == (TX_FIFO_SIZE - 1)) ? 0 : tx_wr + 1;
@@ -220,14 +222,22 @@ void serial_write(uint8_t data)
     }
 }
 
+// read a character from the rx fifo ring buffer
 uint8_t serial_read(void)
 {
-    return 0;
+    uint8_t data = SERIAL_NO_DATA;
+    if (rx_wr != rx_rd) {
+        data = rx_fifo[rx_rd];
+        rx_rd = (rx_rd == (RX_FIFO_SIZE - 1)) ? 0 : rx_rd + 1;
+    }
+    return data;
 }
 
 // Reset and empty data in read buffer. Used by e-stop and reset.
 void serial_reset_read_buffer(void)
 {
+    rx_wr = 0;
+    rx_rd = 0;
 }
 
 //-----------------------------------------------------------------------------

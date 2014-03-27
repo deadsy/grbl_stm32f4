@@ -165,16 +165,8 @@ static void SystemClock_Config(void)
 
 //-----------------------------------------------------------------------------
 
-#include "print.h"
-
-#define STR_SIZE 100
-
-extern uint32_t tx_overflow;
-
 int main(void)
 {
-    char test_data;
-
     HAL_Init();
     SystemClock_Config();
 
@@ -188,7 +180,21 @@ int main(void)
     USBD_CDC_RegisterInterface(&hUSBDDevice, &USBD_CDC_fops);
     USBD_Start(&hUSBDDevice);
 
+    // Delay any output to serial until the USB CDC port is working.
+    HAL_Delay(1000);
+
     //grbl_main();
+
+    while (1) {
+        uint8_t data = serial_read();
+        if (data != SERIAL_NO_DATA) {
+            BSP_LED_Toggle(LED4);
+            serial_write(data);
+        }
+        BSP_LED_Toggle(LED3);
+    }
+
+#if 0
 
     test_data = 'A';
 
@@ -213,6 +219,8 @@ int main(void)
 
         HAL_Delay(50);
     }
+
+#endif
 
     return 0;
 }
