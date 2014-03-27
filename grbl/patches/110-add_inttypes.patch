@@ -53,3 +53,13 @@
  #include "protocol.h"
  #include "report.h"
  #include "stepper.h"
+--- grbl-master/print.c	2014-03-23 09:23:03.000000000 -0700
++++ grbl-master/print.c	2014-03-23 09:23:17.000000000 -0700
+@@ -22,6 +22,7 @@
+ /* This code was initially inspired by the wiring_serial module by David A. Mellis which
+    used to be a part of the Arduino project. */ 
+ 
++#include <inttypes.h>
+ 
+ #include "config.h"
+ #include "serial.h"

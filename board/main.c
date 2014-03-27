@@ -8,6 +8,11 @@
 #include "usbd_desc.h"
 #include "usbd_cdc.h"
 #include "usbd_cdc_interface.h"
+#include "serial.h"
+
+//-----------------------------------------------------------------------------
+
+extern int grbl_main(void);
 
 //-----------------------------------------------------------------------------
 
@@ -114,7 +119,7 @@ void assert_failed(uint8_t* file, uint32_t line)
 }
 #endif
 
-static void Error_Handler(void)
+void Error_Handler(void)
 {
     while (1);
 }
@@ -160,10 +165,16 @@ static void SystemClock_Config(void)
 
 //-----------------------------------------------------------------------------
 
-extern void test_tx(void);
+#include "print.h"
+
+#define STR_SIZE 100
+
+extern uint32_t tx_overflow;
 
 int main(void)
 {
+    char test_data;
+
     HAL_Init();
     SystemClock_Config();
 
@@ -177,14 +188,30 @@ int main(void)
     USBD_CDC_RegisterInterface(&hUSBDDevice, &USBD_CDC_fops);
     USBD_Start(&hUSBDDevice);
 
+    //grbl_main();
+
+    test_data = 'A';
 
     while (1) {
+        char tmp[STR_SIZE];
+
+        memset(tmp, test_data, sizeof(tmp));
+        test_data = (test_data == 'Z' + 1) ? 'A' : test_data + 1;
+
+        tmp[STR_SIZE - 3] = '\r';
+        tmp[STR_SIZE - 2] = '\n';
+        tmp[STR_SIZE - 1] = 0;
+        printString(tmp);
+
+        sprintf(tmp, "tx_overflow = %lx\r\n", tx_overflow);
+        printString(tmp);
+
         BSP_LED_Toggle(LED3);
         BSP_LED_Toggle(LED4);
         BSP_LED_Toggle(LED5);
         BSP_LED_Toggle(LED6);
-        test_tx();
-        HAL_Delay(500);
+
+        HAL_Delay(50);
     }
 
     return 0;

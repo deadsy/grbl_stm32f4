@@ -25,7 +25,6 @@ SRC = $(GRBL_DIR)/coolant_control.c \
       $(GRBL_DIR)/print.c \
       $(GRBL_DIR)/protocol.c \
       $(GRBL_DIR)/report.c \
-      $(GRBL_DIR)/serial.c \
       $(GRBL_DIR)/settings.c \
       $(GRBL_DIR)/spindle_control.c \
       $(GRBL_DIR)/stepper.c \
@@ -39,9 +38,9 @@ SRC += $(HAL_DIR)/stm32f4xx_hal.c \
        $(HAL_DIR)/stm32f4xx_hal_pcd.c \
        $(HAL_DIR)/stm32f4xx_hal_dma.c \
        $(HAL_DIR)/stm32f4xx_ll_usb.c \
+       $(HAL_DIR)/stm32f4xx_hal_tim.c \
+       $(HAL_DIR)/stm32f4xx_hal_tim_ex.c \
 #       $(HAL_DIR)/stm32f4xx_hal_uart.c \
-#       $(HAL_DIR)/stm32f4xx_hal_tim.c \
-#       $(HAL_DIR)/stm32f4xx_hal_tim_ex.c \
 
 # usb sources
 USB_DIR = ./usb
@@ -67,9 +66,10 @@ OBJ += $(BOARD_DIR)/start.o
 INC = .
 INC += ./cmsis
 INC += ./hal/inc
-INC += ./usb/core
-INC += ./usb/cdc
-INC += ./board
+INC += $(USB_DIR)/core
+INC += $(USB_DIR)/cdc
+INC += $(BOARD_DIR)
+INC += $(GRBL_DIR)
 
 INCLUDE = $(addprefix -I,$(INC))
 

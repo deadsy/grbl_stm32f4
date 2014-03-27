@@ -1,6 +1,12 @@
 //-----------------------------------------------------------------------------
 /*
 
+CDC Interface Code
+
+The original grbl code uses UART serial to communicate with the host.
+We implement the original API here, but use the CDC interface to rx/tx
+with the host.
+
 
 */
 //-----------------------------------------------------------------------------
@@ -9,23 +15,38 @@
 #include "usbd_desc.h"
 #include "usbd_cdc.h"
 #include "usbd_cdc_interface.h"
+#include "serial.h"
 
 //-----------------------------------------------------------------------------
 
-#define APP_RX_DATA_SIZE  2048
-#define APP_TX_DATA_SIZE  2048
+extern USBD_HandleTypeDef hUSBDDevice;
+extern void Error_Handler(void);
+extern void toggle_led(void);
 
 //-----------------------------------------------------------------------------
+// We use a periodic timer to transfer bytes from the tx fifo
+// to the USB IN endpoint.
 
-extern USBD_HandleTypeDef  hUSBDDevice;
+#define CDC_POLLING_INTERVAL 5 // in milliseconds
+
+TIM_HandleTypeDef htim3;
 
 //-----------------------------------------------------------------------------
+// Tx and Rx FIFOs
 
-// Rx from Host USB
-static uint8_t UserRxBuffer[APP_RX_DATA_SIZE];
+#define TX_FIFO_SIZE 2048
+static uint8_t tx_fifo[TX_FIFO_SIZE];
+static uint32_t tx_wr;
+static uint32_t tx_rd;
+uint32_t tx_overflow;
 
-// Tx to Host USB
-static uint8_t UserTxBuffer[APP_TX_DATA_SIZE];
+#define RX_FIFO_SIZE 128
+static uint8_t rx_fifo[RX_FIFO_SIZE];
+static uint32_t rx_wr;
+static uint32_t rx_rd;
+uint32_t rx_overflow;
+
+//-----------------------------------------------------------------------------
 
 static USBD_CDC_LineCodingTypeDef LineCoding = {
     115200, // baud rate
@@ -36,10 +57,43 @@ static USBD_CDC_LineCodingTypeDef LineCoding = {
 
 //-----------------------------------------------------------------------------
 
+static void TIM_Config(void)
+{
+    __TIM3_CLK_ENABLE();
+
+    htim3.Instance = TIM3;
+    htim3.Init.Period = (CDC_POLLING_INTERVAL*1000) - 1;
+    htim3.Init.Prescaler = 84-1;
+    htim3.Init.ClockDivision = 0;
+    htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
+
+    if (HAL_TIM_Base_Init(&htim3) != HAL_OK) {
+        Error_Handler();
+    }
+
+    HAL_NVIC_EnableIRQ(TIM3_IRQn);
+
+    if (HAL_TIM_Base_Start_IT(&htim3) != HAL_OK) {
+        Error_Handler();
+    }
+}
+
+//-----------------------------------------------------------------------------
+
 static int8_t CDC_Itf_Init(void)
 {
-    USBD_CDC_SetTxBuffer(&hUSBDDevice, UserTxBuffer, 0);
-    USBD_CDC_SetRxBuffer(&hUSBDDevice, UserRxBuffer);
+    tx_wr = 0;
+    tx_rd = 0;
+    tx_overflow = 0;
+    rx_wr = 0;
+    rx_rd = 0;
+    rx_overflow = 0;
+
+    USBD_CDC_SetTxBuffer(&hUSBDDevice, tx_fifo, 0);
+    USBD_CDC_SetRxBuffer(&hUSBDDevice, rx_fifo);
+
+    TIM_Config();
+
     return USBD_OK;
 }
 
@@ -87,6 +141,19 @@ static int8_t CDC_Itf_Control (uint8_t cmd, uint8_t* pbuf, uint16_t length)
 
 static int8_t CDC_Itf_Receive(uint8_t* pbuf, uint32_t *Len)
 {
+    uint32_t n = *Len;
+    uint32_t i;
+
+    // Write the received buffer to the Rx fifo.
+    for (i = 0; i < n; i ++) {
+        uint32_t rx_wr_inc = (rx_wr == (RX_FIFO_SIZE - 1)) ? 0 : rx_wr + 1;
+        if (rx_wr_inc != rx_rd) {
+            rx_fifo[rx_wr] = pbuf[i];
+            rx_wr = rx_wr_inc;
+        } else {
+            rx_overflow += 1;
+        }
+    }
     return USBD_OK;
 }
 
@@ -102,14 +169,65 @@ USBD_CDC_ItfTypeDef USBD_CDC_fops =
 
 //-----------------------------------------------------------------------------
 
-static int count = 0;
-
-void test_tx(void)
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
-    sprintf((char *)UserTxBuffer, "%d: it works\r\n", count);
-    USBD_CDC_SetTxBuffer(&hUSBDDevice, (uint8_t*)UserTxBuffer, strlen((char *)UserTxBuffer));
-    USBD_CDC_TransmitPacket(&hUSBDDevice);
-    count += 1;
+    uint32_t n;
+
+    if(tx_wr != tx_rd) {
+        if(tx_wr < tx_rd) {
+            // The write index has wrapped around.
+            // Tx from tx_rd to the end of fifo.
+            n = TX_FIFO_SIZE - tx_rd;
+        } else {
+            // The write index is ahead of the read index
+            // Tx from tx_rd to tx_wr - 1
+            n = tx_wr - tx_rd;
+        }
+
+        USBD_CDC_SetTxBuffer(&hUSBDDevice, &tx_fifo[tx_rd], n);
+        if(USBD_CDC_TransmitPacket(&hUSBDDevice) == USBD_OK) {
+            tx_rd += n;
+            if (tx_rd == TX_FIFO_SIZE) {
+                tx_rd = 0;
+            }
+        }
+    }
+}
+
+//-----------------------------------------------------------------------------
+
+void serial_init(void)
+{
+    // do nothing
+}
+
+// insert the character into the tx fifo ring buffer
+void serial_write(uint8_t data)
+{
+    uint32_t tx_wr_inc = (tx_wr == (TX_FIFO_SIZE - 1)) ? 0 : tx_wr + 1;
+    int timeout = 50;
+
+    while ((tx_wr_inc == tx_rd) && (timeout > 0)) {
+        HAL_Delay(1);
+        timeout -= 1;
+    }
+
+    if (timeout == 0) {
+        tx_overflow += 1;
+    } else {
+        tx_fifo[tx_wr] = data;
+        tx_wr = tx_wr_inc;
+    }
+}
+
+uint8_t serial_read(void)
+{
+    return 0;
+}
+
+// Reset and empty data in read buffer. Used by e-stop and reset.
+void serial_reset_read_buffer(void)
+{
 }
 
 //-----------------------------------------------------------------------------
