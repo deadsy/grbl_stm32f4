@@ -75,6 +75,7 @@ INCLUDE = $(addprefix -I,$(INC))
 
 # compiler flags
 CFLAGS = -Wall
+CFLAGS = -O
 CFLAGS += -mlittle-endian -mthumb -mcpu=cortex-m4 -mthumb-interwork
 CFLAGS += -mfloat-abi=hard -mfpu=fpv4-sp-d16
 

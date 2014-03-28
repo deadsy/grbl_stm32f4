@@ -165,8 +165,13 @@ static void SystemClock_Config(void)
 
 //-----------------------------------------------------------------------------
 
+extern uint32_t rx_overflow;
+
 int main(void)
 {
+    uint32_t rx_count = 0;
+    uint32_t i = 0;
+
     HAL_Init();
     SystemClock_Config();
 
@@ -187,40 +192,19 @@ int main(void)
 
     while (1) {
         uint8_t data = serial_read();
+
         if (data != SERIAL_NO_DATA) {
-            BSP_LED_Toggle(LED4);
-            serial_write(data);
+            rx_count += 1;
         }
-        BSP_LED_Toggle(LED3);
+
+        if (i % 100000 == 0) {
+            char tmp[100];
+            sprintf(tmp, "rx_count %ld rx_overflow %ld\r\n", rx_count, rx_overflow);
+            printString(tmp);
+        }
+
+        i += 1;
     }
-
-#if 0
-
-    test_data = 'A';
-
-    while (1) {
-        char tmp[STR_SIZE];
-
-        memset(tmp, test_data, sizeof(tmp));
-        test_data = (test_data == 'Z' + 1) ? 'A' : test_data + 1;
-
-        tmp[STR_SIZE - 3] = '\r';
-        tmp[STR_SIZE - 2] = '\n';
-        tmp[STR_SIZE - 1] = 0;
-        printString(tmp);
-
-        sprintf(tmp, "tx_overflow = %lx\r\n", tx_overflow);
-        printString(tmp);
-
-        BSP_LED_Toggle(LED3);
-        BSP_LED_Toggle(LED4);
-        BSP_LED_Toggle(LED5);
-        BSP_LED_Toggle(LED6);
-
-        HAL_Delay(50);
-    }
-
-#endif
 
     return 0;
 }

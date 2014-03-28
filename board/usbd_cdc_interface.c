@@ -40,7 +40,7 @@ static uint32_t tx_wr;
 static uint32_t tx_rd;
 uint32_t tx_overflow;
 
-#define RX_FIFO_SIZE 2048
+#define RX_FIFO_SIZE 512
 static uint8_t rx_fifo[RX_FIFO_SIZE];
 static uint32_t rx_wr;
 static uint32_t rx_rd;
@@ -156,6 +156,9 @@ static int8_t CDC_Itf_Receive(uint8_t* pbuf, uint32_t *Len)
             rx_overflow += 1;
         }
     }
+
+    USBD_CDC_SetRxBuffer(&hUSBDDevice, rx_buffer);
+    USBD_CDC_ReceivePacket(&hUSBDDevice);
     return USBD_OK;
 }
 
