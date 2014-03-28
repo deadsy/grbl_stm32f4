@@ -9,6 +9,7 @@
 #include "usbd_cdc.h"
 #include "usbd_cdc_interface.h"
 #include "serial.h"
+#include "gpio.h"
 
 //-----------------------------------------------------------------------------
 
@@ -17,98 +18,6 @@ extern int grbl_main(void);
 //-----------------------------------------------------------------------------
 
 USBD_HandleTypeDef hUSBDDevice;
-
-//-----------------------------------------------------------------------------
-
-#define LEDn                             4
-
-#define LED4_PIN                         GPIO_PIN_12
-#define LED4_GPIO_PORT                   GPIOD
-#define LED4_GPIO_CLK_ENABLE()           __GPIOD_CLK_ENABLE()
-#define LED4_GPIO_CLK_DISABLE()          __GPIOD_CLK_DISABLE()
-
-
-#define LED3_PIN                         GPIO_PIN_13
-#define LED3_GPIO_PORT                   GPIOD
-#define LED3_GPIO_CLK_ENABLE()           __GPIOD_CLK_ENABLE()
-#define LED3_GPIO_CLK_DISABLE()          __GPIOD_CLK_DISABLE()
-
-
-#define LED5_PIN                         GPIO_PIN_14
-#define LED5_GPIO_PORT                   GPIOD
-#define LED5_GPIO_CLK_ENABLE()           __GPIOD_CLK_ENABLE()
-#define LED5_GPIO_CLK_DISABLE()          __GPIOD_CLK_DISABLE()
-
-
-#define LED6_PIN                         GPIO_PIN_15
-#define LED6_GPIO_PORT                   GPIOD
-#define LED6_GPIO_CLK_ENABLE()           __GPIOD_CLK_ENABLE()
-#define LED6_GPIO_CLK_DISABLE()          __GPIOD_CLK_DISABLE()
-
-
-
-#define LEDx_GPIO_CLK_ENABLE(__INDEX__)   (((__INDEX__) == 0) ? LED4_GPIO_CLK_ENABLE() :\
-                                           ((__INDEX__) == 1) ? LED3_GPIO_CLK_ENABLE() :\
-                                           ((__INDEX__) == 2) ? LED5_GPIO_CLK_ENABLE() : LED6_GPIO_CLK_ENABLE())
-
-#define LEDx_GPIO_CLK_DISABLE(__INDEX__)  (((__INDEX__) == 0) ? LED4_GPIO_CLK_DISABLE() :\
-                                           ((__INDEX__) == 1) ? LED3_GPIO_CLK_DISABLE() :\
-                                           ((__INDEX__) == 2) ? LED5_GPIO_CLK_DISABLE() : LED6_GPIO_CLK_DISABLE())
-
-GPIO_TypeDef* GPIO_PORT[LEDn] = {LED4_GPIO_PORT,
-                                 LED3_GPIO_PORT,
-                                 LED5_GPIO_PORT,
-                                 LED6_GPIO_PORT};
-
-const uint16_t GPIO_PIN[LEDn] = {LED4_PIN,
-                                 LED3_PIN,
-                                 LED5_PIN,
-                                 LED6_PIN};
-
-typedef enum
-{
-  LED4 = 0,
-  LED3 = 1,
-  LED5 = 2,
-  LED6 = 3
-} Led_TypeDef;
-
-static void BSP_LED_Init(Led_TypeDef Led)
-{
-  GPIO_InitTypeDef  GPIO_InitStruct;
-
-  /* Enable the GPIO_LED Clock */
-  LEDx_GPIO_CLK_ENABLE(Led);
-
-  /* Configure the GPIO_LED pin */
-  GPIO_InitStruct.Pin = GPIO_PIN[Led];
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_PULLUP;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FAST;
-
-  HAL_GPIO_Init(GPIO_PORT[Led], &GPIO_InitStruct);
-
-  HAL_GPIO_WritePin(GPIO_PORT[Led], GPIO_PIN[Led], GPIO_PIN_RESET);
-}
-
-#if 0
-
-static void BSP_LED_On(Led_TypeDef Led)
-{
-  HAL_GPIO_WritePin(GPIO_PORT[Led], GPIO_PIN[Led], GPIO_PIN_SET);
-}
-
-static void BSP_LED_Off(Led_TypeDef Led)
-{
-  HAL_GPIO_WritePin(GPIO_PORT[Led], GPIO_PIN[Led], GPIO_PIN_RESET);
-}
-
-#endif
-
-static void BSP_LED_Toggle(Led_TypeDef Led)
-{
-    HAL_GPIO_TogglePin(GPIO_PORT[Led], GPIO_PIN[Led]);
-}
 
 //-----------------------------------------------------------------------------
 
@@ -169,16 +78,11 @@ extern uint32_t rx_overflow;
 
 int main(void)
 {
-    uint32_t rx_count = 0;
-    uint32_t i = 0;
+    int loop_count = 0;
 
     HAL_Init();
     SystemClock_Config();
-
-    BSP_LED_Init(LED3);
-    BSP_LED_Init(LED4);
-    BSP_LED_Init(LED5);
-    BSP_LED_Init(LED6);
+    gpio_init();
 
     USBD_Init(&hUSBDDevice, &VCP_Desc, 0);
     USBD_RegisterClass(&hUSBDDevice, &USBD_CDC);
@@ -191,19 +95,14 @@ int main(void)
     //grbl_main();
 
     while (1) {
-        uint8_t data = serial_read();
-
-        if (data != SERIAL_NO_DATA) {
-            rx_count += 1;
-        }
-
-        if (i % 100000 == 0) {
-            char tmp[100];
-            sprintf(tmp, "rx_count %ld rx_overflow %ld\r\n", rx_count, rx_overflow);
-            printString(tmp);
-        }
-
-        i += 1;
+        char tmp[100];
+        sprintf(tmp, "loop_count %ld\r\n", loop_count);
+        printString(tmp);
+        gpio_set(LED_RED);
+        HAL_Delay(200);
+        gpio_clr(LED_RED);
+        HAL_Delay(200);
+        loop_count += 1;
     }
 
     return 0;
