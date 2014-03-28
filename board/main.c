@@ -78,8 +78,6 @@ extern uint32_t rx_overflow;
 
 int main(void)
 {
-    int loop_count = 0;
-
     HAL_Init();
     SystemClock_Config();
     gpio_init();
@@ -92,8 +90,9 @@ int main(void)
     // Delay any output to serial until the USB CDC port is working.
     HAL_Delay(1000);
 
-    //grbl_main();
+    grbl_main();
 
+#if 0
     while (1) {
         char tmp[100];
         sprintf(tmp, "loop_count %ld\r\n", loop_count);
@@ -104,6 +103,7 @@ int main(void)
         HAL_Delay(200);
         loop_count += 1;
     }
+#endif
 
     return 0;
 }
