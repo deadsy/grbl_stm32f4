@@ -11,7 +11,7 @@ Delay Functions
 
 //-----------------------------------------------------------------------------
 
-#define TICK_CLK 168 // tick clock in MHz
+#define TICK_CLK 168 // systick count down clock in MHz
 
 static uint64_t get_current_usecs(void)
 {

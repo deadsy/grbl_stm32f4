@@ -8,7 +8,6 @@
 #include "usbd_desc.h"
 #include "usbd_cdc.h"
 #include "usbd_cdc_interface.h"
-#include "serial.h"
 #include "gpio.h"
 
 //-----------------------------------------------------------------------------
@@ -74,8 +73,6 @@ static void SystemClock_Config(void)
 
 //-----------------------------------------------------------------------------
 
-extern uint32_t rx_overflow;
-
 int main(void)
 {
     HAL_Init();
@@ -89,21 +86,7 @@ int main(void)
 
     // Delay any output to serial until the USB CDC port is working.
     HAL_Delay(1000);
-
     grbl_main();
-
-#if 0
-    while (1) {
-        char tmp[100];
-        sprintf(tmp, "loop_count %ld\r\n", loop_count);
-        printString(tmp);
-        gpio_set(LED_RED);
-        HAL_Delay(200);
-        gpio_clr(LED_RED);
-        HAL_Delay(200);
-        loop_count += 1;
-    }
-#endif
 
     return 0;
 }
