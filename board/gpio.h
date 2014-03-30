@@ -10,6 +10,10 @@ GPIO Control for the STM32F4 Discovery Board
 #define GPIO_H
 
 //-----------------------------------------------------------------------------
+
+#include "stm32f4xx_hal.h"
+
+//-----------------------------------------------------------------------------
 // port numbers
 
 #define PORTA 0
@@ -39,8 +43,61 @@ GPIO Control for the STM32F4 Discovery Board
 #define LED_RED     GPIO_NUM(PORTD, 14)
 #define LED_BLUE    GPIO_NUM(PORTD, 15)
 
+// all limit switches must be on the same port
+#define LIMIT_X     GPIO_NUM(PORTA, 0)
+#define LIMIT_Y     GPIO_NUM(PORTA, 1)
+#define LIMIT_Z     GPIO_NUM(PORTA, 2)
+
+// all step bits must be on the same port
+#define STEP_X      GPIO_NUM(PORTB, 0)
+#define STEP_Y      GPIO_NUM(PORTB, 1)
+#define STEP_Z      GPIO_NUM(PORTB, 2)
+
+// all direction bits must be on the same port
+#define DIRN_X      GPIO_NUM(PORTC, 0)
+#define DIRN_Y      GPIO_NUM(PORTC, 1)
+#define DIRN_Z      GPIO_NUM(PORTC, 2)
+
 //-----------------------------------------------------------------------------
-// api functions
+// grbl specific api functions
+
+#define X_LIMIT_BIT GPIO_PIN(LIMIT_X)
+#define Y_LIMIT_BIT GPIO_PIN(LIMIT_Y)
+#define Z_LIMIT_BIT GPIO_PIN(LIMIT_Z)
+#define LIMIT_MASK (GPIO_BIT(LIMIT_X) | GPIO_BIT(LIMIT_Y) | GPIO_BIT(LIMIT_Z))
+
+static inline uint32_t limit_rd(void)
+{
+    uint32_t val = GPIO_BASE(LIMIT_X)->IDR;
+    return val & LIMIT_MASK;
+}
+
+#define X_STEP_BIT GPIO_PIN(STEP_X)
+#define Y_STEP_BIT GPIO_PIN(STEP_Y)
+#define Z_STEP_BIT GPIO_PIN(STEP_Z)
+#define STEP_MASK (GPIO_BIT(STEP_X) | GPIO_BIT(STEP_Y) | GPIO_BIT(STEP_Z))
+
+static inline void step_wr(uint32_t x)
+{
+    uint32_t val = GPIO_BASE(STEP_X)->ODR;
+    val &= ~STEP_MASK;
+    GPIO_BASE(STEP_X)->ODR = (val | x);
+}
+
+#define X_DIRECTION_BIT GPIO_PIN(DIRN_X)
+#define Y_DIRECTION_BIT GPIO_PIN(DIRN_Y)
+#define Z_DIRECTION_BIT GPIO_PIN(DIRN_Z)
+#define DIRECTION_MASK (GPIO_BIT(DIRN_X) | GPIO_BIT(DIRN_Y) | GPIO_BIT(DIRN_Z))
+
+static inline void dirn_wr(uint32_t x)
+{
+    uint32_t val = GPIO_BASE(DIRN_X)->ODR;
+    val &= ~DIRECTION_MASK;
+    GPIO_BASE(DIRN_X)->ODR = (val | x);
+}
+
+//-----------------------------------------------------------------------------
+// generic api functions
 
 static inline void gpio_set(int n)
 {

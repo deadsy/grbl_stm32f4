@@ -1,0 +1,15 @@
+--- grbl-master/pin_map.h	2014-03-14 07:50:36.000000000 -0700
++++ grbl-master/pin_map.h	2014-03-30 08:13:38.000000000 -0700
+@@ -173,7 +173,11 @@
+ 
+ #endif
+ 
+-/* 
++#ifdef PIN_MAP_STM32F4_DISCOVERY // STM32F4 Discovery (Cortex-M4) Dev Board
++#include "gpio.h"
++#endif
++
++/*
+ #ifdef PIN_MAP_CUSTOM_PROC
+   // For a custom pin map or different processor, copy and paste one of the default pin map
+   // settings above and modify it to your needs. Then, make sure the defined name is also
