@@ -1,40 +1,38 @@
---- grbl-master/coolant_control.c	2014-03-16 21:39:06.000000000 -0700
-+++ grbl-master/coolant_control.c	2014-03-16 21:40:15.000000000 -0700
-@@ -30,19 +30,23 @@
+Turn the GPIO control into board specific inline functions.
+--- grbl-master/coolant_control.c	2014-04-01 20:41:19.000000000 -0700
++++ grbl-master/coolant_control.c	2014-04-01 20:43:21.000000000 -0700
+@@ -30,19 +30,15 @@
  void coolant_init()
  {
    current_coolant_mode = COOLANT_DISABLE;
-+#if 0
-   #if ENABLE_M7
-     COOLANT_MIST_DDR |= (1 << COOLANT_MIST_BIT);
-   #endif
-   COOLANT_FLOOD_DDR |= (1 << COOLANT_FLOOD_BIT);
-+#endif
+-  #if ENABLE_M7
+-    COOLANT_MIST_DDR |= (1 << COOLANT_MIST_BIT);
+-  #endif
+-  COOLANT_FLOOD_DDR |= (1 << COOLANT_FLOOD_BIT);
    coolant_stop();
  }
  
  void coolant_stop()
  {
-+#if 0
    #ifdef ENABLE_M7
-     COOLANT_MIST_PORT &= ~(1 << COOLANT_MIST_BIT);
+-    COOLANT_MIST_PORT &= ~(1 << COOLANT_MIST_BIT);
++  coolant_mist_off();
    #endif
-   COOLANT_FLOOD_PORT &= ~(1 << COOLANT_FLOOD_BIT);
-+#endif
+-  COOLANT_FLOOD_PORT &= ~(1 << COOLANT_FLOOD_BIT);
++  coolant_flood_off();
  }
  
  
-@@ -52,11 +56,13 @@
+@@ -52,10 +48,10 @@
    { 
      plan_synchronize(); // Ensure coolant turns on when specified in program.
      if (mode == COOLANT_FLOOD_ENABLE) { 
-+#if 0
-       COOLANT_FLOOD_PORT |= (1 << COOLANT_FLOOD_BIT);
+-      COOLANT_FLOOD_PORT |= (1 << COOLANT_FLOOD_BIT);
++      coolant_flood_on();
      #ifdef ENABLE_M7  
        } else if (mode == COOLANT_MIST_ENABLE) {
-           COOLANT_MIST_PORT |= (1 << COOLANT_MIST_BIT);
+-          COOLANT_MIST_PORT |= (1 << COOLANT_MIST_BIT);
++          coolant_mist_on();
      #endif
-+#endif
      } else {
        coolant_stop();
-     }

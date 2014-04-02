@@ -85,6 +85,7 @@ LDSCRIPT = stm32f407vg_flash.ld
 LDFLAGS = -T$(LDSCRIPT) -Wl,-Map,$(OUTPUT).map -Wl,--gc-sections
 
 DEFINES = -DSTM32F407xx
+DEFINES += -DENABLE_M7
 
 .S.o:
 	$(X_CC) $(INCLUDE) $(DEFINES) $(CFLAGS) -c $< -o $@

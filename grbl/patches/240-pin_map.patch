@@ -1,3 +1,4 @@
+Specify our pin mapping in the gpio.h file.
 --- grbl-master/pin_map.h	2014-03-14 07:50:36.000000000 -0700
 +++ grbl-master/pin_map.h	2014-03-30 08:13:38.000000000 -0700
 @@ -173,7 +173,11 @@

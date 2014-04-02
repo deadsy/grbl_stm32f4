@@ -1,3 +1,4 @@
+Add the standard integer types previously pulled in by the AVR includes.
 --- grbl-master/coolant_control.c	2014-03-16 21:35:19.000000000 -0700
 +++ grbl-master/coolant_control.c	2014-03-16 21:35:44.000000000 -0700
 @@ -18,6 +18,8 @@

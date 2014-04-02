@@ -1,3 +1,4 @@
+Use a pin map specific to the STM32F4 Discovery board.
 --- grbl-master/config.h	2014-03-30 07:33:46.000000000 -0700
 +++ grbl-master/config.h	2014-03-30 07:34:47.000000000 -0700
 @@ -36,7 +36,7 @@

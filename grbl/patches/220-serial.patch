@@ -1,3 +1,4 @@
+The buffers are defined in the CDC USB code.
 --- grbl-master/serial.h	2014-03-26 20:40:16.000000000 -0700
 +++ grbl-master/serial.h	2014-03-26 20:40:37.000000000 -0700
 @@ -25,28 +25,8 @@

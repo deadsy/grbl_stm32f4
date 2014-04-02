@@ -58,6 +58,34 @@ GPIO Control for the STM32F4 Discovery Board
 #define DIRN_Y      GPIO_NUM(PORTC, 1)
 #define DIRN_Z      GPIO_NUM(PORTC, 2)
 
+// coolant control
+#define COOLANT_FLOOD   GPIO_NUM(PORTD, 0)
+#define COOLANT_MIST    GPIO_NUM(PORTD, 1)
+
+// spindle control
+#define SPINDLE_DIRN    GPIO_NUM(PORTD, 2)
+#define SPINDLE_CTRL    GPIO_NUM(PORTD, 3)
+
+//-----------------------------------------------------------------------------
+// generic api functions
+
+static inline void gpio_set(int n)
+{
+    GPIO_BASE(n)->BSRRH = GPIO_BIT(n);
+}
+
+static inline void gpio_clr(int n)
+{
+    GPIO_BASE(n)->BSRRL = GPIO_BIT(n);
+}
+
+static inline void gpio_toggle(int n)
+{
+    GPIO_BASE(n)->ODR ^= GPIO_BIT(n);
+}
+
+void gpio_init(void);
+
 //-----------------------------------------------------------------------------
 // grbl specific api functions
 
@@ -96,25 +124,14 @@ static inline void dirn_wr(uint32_t x)
     GPIO_BASE(DIRN_X)->ODR = (val | x);
 }
 
-//-----------------------------------------------------------------------------
-// generic api functions
-
-static inline void gpio_set(int n)
-{
-    GPIO_BASE(n)->BSRRH = GPIO_BIT(n);
-}
-
-static inline void gpio_clr(int n)
-{
-    GPIO_BASE(n)->BSRRL = GPIO_BIT(n);
-}
-
-static inline void gpio_toggle(int n)
-{
-    GPIO_BASE(n)->ODR ^= GPIO_BIT(n);
-}
-
-void gpio_init(void);
+static inline void coolant_flood_on(void) {gpio_set(COOLANT_FLOOD);}
+static inline void coolant_flood_off(void) {gpio_clr(COOLANT_FLOOD);}
+static inline void coolant_mist_on(void) {gpio_set(COOLANT_MIST);}
+static inline void coolant_mist_off(void) {gpio_clr(COOLANT_MIST);}
+static inline void spindle_on(void) {gpio_set(SPINDLE_CTRL);}
+static inline void spindle_off(void) {gpio_clr(SPINDLE_CTRL);}
+static inline void spindle_fwd(void) {gpio_set(SPINDLE_DIRN);}
+static inline void spindle_rev(void) {gpio_clr(SPINDLE_DIRN);}
 
 //-----------------------------------------------------------------------------
 

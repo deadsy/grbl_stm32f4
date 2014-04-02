@@ -1,3 +1,4 @@
+No program strings for stm32f4.
 --- grbl-master/report.c	2014-03-16 22:13:56.000000000 -0700
 +++ grbl-master/report.c	2014-03-16 22:14:18.000000000 -0700
 @@ -33,6 +33,7 @@

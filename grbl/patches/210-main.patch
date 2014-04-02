@@ -1,3 +1,4 @@
+The grbl main will be called from an STM32F4 specific main.
 --- grbl-master/main.c	2014-03-18 21:09:06.000000000 -0700
 +++ grbl-master/main.c	2014-03-18 21:09:51.000000000 -0700
 @@ -42,13 +42,13 @@

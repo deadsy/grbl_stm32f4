@@ -1,3 +1,4 @@
+Pick up some local delay functions that are previously from the AVR library.
 --- grbl-master/nuts_bolts.c	2014-03-16 22:53:34.000000000 -0700
 +++ grbl-master/nuts_bolts.c	2014-03-16 22:54:06.000000000 -0700
 @@ -19,6 +19,7 @@

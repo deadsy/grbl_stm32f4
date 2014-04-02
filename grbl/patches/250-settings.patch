@@ -1,3 +1,4 @@
+Specify the gpio-ish masks as being uint32_t to match the gpio registers on this platform.
 --- grbl-master/settings.h	2014-03-30 09:06:02.000000000 -0700
 +++ grbl-master/settings.h	2014-03-30 09:07:08.000000000 -0700
 @@ -61,12 +61,12 @@
