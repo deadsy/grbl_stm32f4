@@ -29,6 +29,7 @@ static const GPIO_INFO gpio_info[] = {
     {LED_BLUE, GPIO_MODE_OUTPUT_PP, GPIO_PULLUP, GPIO_SPEED_FAST, 0, GPIO_PIN_RESET},
     {LED_GREEN, GPIO_MODE_OUTPUT_PP, GPIO_PULLUP, GPIO_SPEED_FAST, 0, GPIO_PIN_RESET},
     {LED_AMBER, GPIO_MODE_OUTPUT_PP, GPIO_PULLUP, GPIO_SPEED_FAST, 0, GPIO_PIN_RESET},
+    {PUSH_BUTTON, GPIO_MODE_IT_FALLING, GPIO_NOPULL, 0, 0, -1},
 };
 
 //-----------------------------------------------------------------------------
@@ -55,6 +56,10 @@ void gpio_init(void)
             HAL_GPIO_WritePin(GPIO_BASE(gpio->num), GPIO_BIT(gpio->num), gpio->init);
         }
     }
+
+    // PUSH_BUTTON = PA0 = EXTI Line 0
+    HAL_NVIC_SetPriority(EXTI0_IRQn, 2, 0);
+    HAL_NVIC_EnableIRQ(EXTI0_IRQn);
 }
 
 //-----------------------------------------------------------------------------

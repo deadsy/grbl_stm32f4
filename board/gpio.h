@@ -3,6 +3,96 @@
 
 GPIO Control for the STM32F4 Discovery Board
 
+Pin Assignments
+
+PA0 = push button
+PA1
+PA2
+PA3
+PA4 = codec
+PA5 = accel
+PA6 = accel
+PA7 = accel
+PA8
+PA9 = usb
+PA10 = usb
+PA11 = usb (not on header)
+PA12 = usb (not on header)
+PA13 = swd
+PA14 = swd
+PA15
+
+PB0
+PB1
+PB2
+PB3 = swd
+PB4
+PB5
+PB6 = codec
+PB7
+PB8
+PB9 = codec
+PB10 = mic
+PB11
+PB12
+PB13
+PB14
+PB15
+
+PC0 = usb
+PC1
+PC2
+PC3 = mic
+PC4 = codec
+PC5
+PC6
+PC7 = codec
+PC8
+PC9
+PC10 = codec
+PC11
+PC12 = codec
+PC13
+PC14 = osc_in
+PC15 = osc_out
+
+PD0 = coolant_flood
+PD1 = coolant_mist
+PD2 = spindle_dirn
+PD3 = spindle_ctrl
+PD4 = codec
+PD5 = usb
+PD6 = limit_x
+PD7 = limit_y
+PD8 = limit_z
+PD9 = limit_a
+PD10 = limit_b
+PD11 = limit_c
+PD12 = led
+PD13 = led
+PD14 = led
+PD15 = led
+
+PE0 = accel
+PE1 = accel
+PE2
+PE3 = accel
+PE4 = step_x
+PE5 = step_y
+PE6 = step_z
+PE7 = step_a
+PE8 = step_b
+PE9 = step_c
+PE10 = dirn_x
+PE11 = dirn_y
+PE12 = dirn_z
+PE13 = dirn_a
+PE14 = dirn_b
+PE15 = dirn_c
+
+PH0 = ph0_osc_in
+PH1 = ph1_osc_out
+
 */
 //-----------------------------------------------------------------------------
 
@@ -38,25 +128,26 @@ GPIO Control for the STM32F4 Discovery Board
 //-----------------------------------------------------------------------------
 // gpio assignments
 
-#define LED_GREEN   GPIO_NUM(PORTD, 12)
-#define LED_AMBER   GPIO_NUM(PORTD, 13)
-#define LED_RED     GPIO_NUM(PORTD, 14)
-#define LED_BLUE    GPIO_NUM(PORTD, 15)
+#define LED_GREEN       GPIO_NUM(PORTD, 12)
+#define LED_AMBER       GPIO_NUM(PORTD, 13)
+#define LED_RED         GPIO_NUM(PORTD, 14)
+#define LED_BLUE        GPIO_NUM(PORTD, 15)
+#define PUSH_BUTTON     GPIO_NUM(PORTA, 0)
 
 // all limit switches must be on the same port
-#define LIMIT_X     GPIO_NUM(PORTA, 0)
-#define LIMIT_Y     GPIO_NUM(PORTA, 1)
-#define LIMIT_Z     GPIO_NUM(PORTA, 2)
+#define LIMIT_X         GPIO_NUM(PORTD, 6)
+#define LIMIT_Y         GPIO_NUM(PORTD, 7)
+#define LIMIT_Z         GPIO_NUM(PORTD, 8)
 
 // all step bits must be on the same port
-#define STEP_X      GPIO_NUM(PORTB, 0)
-#define STEP_Y      GPIO_NUM(PORTB, 1)
-#define STEP_Z      GPIO_NUM(PORTB, 2)
+#define STEP_X          GPIO_NUM(PORTE, 4)
+#define STEP_Y          GPIO_NUM(PORTE, 5)
+#define STEP_Z          GPIO_NUM(PORTE, 6)
 
 // all direction bits must be on the same port
-#define DIRN_X      GPIO_NUM(PORTC, 0)
-#define DIRN_Y      GPIO_NUM(PORTC, 1)
-#define DIRN_Z      GPIO_NUM(PORTC, 2)
+#define DIRN_X          GPIO_NUM(PORTE, 10)
+#define DIRN_Y          GPIO_NUM(PORTE, 11)
+#define DIRN_Z          GPIO_NUM(PORTE, 12)
 
 // coolant control
 #define COOLANT_FLOOD   GPIO_NUM(PORTD, 0)

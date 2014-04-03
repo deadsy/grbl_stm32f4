@@ -73,6 +73,17 @@ static void SystemClock_Config(void)
 
 //-----------------------------------------------------------------------------
 
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+    if (GPIO_Pin == GPIO_BIT(PUSH_BUTTON)) {
+        gpio_toggle(LED_AMBER);
+        gpio_toggle(LED_RED);
+        gpio_toggle(LED_BLUE);
+  }
+}
+
+//-----------------------------------------------------------------------------
+
 int main(void)
 {
     HAL_Init();
