@@ -40,7 +40,6 @@ SRC += $(HAL_DIR)/stm32f4xx_hal.c \
        $(HAL_DIR)/stm32f4xx_ll_usb.c \
        $(HAL_DIR)/stm32f4xx_hal_tim.c \
        $(HAL_DIR)/stm32f4xx_hal_tim_ex.c \
-#       $(HAL_DIR)/stm32f4xx_hal_uart.c \
 
 # usb sources
 USB_DIR = ./usb
@@ -59,6 +58,7 @@ SRC += $(BOARD_DIR)/main.c \
        $(BOARD_DIR)/usbd_cdc_interface.c \
        $(BOARD_DIR)/syscalls.c \
        $(BOARD_DIR)/gpio.c \
+       $(BOARD_DIR)/debounce.c \
 
 OBJ = $(patsubst %.c, %.o, $(SRC))
 OBJ += $(BOARD_DIR)/start.o

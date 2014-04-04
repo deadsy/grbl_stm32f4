@@ -9,6 +9,7 @@
 #include "usbd_cdc.h"
 #include "usbd_cdc_interface.h"
 #include "gpio.h"
+#include "debounce.h"
 
 //-----------------------------------------------------------------------------
 
@@ -73,13 +74,18 @@ static void SystemClock_Config(void)
 
 //-----------------------------------------------------------------------------
 
-void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+static void pb_on(uint32_t val)
 {
-    if (GPIO_Pin == GPIO_BIT(PUSH_BUTTON)) {
-        gpio_toggle(LED_AMBER);
-        gpio_toggle(LED_RED);
-        gpio_toggle(LED_BLUE);
-  }
+    if (val & (1 << PUSH_BUTTON_BIT)) {
+        gpio_set(LED_RED);
+    }
+}
+
+static void pb_off(uint32_t val)
+{
+    if (val & (1 << PUSH_BUTTON_BIT)) {
+        gpio_clr(LED_RED);
+    }
 }
 
 //-----------------------------------------------------------------------------
@@ -89,6 +95,11 @@ int main(void)
     HAL_Init();
     SystemClock_Config();
     gpio_init();
+    debounce_init();
+
+    debounce.action_on = pb_on;
+    debounce.action_off = pb_off;
+    debounce.monitor = 1;
 
     USBD_Init(&hUSBDDevice, &VCP_Desc, 0);
     USBD_RegisterClass(&hUSBDDevice, &USBD_CDC);

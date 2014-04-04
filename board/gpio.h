@@ -134,7 +134,6 @@ PH1 = ph1_osc_out
 #define LED_BLUE        GPIO_NUM(PORTD, 15)
 #define PUSH_BUTTON     GPIO_NUM(PORTA, 0)
 
-// all limit switches must be on the same port
 #define LIMIT_X         GPIO_NUM(PORTD, 6)
 #define LIMIT_Y         GPIO_NUM(PORTD, 7)
 #define LIMIT_Z         GPIO_NUM(PORTD, 8)
@@ -175,21 +174,15 @@ static inline void gpio_toggle(int n)
     GPIO_BASE(n)->ODR ^= GPIO_BIT(n);
 }
 
+static inline int gpio_rd(int n)
+{
+    return (GPIO_BASE(n)->IDR >> GPIO_PIN(n)) & 1;
+}
+
 void gpio_init(void);
 
 //-----------------------------------------------------------------------------
 // grbl specific api functions
-
-#define X_LIMIT_BIT GPIO_PIN(LIMIT_X)
-#define Y_LIMIT_BIT GPIO_PIN(LIMIT_Y)
-#define Z_LIMIT_BIT GPIO_PIN(LIMIT_Z)
-#define LIMIT_MASK (GPIO_BIT(LIMIT_X) | GPIO_BIT(LIMIT_Y) | GPIO_BIT(LIMIT_Z))
-
-static inline uint32_t limit_rd(void)
-{
-    uint32_t val = GPIO_BASE(LIMIT_X)->IDR;
-    return val & LIMIT_MASK;
-}
 
 #define X_STEP_BIT GPIO_PIN(STEP_X)
 #define Y_STEP_BIT GPIO_PIN(STEP_Y)
@@ -213,6 +206,22 @@ static inline void dirn_wr(uint32_t x)
     uint32_t val = GPIO_BASE(DIRN_X)->ODR;
     val &= ~DIRECTION_MASK;
     GPIO_BASE(DIRN_X)->ODR = (val | x);
+}
+
+#define X_LIMIT_BIT 3
+#define Y_LIMIT_BIT 2
+#define Z_LIMIT_BIT 1
+#define PUSH_BUTTON_BIT 0
+
+#define LIMIT_MASK ((1 << X_LIMIT_BIT) | (1 << Y_LIMIT_BIT) | (1 << Z_LIMIT_BIT))
+
+static inline uint32_t debounce_input(void)
+{
+    // pack the gpio inputs to be debounced into the uint32_t debounce state
+    return ((gpio_rd(LIMIT_X) << X_LIMIT_BIT) |
+            (gpio_rd(LIMIT_Y) << Y_LIMIT_BIT) |
+            (gpio_rd(LIMIT_Z) << Z_LIMIT_BIT) |
+            (gpio_rd(PUSH_BUTTON) << PUSH_BUTTON_BIT));
 }
 
 static inline void coolant_flood_on(void) {gpio_set(COOLANT_FLOOD);}
