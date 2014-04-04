@@ -11,7 +11,7 @@ Switch Input Debouncing
 
 //-----------------------------------------------------------------------------
 
-#define DEBOUNCE_COUNT 5
+#define DEBOUNCE_COUNT 4
 
 typedef struct debounce_ctrl {
 

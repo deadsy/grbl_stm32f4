@@ -132,7 +132,7 @@ PH1 = ph1_osc_out
 #define LED_AMBER       GPIO_NUM(PORTD, 13)
 #define LED_RED         GPIO_NUM(PORTD, 14)
 #define LED_BLUE        GPIO_NUM(PORTD, 15)
-#define PUSH_BUTTON     GPIO_NUM(PORTA, 0)
+#define PUSH_BUTTON     GPIO_NUM(PORTA, 0) // 0 = open, 1 = pressed
 
 #define LIMIT_X         GPIO_NUM(PORTD, 6)
 #define LIMIT_Y         GPIO_NUM(PORTD, 7)
@@ -177,6 +177,11 @@ static inline void gpio_toggle(int n)
 static inline int gpio_rd(int n)
 {
     return (GPIO_BASE(n)->IDR >> GPIO_PIN(n)) & 1;
+}
+
+static inline int gpio_rd_inv(int n)
+{
+    return (~(GPIO_BASE(n)->IDR) >> GPIO_PIN(n)) & 1;
 }
 
 void gpio_init(void);

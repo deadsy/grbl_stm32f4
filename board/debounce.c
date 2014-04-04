@@ -4,13 +4,13 @@
 Switch Input Debounce
 
 This code debounces up to 32 switch inputs (each switch state is a bit in a uint32_t).
-To fit with a typical "input pulled high" scenario, off = 1 and on = 0.
+To fit with a typical logic, off = 0 and on = 1.
 
 The code samples the inputs in an ISR at an interval selectable by the user (typically 10-20ms)
 and stores them in an array of DEBOUNCE_COUNT values.
-When a debounced switch state is needed the samples in the array are ANDed together.
-This implies the code is fast to recognise an ON (single 0) and slow to recognise
-an off (DEBOUNCE_COUNT 1's).
+When a debounced switch state is needed the samples in the array are ORed together.
+This implies the code is fast to recognise an ON (single 1) and slow to recognise
+an off (DEBOUNCE_COUNT 0's).
 
 */
 //-----------------------------------------------------------------------------
@@ -29,10 +29,10 @@ DEBOUNCE_CTRL debounce;
 
 uint32_t debounce_rd(void)
 {
-    uint32_t state = 0xffffffff;
+    uint32_t state = 0;
     int i;
     for (i = 0; i < DEBOUNCE_COUNT; i ++) {
-        state &= debounce.sample[i];
+        state |= debounce.sample[i];
     }
     return state;
 }
@@ -52,8 +52,8 @@ void debounce_isr(void)
     if (db->monitor) {
         uint32_t state = debounce_rd();
         if (state != db->state) {
-            uint32_t turn_on = db->state & ~state; // 1 to 0: switch is now ON
-            uint32_t turn_off = ~db->state & state; // 0 to 1: switch is now OFF
+            uint32_t turn_on = ~db->state & state; // 0 to 1: switch is now ON
+            uint32_t turn_off = db->state & ~state; // 1 to 0: switch is now OFF
             if (turn_on && db->action_on) {
                 db->action_on(turn_on);
             }

@@ -77,14 +77,14 @@ static void SystemClock_Config(void)
 static void pb_on(uint32_t val)
 {
     if (val & (1 << PUSH_BUTTON_BIT)) {
-        gpio_set(LED_RED);
+        gpio_clr(LED_RED);
     }
 }
 
 static void pb_off(uint32_t val)
 {
     if (val & (1 << PUSH_BUTTON_BIT)) {
-        gpio_clr(LED_RED);
+        gpio_set(LED_RED);
     }
 }
 
