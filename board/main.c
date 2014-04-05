@@ -74,16 +74,16 @@ static void SystemClock_Config(void)
 
 //-----------------------------------------------------------------------------
 
-static void pb_on(uint32_t val)
+void debounce_on_handler(uint32_t bits)
 {
-    if (val & (1 << PUSH_BUTTON_BIT)) {
+    if (bits & (1 << PUSH_BUTTON_BIT)) {
         gpio_clr(LED_RED);
     }
 }
 
-static void pb_off(uint32_t val)
+void debounce_off_handler(uint32_t bits)
 {
-    if (val & (1 << PUSH_BUTTON_BIT)) {
+    if (bits & (1 << PUSH_BUTTON_BIT)) {
         gpio_set(LED_RED);
     }
 }
@@ -96,10 +96,6 @@ int main(void)
     SystemClock_Config();
     gpio_init();
     debounce_init();
-
-    debounce.action_on = pb_on;
-    debounce.action_off = pb_off;
-    debounce.monitor = 1;
 
     USBD_Init(&hUSBDDevice, &VCP_Desc, 0);
     USBD_RegisterClass(&hUSBDDevice, &USBD_CDC);

@@ -22,7 +22,24 @@ an off (DEBOUNCE_COUNT 0's).
 
 //-----------------------------------------------------------------------------
 
-DEBOUNCE_CTRL debounce;
+#define DEBOUNCE_COUNT 4
+
+typedef struct debounce_ctrl {
+
+    uint32_t sample[DEBOUNCE_COUNT];
+    uint32_t state;
+    int idx;
+
+} DEBOUNCE_CTRL;
+
+static DEBOUNCE_CTRL debounce;
+static int debounce_ready = 0;
+
+//-----------------------------------------------------------------------------
+// null on/off handlers - to be provided by other code
+
+__attribute__((weak)) void debounce_on_handler(uint32_t bits) {}
+__attribute__((weak)) void debounce_off_handler(uint32_t bits) {}
 
 //-----------------------------------------------------------------------------
 // return the de-bounced state of the switches
@@ -44,24 +61,28 @@ uint32_t debounce_rd(void)
 void debounce_isr(void)
 {
     DEBOUNCE_CTRL *db = &debounce;
+    uint32_t state;
+
+    if (!debounce_ready) {
+        return;
+    }
 
     // read and store the current input
     db->sample[db->idx] = debounce_input();
     db->idx = (db->idx == DEBOUNCE_COUNT - 1) ? 0 : db->idx + 1;
 
-    if (db->monitor) {
-        uint32_t state = debounce_rd();
-        if (state != db->state) {
-            uint32_t turn_on = ~db->state & state; // 0 to 1: switch is now ON
-            uint32_t turn_off = db->state & ~state; // 1 to 0: switch is now OFF
-            if (turn_on && db->action_on) {
-                db->action_on(turn_on);
-            }
-            if (turn_off && db->action_off) {
-                db->action_off(turn_off);
-            }
-            db->state = state;
+    state = debounce_rd();
+
+    if (state != db->state) {
+        uint32_t on_bits = ~db->state & state; // 0 to 1: switch is now ON
+        uint32_t off_bits = db->state & ~state; // 1 to 0: switch is now OFF
+        if (on_bits) {
+            debounce_on_handler(on_bits);
         }
+        if (off_bits) {
+            debounce_off_handler(off_bits);
+        }
+        db->state = state;
     }
 }
 
@@ -70,6 +91,7 @@ void debounce_isr(void)
 void debounce_init(void)
 {
     memset(&debounce, 0, sizeof(DEBOUNCE_CTRL));
+    debounce_ready = 1;
 }
 
 //-----------------------------------------------------------------------------
