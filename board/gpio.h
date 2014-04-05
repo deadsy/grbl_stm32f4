@@ -6,9 +6,9 @@ GPIO Control for the STM32F4 Discovery Board
 Pin Assignments
 
 PA0 = push button
-PA1
-PA2
-PA3
+PA1 = reset_machine
+PA2 = feed_hold
+PA3 = cycle_start
 PA4 = codec
 PA5 = accel
 PA6 = accel
@@ -128,15 +128,12 @@ PH1 = ph1_osc_out
 //-----------------------------------------------------------------------------
 // gpio assignments
 
+// standard board GPIO
 #define LED_GREEN       GPIO_NUM(PORTD, 12)
 #define LED_AMBER       GPIO_NUM(PORTD, 13)
 #define LED_RED         GPIO_NUM(PORTD, 14)
 #define LED_BLUE        GPIO_NUM(PORTD, 15)
 #define PUSH_BUTTON     GPIO_NUM(PORTA, 0) // 0 = open, 1 = pressed
-
-#define LIMIT_X         GPIO_NUM(PORTD, 6)
-#define LIMIT_Y         GPIO_NUM(PORTD, 7)
-#define LIMIT_Z         GPIO_NUM(PORTD, 8)
 
 // all step bits must be on the same port
 #define STEP_X          GPIO_NUM(PORTE, 4)
@@ -155,6 +152,16 @@ PH1 = ph1_osc_out
 // spindle control
 #define SPINDLE_DIRN    GPIO_NUM(PORTD, 2)
 #define SPINDLE_CTRL    GPIO_NUM(PORTD, 3)
+
+// machine switches
+#define RESET_MACHINE   GPIO_NUM(PORTA, 1)
+#define FEED_HOLD       GPIO_NUM(PORTA, 2)
+#define CYCLE_START     GPIO_NUM(PORTA, 3)
+
+// limit switches
+#define LIMIT_X         GPIO_NUM(PORTD, 6)
+#define LIMIT_Y         GPIO_NUM(PORTD, 7)
+#define LIMIT_Z         GPIO_NUM(PORTD, 8)
 
 //-----------------------------------------------------------------------------
 // generic api functions
@@ -213,6 +220,10 @@ static inline void dirn_wr(uint32_t x)
     GPIO_BASE(DIRN_X)->ODR = (val | x);
 }
 
+// debounced input switches
+#define RESET_MACHINE_BIT 6
+#define FEED_HOLD_BIT 5
+#define CYCLE_START_BIT 4
 #define X_LIMIT_BIT 3
 #define Y_LIMIT_BIT 2
 #define Z_LIMIT_BIT 1
@@ -226,9 +237,13 @@ static inline uint32_t debounce_input(void)
     return ((gpio_rd(LIMIT_X) << X_LIMIT_BIT) |
             (gpio_rd(LIMIT_Y) << Y_LIMIT_BIT) |
             (gpio_rd(LIMIT_Z) << Z_LIMIT_BIT) |
+            (gpio_rd(RESET_MACHINE) << RESET_MACHINE_BIT) |
+            (gpio_rd(FEED_HOLD) << FEED_HOLD_BIT) |
+            (gpio_rd(CYCLE_START) << CYCLE_START_BIT) |
             (gpio_rd(PUSH_BUTTON) << PUSH_BUTTON_BIT));
 }
 
+// coolant and spindle controls
 static inline void coolant_flood_on(void) {gpio_set(COOLANT_FLOOD);}
 static inline void coolant_flood_off(void) {gpio_clr(COOLANT_FLOOD);}
 static inline void coolant_mist_on(void) {gpio_set(COOLANT_MIST);}
