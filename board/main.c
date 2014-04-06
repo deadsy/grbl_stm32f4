@@ -74,10 +74,24 @@ static void SystemClock_Config(void)
 
 //-----------------------------------------------------------------------------
 
+void limits_isr(void);
+
+int limits_enabled = 0;
+int switches_enabled = 0;
+
 void debounce_on_handler(uint32_t bits)
 {
     if (bits & (1 << PUSH_BUTTON_BIT)) {
         gpio_clr(LED_RED);
+    }
+
+    // check limits
+    if (limits_enabled && (bits & LIMIT_MASK)) {
+        limits_isr();
+    }
+
+    // check machine switches
+    if (switches_enabled && (bits & PINOUT_MASK)) {
     }
 }
 

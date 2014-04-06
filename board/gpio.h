@@ -230,6 +230,7 @@ static inline void dirn_wr(uint32_t x)
 #define PUSH_BUTTON_BIT 0
 
 #define LIMIT_MASK ((1 << X_LIMIT_BIT) | (1 << Y_LIMIT_BIT) | (1 << Z_LIMIT_BIT))
+#define PINOUT_MASK ((1 << RESET_MACHINE_BIT) | (1 << FEED_HOLD_BIT) | (1 << CYCLE_START_BIT))
 
 static inline uint32_t debounce_input(void)
 {
