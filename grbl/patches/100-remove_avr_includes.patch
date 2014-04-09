@@ -164,3 +164,15 @@ Remove the AVR specific include files.
  #include "nuts_bolts.h"
  #include "gcode.h"
  #include "planner.h"
+--- grbl-master/limits.c	2014-04-08 22:59:39.000000000 -0700
++++ grbl-master/limits.c	2014-04-08 22:59:49.000000000 -0700
+@@ -19,9 +19,6 @@
+   along with Grbl.  If not, see <http://www.gnu.org/licenses/>.
+ */
+   
+-#include <util/delay.h>
+-#include <avr/io.h>
+-#include <avr/interrupt.h>
+ #include "stepper.h"
+ #include "settings.h"
+ #include "nuts_bolts.h"

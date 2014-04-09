@@ -1,34 +1,45 @@
-TODO
---- grbl-master/protocol.c	2014-03-16 22:11:20.000000000 -0700
-+++ grbl-master/protocol.c	2014-03-16 22:12:28.000000000 -0700
-@@ -48,11 +48,13 @@
+--- grbl-master/protocol.c	2014-04-08 22:40:38.000000000 -0700
++++ grbl-master/protocol.c	2014-04-08 22:43:12.000000000 -0700
+@@ -43,16 +43,11 @@
+   iscomment = false;
+ }
+ 
+-
+ void protocol_init() 
  {
    protocol_reset_line_buffer();
    report_init_message(); // Welcome message   
 -  
-+
-+#if 0  
-   PINOUT_DDR &= ~(PINOUT_MASK); // Set as input pins
-   PINOUT_PORT |= PINOUT_MASK; // Enable internal pull-up resistors. Normal high operation.
-   PINOUT_PCMSK |= PINOUT_MASK;   // Enable specific pins of the Pin Change Interrupt
-   PCICR |= (1 << PINOUT_INT);   // Enable Pin Change Interrupt
-+#endif
+-  PINOUT_DDR &= ~(PINOUT_MASK); // Set as input pins
+-  PINOUT_PORT |= PINOUT_MASK; // Enable internal pull-up resistors. Normal high operation.
+-  PINOUT_PCMSK |= PINOUT_MASK;   // Enable specific pins of the Pin Change Interrupt
+-  PCICR |= (1 << PINOUT_INT);   // Enable Pin Change Interrupt
++  buttons_enabled = 1; 
  }
  
  // Executes user startup script, if stored.
-@@ -71,6 +73,7 @@
-   }  
- }
- 
-+#if 0
- // Pin change interrupt for pin-out commands, i.e. cycle start, feed hold, and reset. Sets
+@@ -75,17 +70,14 @@
  // only the runtime command execute variable to have the main program execute these when 
  // its ready. This works exactly like the character-based runtime commands when picked off
-@@ -88,6 +91,7 @@
-     }
+ // directly from the incoming serial data stream.
+-ISR(PINOUT_INT_vect) 
++void buttons_isr(uint32_t buttons)
+ {
+-  // Enter only if any pinout pin is actively low.
+-  if ((PINOUT_PIN & PINOUT_MASK) ^ PINOUT_MASK) { 
+-    if (bit_isfalse(PINOUT_PIN,bit(PIN_RESET))) {
+-      mc_reset();
+-    } else if (bit_isfalse(PINOUT_PIN,bit(PIN_FEED_HOLD))) {
+-      sys.execute |= EXEC_FEED_HOLD; 
+-    } else if (bit_isfalse(PINOUT_PIN,bit(PIN_CYCLE_START))) {
+-      sys.execute |= EXEC_CYCLE_START;
+-    }
++  if (bit_istrue(buttons,bit(RESET_MACHINE_BIT))) {
++    mc_reset();
++  } else if (bit_istrue(buttons,bit(FEED_HOLD_BIT))) {
++    sys.execute |= EXEC_FEED_HOLD; 
++  } else if (bit_istrue(buttons,bit(CYCLE_START_BIT))) {
++    sys.execute |= EXEC_CYCLE_START;
    }
  }
-+#endif
  
- // Executes run-time commands, when required. This is called from various check points in the main
- // program, primarily where there may be a while loop waiting for a buffer to clear space or any

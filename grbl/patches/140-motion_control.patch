@@ -1,20 +1,19 @@
-TODO
---- grbl_master/motion_control.c	2014-03-16 22:55:11.000000000 -0700
-+++ grbl_master/motion_control.c	2014-03-16 22:56:02.000000000 -0700
-@@ -22,6 +22,7 @@
- 
- #include <math.h>
- #include <stdlib.h>
+--- grbl-master/motion_control.c	2014-04-08 22:52:02.000000000 -0700
++++ grbl-master/motion_control.c	2014-04-08 22:53:42.000000000 -0700
+@@ -33,6 +33,7 @@
+ #include "planner.h"
+ #include "limits.h"
+ #include "protocol.h"
 +#include "delay.h"
- #include "settings.h"
- #include "config.h"
- #include "gcode.h"
+ 
+ // Execute linear motion in absolute millimeter coordinates. Feed rate given in millimeters/second
+ // unless invert_feed_rate is true. Then the feed_rate means that the motion should be completed in
 @@ -213,7 +214,7 @@
  void mc_go_home()
  {
    sys.state = STATE_HOMING; // Set system state variable
 -  LIMIT_PCMSK &= ~LIMIT_MASK; // Disable hard limits pin change register for cycle duration
-+//  LIMIT_PCMSK &= ~LIMIT_MASK; // Disable hard limits pin change register for cycle duration
++  limits_enabled = 0; // Disable hard limits pin change register for cycle duration
    
    limits_go_home(); // Perform homing routine.
  
@@ -23,7 +22,7 @@ TODO
  
    // If hard limits feature enabled, re-enable hard limits pin change register after homing cycle.
 -  if (bit_istrue(settings.flags,BITFLAG_HARD_LIMIT_ENABLE)) { LIMIT_PCMSK |= LIMIT_MASK; }
-+//  if (bit_istrue(settings.flags,BITFLAG_HARD_LIMIT_ENABLE)) { LIMIT_PCMSK |= LIMIT_MASK; }
++  if (bit_istrue(settings.flags,BITFLAG_HARD_LIMIT_ENABLE)) { limits_enabled = 1; }
    // Finished! 
  }
  
