@@ -77,21 +77,27 @@ PE0 = accel
 PE1 = accel
 PE2
 PE3 = accel
-PE4 = step_x
-PE5 = step_y
-PE6 = step_z
-PE7 = step_a
-PE8 = step_b
-PE9 = step_c
-PE10 = dirn_x
-PE11 = dirn_y
-PE12 = dirn_z
-PE13 = dirn_a
-PE14 = dirn_b
-PE15 = dirn_c
+PE4 = dirn_x
+PE5 = step_x
+PE6 = dirn_y
+PE7 = step_y
+PE8 = dirn_z
+PE9 = step_z
+PE10 = dirn_a
+PE11 = step_a
+PE12 = dirn_b
+PE13 = step_b
+PE14 = dirn_c
+PE15 = step_c
 
 PH0 = ph0_osc_in
 PH1 = ph1_osc_out
+
+notes on step pulses:
+All TBI:
+Minimum step pulse width 200 uS
+Dirn Change/Step Pulse Delay 100 uS
+Minimal Step Period approx 800 uS
 
 */
 //-----------------------------------------------------------------------------
@@ -136,14 +142,20 @@ PH1 = ph1_osc_out
 #define PUSH_BUTTON     GPIO_NUM(PORTA, 0) // 0 = open, 1 = pressed
 
 // all step bits must be on the same port
-#define STEP_X          GPIO_NUM(PORTE, 4)
-#define STEP_Y          GPIO_NUM(PORTE, 5)
-#define STEP_Z          GPIO_NUM(PORTE, 6)
+#define STEP_X          GPIO_NUM(PORTE, 5)
+#define STEP_Y          GPIO_NUM(PORTE, 7)
+#define STEP_Z          GPIO_NUM(PORTE, 9)
+#define STEP_A          GPIO_NUM(PORTE, 11)
+#define STEP_B          GPIO_NUM(PORTE, 13)
+#define STEP_C          GPIO_NUM(PORTE, 15)
 
 // all direction bits must be on the same port
-#define DIRN_X          GPIO_NUM(PORTE, 10)
-#define DIRN_Y          GPIO_NUM(PORTE, 11)
-#define DIRN_Z          GPIO_NUM(PORTE, 12)
+#define DIRN_X          GPIO_NUM(PORTE, 4)
+#define DIRN_Y          GPIO_NUM(PORTE, 6)
+#define DIRN_Z          GPIO_NUM(PORTE, 8)
+#define DIRN_A          GPIO_NUM(PORTE, 10)
+#define DIRN_B          GPIO_NUM(PORTE, 12)
+#define DIRN_C          GPIO_NUM(PORTE, 14)
 
 // coolant control
 #define COOLANT_FLOOD   GPIO_NUM(PORTD, 0)
