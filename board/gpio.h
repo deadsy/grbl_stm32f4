@@ -3,12 +3,40 @@
 
 GPIO Control for the STM32F4 Discovery Board
 
-Pin Assignments
+Pin Assignments for Gecko G540 DB25 Port:
+
+pin1 = OUTPUT 2, pin 6 on terminal block (output from PC)
+pin2 = X-AXIS STEP (output from PC)
+pin3 = X-AXIS DIRECTION (output from PC)
+pin4 = Y-AXIS STEP (output from PC)
+pin5 = Y-AXIS DIRECTION (output from PC)
+pin6 = Z-AXIS STEP (output from PC)
+pin7 = Z-AXIS DIRECTION (output from PC)
+pin8 = A-AXIS STEP (output from PC)
+pin9 = A-AXIS DIRECTION (output from PC)
+pin10 = INPUT 1, pin 1 on terminal block (input to PC)
+pin11 = INPUT 2, pin 2 on terminal block (input to PC)
+pin12 = INPUT 3, pin 3 on terminal block (input to PC)
+pin13 = INPUT 4, pin 4 on terminal block (input to PC)
+pin14 = VFD PWM (50 Hz), pin 8 on terminal block (output from PC)
+pin15 = FAULT, pin 10 on terminal block (input to PC)
+pin16 = CHARGE PUMP (>10 kHz)
+pin17 = OUTPUT 1, pin 5 on terminal block (output from PC)
+pin18 = GND
+pin19 = GND
+pin20 = GND
+pin21 = GND
+pin22 = GND
+pin23 = GND
+pin24 = GND
+pin25 = GND
+
+Pin Assignments for STM32F4 Discovery Board
 
 PA0 = push button
-PA1 = reset_machine
-PA2 = feed_hold
-PA3 = cycle_start
+PA1 = system_reset
+PA2 = e-stop
+PA3 =
 PA4 = codec
 PA5 = accel
 PA6 = accel
@@ -56,18 +84,18 @@ PC13
 PC14 = osc_in
 PC15 = osc_out
 
-PD0 = coolant_flood
-PD1 = coolant_mist
-PD2 = spindle_dirn
-PD3 = spindle_ctrl
+PD0 =
+PD1 =
+PD2 =
+PD3 =
 PD4 = codec
 PD5 = usb
 PD6 = limit_x
 PD7 = limit_y
 PD8 = limit_z
 PD9 = limit_a
-PD10 = limit_b
-PD11 = limit_c
+PD10 =
+PD11 =
 PD12 = led
 PD13 = led
 PD14 = led
@@ -85,19 +113,13 @@ PE8 = dirn_z
 PE9 = step_z
 PE10 = dirn_a
 PE11 = step_a
-PE12 = dirn_b
-PE13 = step_b
-PE14 = dirn_c
-PE15 = step_c
+PE12 =
+PE13 =
+PE14 =
+PE15 =
 
 PH0 = ph0_osc_in
 PH1 = ph1_osc_out
-
-notes on step pulses:
-All TBI:
-Minimum step pulse width 200 uS
-Dirn Change/Step Pulse Delay 100 uS
-Minimal Step Period approx 800 uS
 
 */
 //-----------------------------------------------------------------------------
@@ -141,39 +163,26 @@ Minimal Step Period approx 800 uS
 #define LED_BLUE        GPIO_NUM(PORTD, 15)
 #define PUSH_BUTTON     GPIO_NUM(PORTA, 0) // 0 = open, 1 = pressed
 
+// machine switches
+#define SWITCH_E_STOP   GPIO_NUM(PORTA, 2)
+
 // all step bits must be on the same port
 #define STEP_X          GPIO_NUM(PORTE, 5)
 #define STEP_Y          GPIO_NUM(PORTE, 7)
 #define STEP_Z          GPIO_NUM(PORTE, 9)
 #define STEP_A          GPIO_NUM(PORTE, 11)
-#define STEP_B          GPIO_NUM(PORTE, 13)
-#define STEP_C          GPIO_NUM(PORTE, 15)
 
 // all direction bits must be on the same port
 #define DIRN_X          GPIO_NUM(PORTE, 4)
 #define DIRN_Y          GPIO_NUM(PORTE, 6)
 #define DIRN_Z          GPIO_NUM(PORTE, 8)
 #define DIRN_A          GPIO_NUM(PORTE, 10)
-#define DIRN_B          GPIO_NUM(PORTE, 12)
-#define DIRN_C          GPIO_NUM(PORTE, 14)
-
-// coolant control
-#define COOLANT_FLOOD   GPIO_NUM(PORTD, 0)
-#define COOLANT_MIST    GPIO_NUM(PORTD, 1)
-
-// spindle control
-#define SPINDLE_DIRN    GPIO_NUM(PORTD, 2)
-#define SPINDLE_CTRL    GPIO_NUM(PORTD, 3)
-
-// machine switches
-#define RESET_MACHINE   GPIO_NUM(PORTA, 1)
-#define FEED_HOLD       GPIO_NUM(PORTA, 2)
-#define CYCLE_START     GPIO_NUM(PORTA, 3)
 
 // limit switches
 #define LIMIT_X         GPIO_NUM(PORTD, 6)
 #define LIMIT_Y         GPIO_NUM(PORTD, 7)
 #define LIMIT_Z         GPIO_NUM(PORTD, 8)
+#define LIMIT_A         GPIO_NUM(PORTD, 9)
 
 //-----------------------------------------------------------------------------
 // generic api functions
@@ -211,7 +220,8 @@ void gpio_init(void);
 #define X_STEP_BIT GPIO_PIN(STEP_X)
 #define Y_STEP_BIT GPIO_PIN(STEP_Y)
 #define Z_STEP_BIT GPIO_PIN(STEP_Z)
-#define STEP_MASK (GPIO_BIT(STEP_X) | GPIO_BIT(STEP_Y) | GPIO_BIT(STEP_Z))
+#define A_STEP_BIT GPIO_PIN(STEP_A)
+#define STEP_MASK (GPIO_BIT(STEP_X) | GPIO_BIT(STEP_Y) | GPIO_BIT(STEP_Z) | GPIO_BIT(STEP_A))
 
 static inline void step_wr(uint32_t x)
 {
@@ -223,7 +233,8 @@ static inline void step_wr(uint32_t x)
 #define X_DIRECTION_BIT GPIO_PIN(DIRN_X)
 #define Y_DIRECTION_BIT GPIO_PIN(DIRN_Y)
 #define Z_DIRECTION_BIT GPIO_PIN(DIRN_Z)
-#define DIRECTION_MASK (GPIO_BIT(DIRN_X) | GPIO_BIT(DIRN_Y) | GPIO_BIT(DIRN_Z))
+#define A_DIRECTION_BIT GPIO_PIN(DIRN_A)
+#define DIRECTION_MASK (GPIO_BIT(DIRN_X) | GPIO_BIT(DIRN_Y) | GPIO_BIT(DIRN_Z) | GPIO_BIT(DIRN_A))
 
 static inline void dirn_wr(uint32_t x)
 {
@@ -232,20 +243,23 @@ static inline void dirn_wr(uint32_t x)
     GPIO_BASE(DIRN_X)->ODR = (val | x);
 }
 
+//-----------------------------------------------------------------------------
+
 // debounced input switches
-#define RESET_MACHINE_BIT 6
-#define FEED_HOLD_BIT 5
-#define CYCLE_START_BIT 4
-#define X_LIMIT_BIT 3
-#define Y_LIMIT_BIT 2
-#define Z_LIMIT_BIT 1
+#define RESET_MACHINE_BIT 7
+#define FEED_HOLD_BIT 6 // not connected
+#define CYCLE_START_BIT 5 // not connected
+#define X_LIMIT_BIT 4
+#define Y_LIMIT_BIT 3
+#define Z_LIMIT_BIT 2
+#define A_LIMIT_BIT 1
 #define PUSH_BUTTON_BIT 0
 
 extern int buttons_enabled;
 extern int limits_enabled;
 
-#define LIMIT_MASK ((1 << X_LIMIT_BIT) | (1 << Y_LIMIT_BIT) | (1 << Z_LIMIT_BIT))
-#define BUTTON_MASK ((1 << RESET_MACHINE_BIT) | (1 << FEED_HOLD_BIT) | (1 << CYCLE_START_BIT))
+#define LIMIT_MASK ((1 << X_LIMIT_BIT) | (1 << Y_LIMIT_BIT) | (1 << Z_LIMIT_BIT) | (1 << A_LIMIT_BIT))
+#define BUTTON_MASK (1 << RESET_MACHINE_BIT)
 
 static inline uint32_t debounce_input(void)
 {
@@ -253,21 +267,22 @@ static inline uint32_t debounce_input(void)
     return ((gpio_rd(LIMIT_X) << X_LIMIT_BIT) |
             (gpio_rd(LIMIT_Y) << Y_LIMIT_BIT) |
             (gpio_rd(LIMIT_Z) << Z_LIMIT_BIT) |
-            (gpio_rd(RESET_MACHINE) << RESET_MACHINE_BIT) |
-            (gpio_rd(FEED_HOLD) << FEED_HOLD_BIT) |
-            (gpio_rd(CYCLE_START) << CYCLE_START_BIT) |
+            (gpio_rd(LIMIT_A) << A_LIMIT_BIT) |
+            (gpio_rd(SWITCH_E_STOP) << RESET_MACHINE_BIT) |
             (gpio_rd(PUSH_BUTTON) << PUSH_BUTTON_BIT));
 }
 
+//-----------------------------------------------------------------------------
+
 // coolant and spindle controls
-static inline void coolant_flood_on(void) {gpio_set(COOLANT_FLOOD);}
-static inline void coolant_flood_off(void) {gpio_clr(COOLANT_FLOOD);}
-static inline void coolant_mist_on(void) {gpio_set(COOLANT_MIST);}
-static inline void coolant_mist_off(void) {gpio_clr(COOLANT_MIST);}
-static inline void spindle_on(void) {gpio_set(SPINDLE_CTRL);}
-static inline void spindle_off(void) {gpio_clr(SPINDLE_CTRL);}
-static inline void spindle_fwd(void) {gpio_set(SPINDLE_DIRN);}
-static inline void spindle_rev(void) {gpio_clr(SPINDLE_DIRN);}
+static inline void coolant_flood_on(void) {}
+static inline void coolant_flood_off(void) {}
+static inline void coolant_mist_on(void) {}
+static inline void coolant_mist_off(void) {}
+static inline void spindle_on(void) {}
+static inline void spindle_off(void) {}
+static inline void spindle_fwd(void) {}
+static inline void spindle_rev(void) {}
 
 //-----------------------------------------------------------------------------
 
