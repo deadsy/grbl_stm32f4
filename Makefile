@@ -59,6 +59,7 @@ SRC += $(BOARD_DIR)/main.c \
        $(BOARD_DIR)/syscalls.c \
        $(BOARD_DIR)/gpio.c \
        $(BOARD_DIR)/debounce.c \
+       $(BOARD_DIR)/g540.c \
 
 OBJ = $(patsubst %.c, %.o, $(SRC))
 OBJ += $(BOARD_DIR)/start.o

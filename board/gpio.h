@@ -32,11 +32,12 @@ pin24 = GND
 pin25 = GND
 
 Pin Assignments for STM32F4 Discovery Board
+* = CNC function
 
 PA0 = push button
 PA1 = system_reset
-PA2 = e-stop
-PA3 =
+PA2 = e-stop *
+PA3 = g540 keepalive (charge pump) *
 PA4 = codec
 PA5 = accel
 PA6 = accel
@@ -90,10 +91,10 @@ PD2 =
 PD3 =
 PD4 = codec
 PD5 = usb
-PD6 = limit_x
-PD7 = limit_y
-PD8 = limit_z
-PD9 = limit_a
+PD6 = limit_x *
+PD7 = limit_y *
+PD8 = limit_z *
+PD9 = limit_a *
 PD10 =
 PD11 =
 PD12 = led
@@ -105,14 +106,14 @@ PE0 = accel
 PE1 = accel
 PE2
 PE3 = accel
-PE4 = dirn_x
-PE5 = step_x
-PE6 = dirn_y
-PE7 = step_y
-PE8 = dirn_z
-PE9 = step_z
-PE10 = dirn_a
-PE11 = step_a
+PE4 = dirn_x *
+PE5 = step_x *
+PE6 = dirn_y *
+PE7 = step_y *
+PE8 = dirn_z *
+PE9 = step_z *
+PE10 = dirn_a *
+PE11 = step_a *
 PE12 =
 PE13 =
 PE14 =
@@ -184,6 +185,9 @@ PH1 = ph1_osc_out
 #define LIMIT_Z         GPIO_NUM(PORTD, 8)
 #define LIMIT_A         GPIO_NUM(PORTD, 9)
 
+// misc
+#define G540_KEEPALIVE  GPIO_NUM(PORTC, 6)
+
 //-----------------------------------------------------------------------------
 // generic api functions
 
@@ -244,6 +248,8 @@ static inline void dirn_wr(uint32_t x)
 }
 
 //-----------------------------------------------------------------------------
+// The input gpios are spread out across several ports. We read and pack them into a
+// single uint32_t and debounce them together.
 
 // debounced input switches
 #define RESET_MACHINE_BIT 7
@@ -274,7 +280,7 @@ static inline uint32_t debounce_input(void)
 
 //-----------------------------------------------------------------------------
 
-// coolant and spindle controls
+// coolant and spindle controls - no-ops for now
 static inline void coolant_flood_on(void) {}
 static inline void coolant_flood_off(void) {}
 static inline void coolant_mist_on(void) {}

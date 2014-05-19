@@ -43,6 +43,8 @@ static const GPIO_INFO gpio_info[] = {
     // push buttons
     {PUSH_BUTTON, GPIO_MODE_IT_FALLING, GPIO_NOPULL, 0, 0, -1},
     {SWITCH_E_STOP, GPIO_MODE_IT_FALLING, GPIO_NOPULL, 0, 0, -1},
+    // misc
+    {G540_KEEPALIVE, GPIO_MODE_AF_PP, GPIO_PULLUP, GPIO_SPEED_HIGH, GPIO_AF2_TIM3, -1},
 };
 
 //-----------------------------------------------------------------------------
@@ -54,8 +56,7 @@ void gpio_init(void)
     for (i = 0; i < sizeof(gpio_info)/sizeof(GPIO_INFO); i ++) {
         const GPIO_INFO *gpio = &gpio_info[i];
         GPIO_InitTypeDef GPIO_InitStruct;
-        // enable the peripheral clock
-        // __GPIOx_CLK_ENABLE()
+        // enable the peripheral clock: __GPIOx_CLK_ENABLE()
         RCC->AHB1ENR |= (1 << GPIO_PORT(gpio->num));
         // setup the gpio port/pin
         GPIO_InitStruct.Pin = GPIO_BIT(gpio->num);

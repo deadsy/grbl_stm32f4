@@ -10,6 +10,7 @@
 #include "usbd_cdc_interface.h"
 #include "gpio.h"
 #include "debounce.h"
+#include "g540.h"
 
 //-----------------------------------------------------------------------------
 
@@ -21,7 +22,7 @@ USBD_HandleTypeDef hUSBDDevice;
 
 //-----------------------------------------------------------------------------
 
-#ifdef  USE_FULL_ASSERT
+#ifdef USE_FULL_ASSERT
 void assert_failed(uint8_t* file, uint32_t line)
 {
     while (1);
@@ -111,6 +112,7 @@ int main(void)
     HAL_Init();
     SystemClock_Config();
     gpio_init();
+    g540_init();
     debounce_init();
 
     USBD_Init(&hUSBDDevice, &VCP_Desc, 0);
