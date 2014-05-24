@@ -44,7 +44,7 @@ static const GPIO_INFO gpio_info[] = {
     {PUSH_BUTTON, GPIO_MODE_IT_FALLING, GPIO_NOPULL, 0, 0, -1},
     {SWITCH_E_STOP, GPIO_MODE_IT_FALLING, GPIO_NOPULL, 0, 0, -1},
     // misc
-    {G540_KEEPALIVE, GPIO_MODE_AF_PP, GPIO_PULLUP, GPIO_SPEED_HIGH, GPIO_AF2_TIM3, -1},
+    {G540_KEEPALIVE, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_HIGH, GPIO_AF2_TIM4, -1},
 };
 
 //-----------------------------------------------------------------------------

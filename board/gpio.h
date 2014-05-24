@@ -37,7 +37,7 @@ Pin Assignments for STM32F4 Discovery Board
 PA0 = push button
 PA1 = system_reset
 PA2 = e-stop *
-PA3 = g540 keepalive (charge pump) *
+PA3
 PA4 = codec
 PA5 = accel
 PA6 = accel
@@ -58,7 +58,7 @@ PB3 = swd
 PB4
 PB5
 PB6 = codec
-PB7
+PB7 = g540 keepalive (charge pump) *
 PB8
 PB9 = codec
 PB10 = mic
@@ -186,7 +186,7 @@ PH1 = ph1_osc_out
 #define LIMIT_A         GPIO_NUM(PORTD, 9)
 
 // misc
-#define G540_KEEPALIVE  GPIO_NUM(PORTC, 6)
+#define G540_KEEPALIVE  GPIO_NUM(PORTB, 7) // tim4, ch2, af2
 
 //-----------------------------------------------------------------------------
 // generic api functions
