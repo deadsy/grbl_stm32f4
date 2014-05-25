@@ -1,6 +1,7 @@
 Specifying the KRMx01 machine and STM32F4-Discovery controller.
+The limit switch debounce logic makes them active high.
 --- grbl-master/config.h	2014-03-14 07:50:36.000000000 -0700
-+++ grbl-master/config.h	2014-05-25 10:19:50.000000000 -0700
++++ grbl-master/config.h	2014-05-25 11:44:38.000000000 -0700
 @@ -29,14 +29,14 @@
  #define config_h
  
@@ -18,3 +19,12 @@ Specifying the KRMx01 machine and STM32F4-Discovery controller.
  
  // Define runtime command special characters. These characters are 'picked-off' directly from the
  // serial read data stream and are not passed to the grbl line execution parser. Select characters
+@@ -175,7 +175,7 @@
+ // are reached. You will need to ensure that you have appropriate pull-down resistors on the
+ // limit switch input pins, or that your hardware drives the pins low when they are open (non-
+ // triggered).
+-// #define LIMIT_SWITCHES_ACTIVE_HIGH
++#define LIMIT_SWITCHES_ACTIVE_HIGH
+ 
+ // ---------------------------------------------------------------------------------------
+ 
