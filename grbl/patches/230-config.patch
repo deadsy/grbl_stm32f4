@@ -1,7 +1,15 @@
-Use a pin map specific to the STM32F4 Discovery board.
---- grbl-master/config.h	2014-03-30 07:33:46.000000000 -0700
-+++ grbl-master/config.h	2014-03-30 07:34:47.000000000 -0700
-@@ -36,7 +36,7 @@
+Specifying the KRMx01 machine and STM32F4-Discovery controller.
+--- grbl-master/config.h	2014-03-14 07:50:36.000000000 -0700
++++ grbl-master/config.h	2014-05-25 10:19:50.000000000 -0700
+@@ -29,14 +29,14 @@
+ #define config_h
+ 
+ // Default settings. Used when resetting EEPROM. Change to desired name in defaults.h
+-#define DEFAULTS_GENERIC
++#define DEFAULTS_KRMX01
+ 
+ // Serial baud rate
+ #define BAUD_RATE 9600
  
  // Default pin mappings. Grbl officially supports the Arduino Uno only. Other processor types
  // may exist from user-supplied templates or directly user-defined in pin_map.h

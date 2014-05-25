@@ -106,14 +106,14 @@ PE0 = accel
 PE1 = accel
 PE2
 PE3 = accel
-PE4 = dirn_x *
-PE5 = step_x *
-PE6 = dirn_y *
-PE7 = step_y *
-PE8 = dirn_z *
-PE9 = step_z *
-PE10 = dirn_a *
-PE11 = step_a *
+PE4 = step_x *
+PE5 = dirn_x *
+PE6 = step_y *
+PE7 = dirn_y *
+PE8 = step_z *
+PE9 = dirn_z *
+PE10 = step_a *
+PE11 = dirn_a *
 PE12 =
 PE13 =
 PE14 =
@@ -168,16 +168,16 @@ PH1 = ph1_osc_out
 #define SWITCH_E_STOP   GPIO_NUM(PORTA, 2)
 
 // all step bits must be on the same port
-#define STEP_X          GPIO_NUM(PORTE, 5)
-#define STEP_Y          GPIO_NUM(PORTE, 7)
-#define STEP_Z          GPIO_NUM(PORTE, 9)
-#define STEP_A          GPIO_NUM(PORTE, 11)
+#define STEP_X          GPIO_NUM(PORTE, 4)
+#define STEP_Y          GPIO_NUM(PORTE, 6)
+#define STEP_Z          GPIO_NUM(PORTE, 8)
+#define STEP_A          GPIO_NUM(PORTE, 10)
 
 // all direction bits must be on the same port
-#define DIRN_X          GPIO_NUM(PORTE, 4)
-#define DIRN_Y          GPIO_NUM(PORTE, 6)
-#define DIRN_Z          GPIO_NUM(PORTE, 8)
-#define DIRN_A          GPIO_NUM(PORTE, 10)
+#define DIRN_X          GPIO_NUM(PORTE, 5)
+#define DIRN_Y          GPIO_NUM(PORTE, 7)
+#define DIRN_Z          GPIO_NUM(PORTE, 9)
+#define DIRN_A          GPIO_NUM(PORTE, 11)
 
 // limit switches
 #define LIMIT_X         GPIO_NUM(PORTD, 6)
