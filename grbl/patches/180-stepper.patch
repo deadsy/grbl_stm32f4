@@ -1,27 +1,168 @@
-TODO
---- grbl-master/stepper.c	2014-03-16 22:20:41.000000000 -0700
-+++ grbl-master/stepper.c	2014-03-16 22:22:53.000000000 -0700
-@@ -27,6 +27,16 @@
+--- grbl-master/stepper.c	2014-05-26 08:28:14.000000000 -0700
++++ grbl-master/stepper.c	2014-05-26 08:34:05.000000000 -0700
+@@ -26,9 +26,9 @@
+ #include "config.h"
  #include "settings.h"
  #include "planner.h"
++#include "timers.h"
  
-+void st_init(void){}
-+void st_wake_up(void){}
-+void st_go_idle(void){}
-+void st_reset(void){}
-+void st_cycle_start(void){}
-+void st_cycle_reinitialize(void){} 
-+void st_feed_hold(void){}
-+
-+#if 0
-+
  // Some useful constants
- #define TICKS_PER_MICROSECOND (F_CPU/1000000)
+-#define TICKS_PER_MICROSECOND (F_CPU/1000000)
  #define CYCLES_PER_ACCELERATION_TICK ((TICKS_PER_MICROSECOND*1000000)/ACCELERATION_TICKS_PER_SECOND)
-@@ -461,3 +471,6 @@
-     sys.state = STATE_IDLE;
+ 
+ // Stepper state variable. Contains running data and trapezoid variables.
+@@ -53,11 +53,11 @@
+ 
+ // Used by the stepper driver interrupt
+ static uint8_t step_pulse_time; // Step pulse reset time after step rise
+-static uint8_t out_bits;        // The next stepping-bits to be output
++static uint32_t out_bits;        // The next stepping-bits to be output
+ static volatile uint8_t busy;   // True when SIG_OUTPUT_COMPARE1A is being serviced. Used to avoid retriggering that handler.
+ 
+ #if STEP_PULSE_DELAY > 0
+-  static uint8_t step_bits;  // Stores out_bits output to complete the step pulse delay
++  static uint32_t step_bits;  // Stores out_bits output to complete the step pulse delay
+ #endif
+ 
+ //         __________________________
+@@ -84,10 +84,10 @@
+ void st_wake_up() 
+ {
+   // Enable steppers by resetting the stepper disable port
+-  if (bit_istrue(settings.flags,BITFLAG_INVERT_ST_ENABLE)) { 
+-    STEPPERS_DISABLE_PORT |= (1<<STEPPERS_DISABLE_BIT); 
++  if (bit_istrue(settings.flags,BITFLAG_INVERT_ST_ENABLE)) {
++    steppers_enable(); 
+   } else { 
+-    STEPPERS_DISABLE_PORT &= ~(1<<STEPPERS_DISABLE_BIT);
++    steppers_disable(); 
+   }
+   if (sys.state == STATE_CYCLE) {
+     // Initialize stepper output bits
+@@ -103,7 +103,7 @@
+       step_pulse_time = -(((settings.pulse_microseconds-2)*TICKS_PER_MICROSECOND) >> 3);
+     #endif
+     // Enable stepper driver interrupt
+-    TIMSK1 |= (1<<OCIE1A);
++    stepper_isr_enable();
    }
  }
+ 
+@@ -111,16 +111,16 @@
+ void st_go_idle() 
+ {
+   // Disable stepper driver interrupt
+-  TIMSK1 &= ~(1<<OCIE1A); 
++  stepper_isr_disable();
+   // Disable steppers only upon system alarm activated or by user setting to not be kept enabled.
+   if ((settings.stepper_idle_lock_time != 0xff) || bit_istrue(sys.execute,EXEC_ALARM)) {
+     // Force stepper dwell to lock axes for a defined amount of time to ensure the axes come to a complete
+     // stop and not drift from residual inertial forces at the end of the last movement.
+     delay_ms(settings.stepper_idle_lock_time);
+     if (bit_istrue(settings.flags,BITFLAG_INVERT_ST_ENABLE)) { 
+-      STEPPERS_DISABLE_PORT &= ~(1<<STEPPERS_DISABLE_BIT); 
++      steppers_enable(); 
+     } else { 
+-      STEPPERS_DISABLE_PORT |= (1<<STEPPERS_DISABLE_BIT); 
++      steppers_disable(); 
+     }   
+   }
+ }
+@@ -143,28 +143,28 @@
+ // config_step_timer. It pops blocks from the block_buffer and executes them by pulsing the stepper pins appropriately. 
+ // It is supported by The Stepper Port Reset Interrupt which it uses to reset the stepper port after each pulse. 
+ // The bresenham line tracer algorithm controls all three stepper outputs simultaneously with these two interrupts.
+-ISR(TIMER1_COMPA_vect)
++void stepper_isr1(void)
+ {        
+   if (busy) { return; } // The busy-flag is used to avoid reentering this interrupt
+   
+   // Set the direction pins a couple of nanoseconds before we step the steppers
+-  STEPPING_PORT = (STEPPING_PORT & ~DIRECTION_MASK) | (out_bits & DIRECTION_MASK);
++  dirn_wr(out_bits & DIRECTION_MASK);
+   // Then pulse the stepping pins
+   #ifdef STEP_PULSE_DELAY
+-    step_bits = (STEPPING_PORT & ~STEP_MASK) | out_bits; // Store out_bits to prevent overwriting.
++    step_bits = out_bits; // Store out_bits to prevent overwriting.
+   #else  // Normal operation
+-    STEPPING_PORT = (STEPPING_PORT & ~STEP_MASK) | out_bits;
++    step_wr(out_bits);
+   #endif
+   // Enable step pulse reset timer so that The Stepper Port Reset Interrupt can reset the signal after
+   // exactly settings.pulse_microseconds microseconds, independent of the main Timer1 prescaler.
+-  TCNT2 = step_pulse_time; // Reload timer counter
+-  TCCR2B = (1<<CS21); // Begin timer2. Full speed, 1/8 prescaler
++  //TCNT2 = step_pulse_time; // Reload timer counter
++  //TCCR2B = (1<<CS21); // Begin timer2. Full speed, 1/8 prescaler
+ 
+   busy = true;
+   // Re-enable interrupts to allow ISR_TIMER2_OVERFLOW to trigger on-time and allow serial communications
+   // regardless of time in this handler. The following code prepares the stepper driver for the next
+   // step interrupt compare and will always finish before returning to the main program.
+-  sei();
++  //sei();
+   
+   // If there is no current block, attempt to pop one from the buffer
+   if (current_block == NULL) {
+@@ -317,11 +317,11 @@
+ // a few microseconds, if they execute right before one another. Not a big deal, but can
+ // cause issues at high step rates if another high frequency asynchronous interrupt is 
+ // added to Grbl.
+-ISR(TIMER2_OVF_vect)
++void stepper_isr2(void)
+ {
+   // Reset stepping pins (leave the direction pins)
+-  STEPPING_PORT = (STEPPING_PORT & ~STEP_MASK) | (settings.invert_mask & STEP_MASK); 
+-  TCCR2B = 0; // Disable Timer2 to prevent re-entering this interrupt when it's not needed. 
++  step_wr(settings.invert_mask & STEP_MASK); 
++  //TCCR2B = 0; // Disable Timer2 to prevent re-entering this interrupt when it's not needed. 
+ }
+ 
+ #ifdef STEP_PULSE_DELAY
+@@ -330,9 +330,9 @@
+   // will then trigger after the appropriate settings.pulse_microseconds, as in normal operation.
+   // The new timing between direction, step pulse, and step complete events are setup in the
+   // st_wake_up() routine.
+-  ISR(TIMER2_COMPA_vect) 
++  void stepper_isr3(void)
+   { 
+-    STEPPING_PORT = step_bits; // Begin step pulse.
++    step_wr(step_bits); // Begin step pulse.
+   }
+ #endif
+ 
+@@ -348,6 +348,8 @@
+ // Initialize and start the stepper motor subsystem
+ void st_init()
+ {
++#if 0
 +
+   // Configure directions of interface pins
+   STEPPING_DDR |= STEPPING_MASK;
+   STEPPING_PORT = (STEPPING_PORT & ~STEPPING_MASK) | settings.invert_mask;
+@@ -371,6 +373,8 @@
+     TIMSK2 |= (1<<OCIE2A); // Enable Timer2 Compare Match A interrupt
+   #endif
+ 
 +#endif
 +
+   // Start in the idle state, but first wake up to check for keep steppers enabled option.
+   st_wake_up();
+   st_go_idle();
+@@ -380,6 +384,7 @@
+ // Returns the actual number of cycles per interrupt
+ static uint32_t config_step_timer(uint32_t cycles)
+ {
++#if 0
+   uint16_t ceiling;
+   uint8_t prescaler;
+   uint32_t actual_cycles;
+@@ -414,6 +419,8 @@
+   // Set ceiling
+   OCR1A = ceiling;
+   return(actual_cycles);
++#endif
++  return cycles;
+ }
+ 
+ static void set_step_events_per_minute(uint32_t steps_per_minute) 

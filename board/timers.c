@@ -1,23 +1,24 @@
 //-----------------------------------------------------------------------------
 /*
 
-Gecko G540 Stepper Controller
+Timer Functions
+
+The main stepper routines use timers and ISRs for pulse generation.
+This file has the board specific routines to allow this.
 
 */
 //-----------------------------------------------------------------------------
 
 #include "stm32f4xx_hal.h"
-#include "g540.h"
+#include "timers.h"
 
 void Error_Handler(void);
 
 //-----------------------------------------------------------------------------
+// On the G540 a charge pump signal (>= 10KHz square wave) is used as a keepalive.
+// When the e-stop is pressed we will stop it.
 
 static TIM_HandleTypeDef charge_pump_timer;
-
-//-----------------------------------------------------------------------------
-// A charge pump signal (>= 10KHz square wave) is used as a keepalive.
-// When the e-stop is pressed we will stop it.
 
 #define CHARGE_PUMP_HZ 12000
 #define PERIOD_CNT 200
@@ -26,7 +27,7 @@ static TIM_HandleTypeDef charge_pump_timer;
 #define TIM_ARR (PERIOD_CNT - 1)
 #define TIM_CCR (PERIOD_CNT / 2)
 
-static void keepalive_start(TIM_HandleTypeDef *tim)
+static void charge_pump_start(TIM_HandleTypeDef *tim)
 {
     TIM_OC_InitTypeDef tim_cfg;
 
@@ -58,16 +59,34 @@ static void keepalive_start(TIM_HandleTypeDef *tim)
     }
 }
 
-void keepalive_stop(void)
+void charge_pump_stop(void)
 {
     HAL_TIM_PWM_Stop(&charge_pump_timer, TIM_CHANNEL_2);
 }
 
 //-----------------------------------------------------------------------------
 
-void g540_init(void)
+void stepper_isr_enable(void)
 {
-    keepalive_start(&charge_pump_timer);
+}
+
+void stepper_isr_disable(void)
+{
+}
+
+void steppers_enable(void)
+{
+}
+
+void steppers_disable(void)
+{
+}
+
+//-----------------------------------------------------------------------------
+
+void timers_init(void)
+{
+    charge_pump_start(&charge_pump_timer);
 }
 
 //-----------------------------------------------------------------------------

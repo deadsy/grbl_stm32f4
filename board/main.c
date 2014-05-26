@@ -10,7 +10,7 @@
 #include "usbd_cdc_interface.h"
 #include "gpio.h"
 #include "debounce.h"
-#include "g540.h"
+#include "timers.h"
 
 //-----------------------------------------------------------------------------
 
@@ -112,7 +112,7 @@ int main(void)
     HAL_Init();
     SystemClock_Config();
     gpio_init();
-    g540_init();
+    timers_init();
     debounce_init();
 
     USBD_Init(&hUSBDDevice, &VCP_Desc, 0);
