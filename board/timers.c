@@ -66,21 +66,11 @@ void charge_pump_stop(void)
 
 //-----------------------------------------------------------------------------
 
-void stepper_isr_enable(void)
-{
-}
-
-void stepper_isr_disable(void)
-{
-}
-
-void steppers_enable(void)
-{
-}
-
-void steppers_disable(void)
-{
-}
+void stepper_isr_enable(void){}
+void stepper_isr_disable(void){}
+void set_step_period(uint32_t ticks) {}
+void set_step_pulse_delay(uint32_t ticks) {}
+void set_step_pulse_time(uint32_t ticks) {}
 
 //-----------------------------------------------------------------------------
 

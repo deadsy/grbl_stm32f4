@@ -279,8 +279,8 @@ static inline uint32_t debounce_input(void)
 }
 
 //-----------------------------------------------------------------------------
-
 // coolant and spindle controls - no-ops for now
+
 static inline void coolant_flood_on(void) {}
 static inline void coolant_flood_off(void) {}
 static inline void coolant_mist_on(void) {}
@@ -289,6 +289,14 @@ static inline void spindle_on(void) {}
 static inline void spindle_off(void) {}
 static inline void spindle_fwd(void) {}
 static inline void spindle_rev(void) {}
+
+//-----------------------------------------------------------------------------
+// stepper motor enable/disable
+// Normally these would be used to control enable/disable gpio lines to the
+// stepper motor driver board. For the G540 they are no-ops.
+
+static inline void stepper_motor_disable(void) {}
+static inline void stepper_motor_enable(void) {}
 
 //-----------------------------------------------------------------------------
 
