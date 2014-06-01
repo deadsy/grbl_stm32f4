@@ -225,6 +225,13 @@ void serial_write(uint8_t data)
     }
 }
 
+// hook up stdio output to the serial port
+int __io_putchar(int ch)
+{
+    serial_write(ch);
+    return 0;
+}
+
 // read a character from the rx fifo ring buffer
 uint8_t serial_read(void)
 {

@@ -11,6 +11,7 @@
 #include "gpio.h"
 #include "debounce.h"
 #include "timers.h"
+#include "stm32f4_regs.h"
 
 //-----------------------------------------------------------------------------
 
@@ -121,7 +122,8 @@ int main(void)
     USBD_Start(&hUSBDDevice);
 
     // Delay any output to serial until the USB CDC port is working.
-    HAL_Delay(1000);
+    HAL_Delay(1500);
+    display_tim(4);
     grbl_main();
 
     return 0;
