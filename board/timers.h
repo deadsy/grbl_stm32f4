@@ -20,22 +20,27 @@ This file has the board specific routines to allow this.
 // ie 1 us == 21
 #define TICKS_PER_MICROSECOND 21
 
-void stepper_isr_enable(void);
-void stepper_isr_disable(void);
+void step_isr_enable(void);
+void step_isr_disable(void);
 
 void set_step_period(uint32_t ticks);
 void set_step_pulse_delay(uint32_t ticks);
 void set_step_pulse_time(uint32_t ticks);
 
 // interrupt context callbacks to generate step/direction pulses
-void step_period_isr(void);
 void step_pulse_isr(void);
 void step_delay_isr(void);
+void step_period_isr(void);
 
 //-----------------------------------------------------------------------------
-// g540 charge pump
 
-void charge_pump_stop(void);
+// g540 charge pump
+void g540_timer_start(void);
+void g540_timer_start(void);
+
+// cdc interface
+void cdc_timer_start(void);
+void cdc_timer_isr(void);
 
 //-----------------------------------------------------------------------------
 

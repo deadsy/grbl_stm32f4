@@ -70,21 +70,9 @@ void SysTick_Handler(void)
 // STM32F4xx Peripherals Interrupt Handlers
 
 extern PCD_HandleTypeDef hpcd;
-extern TIM_HandleTypeDef htim3;
-
 void OTG_FS_IRQHandler(void)
 {
     HAL_PCD_IRQHandler(&hpcd);
-}
-
-void TIM3_IRQHandler(void)
-{
-    HAL_TIM_IRQHandler(&htim3);
-}
-
-void EXTI0_IRQHandler(void)
-{
-  HAL_GPIO_EXTI_IRQHandler(GPIO_BIT(PUSH_BUTTON));
 }
 
 //-----------------------------------------------------------------------------

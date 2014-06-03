@@ -287,7 +287,7 @@ void st_wake_up(void)
         set_step_pulse_time(settings.pulse_microseconds * TICKS_PER_MICROSECOND);
 #endif
         // Enable stepper driver interrupt
-        stepper_isr_enable();
+        step_isr_enable();
     }
 }
 
@@ -297,7 +297,7 @@ void st_wake_up(void)
 void st_go_idle(void)
 {
     // Disable stepper driver interrupt
-    stepper_isr_disable();
+    step_isr_disable();
     // Disable steppers only upon system alarm activated or by user setting to not be kept enabled.
     if ((settings.stepper_idle_lock_time != 0xff) || bit_istrue(sys.execute,EXEC_ALARM)) {
         // Force stepper dwell to lock axes for a defined amount of time to ensure the axes come to a complete
