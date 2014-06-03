@@ -191,12 +191,12 @@ PH1 = ph1_osc_out
 //-----------------------------------------------------------------------------
 // generic api functions
 
-static inline void gpio_set(int n)
+static inline void gpio_clr(int n)
 {
     GPIO_BASE(n)->BSRRH = GPIO_BIT(n);
 }
 
-static inline void gpio_clr(int n)
+static inline void gpio_set(int n)
 {
     GPIO_BASE(n)->BSRRL = GPIO_BIT(n);
 }
