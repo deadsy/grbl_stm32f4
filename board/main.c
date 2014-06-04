@@ -85,7 +85,7 @@ int buttons_enabled = 0;
 void debounce_on_handler(uint32_t bits)
 {
     if (bits & (1 << PUSH_BUTTON_BIT)) {
-        gpio_clr(LED_RED);
+        gpio_set(LED_RED);
     }
 
     // check limits
@@ -102,7 +102,7 @@ void debounce_on_handler(uint32_t bits)
 void debounce_off_handler(uint32_t bits)
 {
     if (bits & (1 << PUSH_BUTTON_BIT)) {
-        gpio_set(LED_RED);
+        gpio_clr(LED_RED);
     }
 }
 

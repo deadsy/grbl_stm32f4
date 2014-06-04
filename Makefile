@@ -60,6 +60,7 @@ SRC += $(BOARD_DIR)/main.c \
        $(BOARD_DIR)/gpio.c \
        $(BOARD_DIR)/debounce.c \
        $(BOARD_DIR)/timers.c \
+       $(BOARD_DIR)/usart.c \
        $(BOARD_DIR)/stm32f4_regs.c \
 
 OBJ = $(patsubst %.c, %.o, $(SRC))

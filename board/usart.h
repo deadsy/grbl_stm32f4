@@ -1,21 +1,23 @@
 //-----------------------------------------------------------------------------
 /*
 
-Dump stm32f4 peripheral register contents
+USART Driver
 
 */
 //-----------------------------------------------------------------------------
 
-#ifndef STM32F4_REGS_H
-#define STM32F4_REGS_H
+#ifndef USART_H
+#define USART_H
 
 //-----------------------------------------------------------------------------
 
-void display_tim(int num);
-void display_usart(int num);
+void usart_tx(uint8_t data);
+int usart_tstc(void);
+uint8_t usart_rx(void);
+void usart_init(void);
 
 //-----------------------------------------------------------------------------
 
-#endif //  STM32F4_REGS_H
+#endif // USART_H
 
 //-----------------------------------------------------------------------------

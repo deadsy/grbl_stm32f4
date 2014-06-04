@@ -21,6 +21,7 @@ static void dump_reg(const char *base_name, const char *reg_name, const volatile
 }
 
 //-----------------------------------------------------------------------------
+// TIM Registers
 
 static TIM_TypeDef *tim_base[] = {
     TIM1, TIM2, TIM3, TIM4, TIM5, TIM6, TIM7, TIM8, TIM9, TIM10, TIM11, TIM12, TIM13, TIM14
@@ -59,6 +60,38 @@ void display_tim(int num)
     dump_reg(base_name, "DCR", &tim->DCR);
     dump_reg(base_name, "DMAR", &tim->DMAR);
     dump_reg(base_name, "OR", &tim->OR);
+}
+
+//-----------------------------------------------------------------------------
+// USART Registers
+
+static USART_TypeDef *usart_base[] = {
+    USART1, USART2, USART3, UART4, UART5, USART6
+};
+
+void display_usart(int num)
+{
+    USART_TypeDef *usart;
+    char base_name[16];
+
+    if (num < 1 || num > 6) {
+        return;
+    }
+    usart = usart_base[num - 1];
+
+    if (num == 4 || num == 5) {
+        sprintf(base_name, "UART%d", num);
+    } else {
+        sprintf(base_name, "USART%d", num);
+    }
+
+    dump_reg(base_name, "SR", &usart->SR);
+    dump_reg(base_name, "DR", &usart->DR);
+    dump_reg(base_name, "BRR", &usart->BRR);
+    dump_reg(base_name, "CR1", &usart->CR1);
+    dump_reg(base_name, "CR2", &usart->CR2);
+    dump_reg(base_name, "CR3", &usart->CR3);
+    dump_reg(base_name, "GTPR", &usart->GTPR);
 }
 
 //-----------------------------------------------------------------------------

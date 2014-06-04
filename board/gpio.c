@@ -43,7 +43,10 @@ static const GPIO_INFO gpio_info[] = {
     // push buttons
     {PUSH_BUTTON, GPIO_MODE_IT_FALLING, GPIO_NOPULL, 0, 0, -1},
     {SWITCH_E_STOP, GPIO_MODE_IT_FALLING, GPIO_NOPULL, 0, 0, -1},
-    // misc
+    // serial port (usart2 function)
+    {UART_TX, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_HIGH, GPIO_AF7_USART2, -1},
+    {UART_RX, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_HIGH, GPIO_AF7_USART2, -1},
+    // g540 keepalive (tim4 function)
     {G540_KEEPALIVE, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_HIGH, GPIO_AF2_TIM4, -1},
 };
 
@@ -70,10 +73,6 @@ void gpio_init(void)
             HAL_GPIO_WritePin(GPIO_BASE(gpio->num), GPIO_BIT(gpio->num), gpio->init);
         }
     }
-
-    // PUSH_BUTTON = PA0 = EXTI Line 0
-    HAL_NVIC_SetPriority(EXTI0_IRQn, 2, 0);
-    HAL_NVIC_EnableIRQ(EXTI0_IRQn);
 }
 
 //-----------------------------------------------------------------------------
