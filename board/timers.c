@@ -96,11 +96,11 @@ void step_isr_enable(void)
     // enable interrupts
     if (TIMx->CCR1) {
         // the dirn to step pulse delay is non-zero, enable channel 1
-         enable |= TIM_DIER_CC1DE;
+         enable |= TIM_DIER_CC1IE;
     }
     if (TIMx->CCR2) {
         // the step pulse is non-zero, enable channel 2
-         enable |= TIM_DIER_CC2DE;
+         enable |= TIM_DIER_CC2IE;
     }
     TIMx->DIER |= enable;
 
@@ -114,7 +114,7 @@ void step_isr_disable(void)
     // turn off the timer
     TIMx->CR1 &= ~TIM_CR1_CEN;
     // disable interrupts (updates, channel1, channel2)
-    TIMx->DIER &= ~(TIM_DIER_UIE | TIM_DIER_CC1DE | TIM_DIER_CC2DE);
+    TIMx->DIER &= ~(TIM_DIER_UIE | TIM_DIER_CC1IE | TIM_DIER_CC2IE);
 }
 
 void set_step_period(uint32_t ticks)
@@ -139,19 +139,22 @@ void TIM2_IRQHandler(void)
 {
     TIM_TypeDef* const TIMx = STEP_TIMER;
 
-    if ((TIMx->SR & TIM_SR_CC1IF) && (TIMx->DIER & TIM_DIER_CC1DE)) {
+    if ((TIMx->SR & TIM_SR_CC1IF) && (TIMx->DIER & TIM_DIER_CC1IE)) {
         TIMx->SR &= ~TIM_SR_CC1IF;
-        step_delay_isr();
+        gpio_set(STEP_Z);
+        //step_delay_isr();
     }
 
-    if ((TIMx->SR & TIM_SR_CC2IF) && (TIMx->DIER & TIM_DIER_CC2DE)) {
+    if ((TIMx->SR & TIM_SR_CC2IF) && (TIMx->DIER & TIM_DIER_CC2IE)) {
         TIMx->SR &= ~TIM_SR_CC2IF;
-        step_pulse_isr();
+        gpio_clr(STEP_Z);
+        //step_pulse_isr();
     }
 
     if ((TIMx->SR & TIM_SR_UIF) && (TIMx->DIER & TIM_DIER_UIE)) {
         TIMx->SR &= ~TIM_SR_UIF;
-        step_period_isr();
+        gpio_toggle(DIRN_Z);
+        //step_period_isr();
     }
 }
 
