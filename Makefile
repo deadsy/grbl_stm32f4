@@ -28,6 +28,7 @@ SRC = $(GRBL_DIR)/coolant_control.c \
       $(GRBL_DIR)/settings.c \
       $(GRBL_DIR)/spindle_control.c \
       $(GRBL_DIR)/stepper.c \
+      $(GRBL_DIR)/serial.c \
 
 # hal sources
 HAL_DIR = ./hal/src

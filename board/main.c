@@ -110,9 +110,6 @@ void debounce_off_handler(uint32_t bits)
 
 int main(void)
 {
-    int period = 200;
-    int delta = 1;
-
     HAL_Init();
     SystemClock_Config();
     gpio_init();
@@ -126,35 +123,6 @@ int main(void)
 
     // Delay any output to serial until the USB CDC port is working.
     HAL_Delay(1500);
-
-    set_step_period(TICKS_PER_MICROSECOND * period);
-    set_step_pulse_delay(TICKS_PER_MICROSECOND * 10);
-    set_step_pulse_time(TICKS_PER_MICROSECOND * 40);
-    step_isr_enable();
-
-
-
-    while(1) {
-
-
-//         set_step_period(TICKS_PER_MICROSECOND * period);
-//
-//         if (period >= 300) {
-//             delta = -1;
-//         }
-//
-//         if (period <= 100) {
-//             delta = 1;
-//         }
-//
-//         HAL_Delay(3);
-//
-//
-//         period += delta;
-
-    }
-
-
     grbl_main();
 
     return 0;

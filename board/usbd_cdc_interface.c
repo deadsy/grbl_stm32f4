@@ -116,6 +116,10 @@ static int8_t CDC_Itf_Receive(uint8_t* pbuf, uint32_t *Len)
 
     // Write the received buffer to the Rx fifo.
     for (i = 0; i < n; i ++) {
+        if (serial_rx_hook(pbuf[i])) {
+            // the character has been absorbed by the rx hook
+            continue;
+        }
         uint32_t rx_wr_inc = (rx_wr == (RX_FIFO_SIZE - 1)) ? 0 : rx_wr + 1;
         if (rx_wr_inc != rx_rd) {
             rx_fifo[rx_wr] = pbuf[i];

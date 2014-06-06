@@ -120,7 +120,13 @@ void step_isr_disable(void)
 void set_step_period(uint32_t ticks)
 {
     TIM_TypeDef* const TIMx = STEP_TIMER;
+    uint32_t saved = TIMx->CR1 & TIM_CR1_CEN;
+    TIMx->CR1 &= ~TIM_CR1_CEN;
     TIMx->ARR = ticks;
+    if (TIMx->CNT >= ticks) {
+        TIMx->CNT = ticks;
+    }
+    TIMx->CR1 |= saved;
 }
 
 void set_step_pulse_delay(uint32_t ticks)
