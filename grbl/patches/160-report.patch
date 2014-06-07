@@ -1,7 +1,8 @@
-No program strings for stm32f4.
---- grbl-master/report.c	2014-03-16 22:13:56.000000000 -0700
-+++ grbl-master/report.c	2014-03-16 22:14:18.000000000 -0700
-@@ -33,6 +33,7 @@
+No PSTR() strings on this platform.
+Added 32-bit invert masks for ports. 
+--- grbl-master/report.c	2014-06-07 14:36:59.000000000 -0700
++++ grbl-master/report.c	2014-06-07 14:39:46.000000000 -0700
+@@ -35,6 +35,7 @@
  #include "gcode.h"
  #include "coolant_control.h"
  
@@ -9,3 +10,30 @@ No program strings for stm32f4.
  
  // Handles the primary confirmation protocol response for streaming interfaces and human-feedback.
  // For every incoming line, this method responds with an 'ok' for a successful command or an 
+@@ -153,8 +154,8 @@
+   printPgmString(PSTR(" (z, step/mm)\r\n$3=")); printInteger(settings.pulse_microseconds);
+   printPgmString(PSTR(" (step pulse, usec)\r\n$4=")); printFloat(settings.default_feed_rate);
+   printPgmString(PSTR(" (default feed, mm/min)\r\n$5=")); printFloat(settings.default_seek_rate);
+-  printPgmString(PSTR(" (default seek, mm/min)\r\n$6=")); printInteger(settings.invert_mask); 
+-  printPgmString(PSTR(" (step port invert mask, int:")); print_uint8_base2(settings.invert_mask);  
++  printPgmString(PSTR(" (default seek, mm/min)\r\n$6=")); printInteger(settings.step_invert_mask); 
++  printPgmString(PSTR(" (step port invert mask, int:")); print_uint32_base2(settings.step_invert_mask);  
+   printPgmString(PSTR(")\r\n$7=")); printInteger(settings.stepper_idle_lock_time);
+   printPgmString(PSTR(" (step idle delay, msec)\r\n$8=")); printFloat(settings.acceleration/(60*60)); // Convert from mm/min^2 for human readability
+   printPgmString(PSTR(" (acceleration, mm/sec^2)\r\n$9=")); printFloat(settings.junction_deviation);
+@@ -167,12 +168,14 @@
+   printPgmString(PSTR(" (invert step enable, bool)\r\n$16=")); printInteger(bit_istrue(settings.flags,BITFLAG_HARD_LIMIT_ENABLE));
+   printPgmString(PSTR(" (hard limits, bool)\r\n$17=")); printInteger(bit_istrue(settings.flags,BITFLAG_HOMING_ENABLE));
+   printPgmString(PSTR(" (homing cycle, bool)\r\n$18=")); printInteger(settings.homing_dir_mask);
+-  printPgmString(PSTR(" (homing dir invert mask, int:")); print_uint8_base2(settings.homing_dir_mask);  
++  printPgmString(PSTR(" (homing dir invert mask, int:")); print_uint32_base2(settings.homing_dir_mask);  
+   printPgmString(PSTR(")\r\n$19=")); printFloat(settings.homing_feed_rate);
+   printPgmString(PSTR(" (homing feed, mm/min)\r\n$20=")); printFloat(settings.homing_seek_rate);
+   printPgmString(PSTR(" (homing seek, mm/min)\r\n$21=")); printInteger(settings.homing_debounce_delay);
+   printPgmString(PSTR(" (homing debounce, msec)\r\n$22=")); printFloat(settings.homing_pulloff);
+   printPgmString(PSTR(" (homing pull-off, mm)\r\n")); 
++
++#warning "TODO: add rd/wr for the direction port invert mask"
+ }
+ 
+ 

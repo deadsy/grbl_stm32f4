@@ -1,6 +1,7 @@
---- grbl-master/limits.c.original	2014-03-14 07:50:36.000000000 -0700
-+++ grbl-master/limits.c	2014-04-08 23:08:07.000000000 -0700
-@@ -37,18 +34,10 @@
+Using separate 32 bit ports for dirn/step control.
+--- grbl-master/limits.c	2014-06-07 13:42:52.000000000 -0700
++++ grbl-master/limits.c	2014-06-07 13:55:15.000000000 -0700
+@@ -34,18 +34,10 @@
  
  void limits_init() 
  {
@@ -21,7 +22,7 @@
    }
  }
  
-@@ -61,7 +50,7 @@
+@@ -58,7 +50,7 @@
  // homing cycles and will not respond correctly. Upon user request or need, there may be a
  // special pinout for an e-stop, but it is generally recommended to just directly connect
  // your e-stop switch to the Arduino reset pin, since it is the most correct way to do this.
@@ -30,7 +31,7 @@
  {
    // TODO: This interrupt may be used to manage the homing cycle directly with the main stepper
    // interrupt without adding too much to it. All it would need is some way to stop one axis 
-@@ -144,11 +133,14 @@
+@@ -141,11 +133,14 @@
    uint32_t dt_min = lround(1000000*60/(ds*homing_rate)); // Cruising (usec/step)
    uint32_t dt = 1000000*60/MINIMUM_STEPS_PER_MINUTE; // Initial (usec/step)
    if (dt > dt_min) { dt = dt_min; } // Disable acceleration for very slow rates.
@@ -40,35 +41,40 @@
 -  out_bits0 ^= (settings.homing_dir_mask & DIRECTION_MASK); // Apply homing direction settings
 -  if (!pos_dir) { out_bits0 ^= DIRECTION_MASK; }   // Invert bits, if negative dir.
 +
-+  // Set up direction and step bits.
-+  uint32_t dirn_bits = settings.invert_mask;
-+  uint32_t step_bits = 0;
++  // Set default step/dirn bits.
++  uint32_t step_bits0 = settings.step_invert_mask;
++  uint32_t dirn_bits = settings.dirn_invert_mask;
 +  dirn_bits ^= (settings.homing_dir_mask & DIRECTION_MASK); // Apply homing direction settings
 +  if (!pos_dir) { dirn_bits ^= DIRECTION_MASK; }   // Invert bits, if negative dir.
 +  dirn_wr(dirn_bits);
-+  step_wr(step_bits);
++  step_wr(step_bits0);
    
    // Initialize stepping variables
    int32_t counter_x = -(step_event_count >> 1); // Bresenham counters
-@@ -157,15 +149,10 @@
+@@ -154,15 +149,15 @@
    uint32_t step_delay = dt-settings.pulse_microseconds;  // Step delay after pulse
    uint32_t step_rate = 0;  // Tracks step rate. Initialized from 0 rate. (in step/min)
    uint32_t trap_counter = MICROSECONDS_PER_ACCELERATION_TICK/2; // Acceleration trapezoid counter
 -  uint8_t out_bits;
 -  uint8_t limit_state;
++  uint32_t step_bits;
 +  uint32_t limit_state;
    for(;;) {
 -  
 -    // Reset out bits. Both direction and step pins appropriately inverted and set.
 -    out_bits = out_bits0;
 -    
++
++    // Reset step bits. Step pins appropriately inverted and set.
++    step_bits = step_bits0;
++
      // Get limit pin state.
 -    limit_state = LIMIT_PIN;
 +    limit_state = debounce_rd();
      if (invert_pin) { limit_state ^= LIMIT_MASK; } // If leaving switch, invert to move.
      
      // Set step pins by Bresenham line algorithm. If limit switch reached, disable and
-@@ -173,7 +160,7 @@
+@@ -170,7 +165,7 @@
      if (cycle_mask & (1<<X_AXIS)) {
        counter_x += steps[X_AXIS];
        if (counter_x > 0) {
@@ -77,7 +83,7 @@
          else { cycle_mask &= ~(1<<X_AXIS); }
          counter_x -= step_event_count;
        }
-@@ -181,7 +168,7 @@
+@@ -178,7 +173,7 @@
      if (cycle_mask & (1<<Y_AXIS)) {
        counter_y += steps[Y_AXIS];
        if (counter_y > 0) {
@@ -86,7 +92,7 @@
          else { cycle_mask &= ~(1<<Y_AXIS); }
          counter_y -= step_event_count;
        }
-@@ -189,7 +176,7 @@
+@@ -186,7 +181,7 @@
      if (cycle_mask & (1<<Z_AXIS)) {
        counter_z += steps[Z_AXIS];
        if (counter_z > 0) {
@@ -95,7 +101,7 @@
          else { cycle_mask &= ~(1<<Z_AXIS); }
          counter_z -= step_event_count;
        }
-@@ -199,9 +186,9 @@
+@@ -196,9 +191,9 @@
      if (!(cycle_mask) || (sys.execute & EXEC_RESET)) { return; }
          
      // Perform step.
@@ -103,7 +109,7 @@
 +    step_wr(step_bits);
      delay_us(settings.pulse_microseconds);
 -    STEPPING_PORT = out_bits0;
-+    step_wr(0);
++    step_wr(step_bits0);
      delay_us(step_delay);
      
      // Track and set the next step delay, if required. This routine uses another Bresenham

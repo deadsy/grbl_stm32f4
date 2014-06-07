@@ -43,17 +43,6 @@ Add the standard integer types previously pulled in by the AVR includes.
  #include "report.h"
  #include "print.h"
  #include "settings.h"
---- grbl-master/settings.c	2014-03-16 22:16:58.000000000 -0700
-+++ grbl-master/settings.c	2014-03-16 22:17:16.000000000 -0700
-@@ -19,6 +19,8 @@
-   along with Grbl.  If not, see <http://www.gnu.org/licenses/>.
- */
- 
-+#include <inttypes.h>
-+
- #include "protocol.h"
- #include "report.h"
- #include "stepper.h"
 --- grbl-master/print.c	2014-03-23 09:23:03.000000000 -0700
 +++ grbl-master/print.c	2014-03-23 09:23:17.000000000 -0700
 @@ -22,6 +22,7 @@
