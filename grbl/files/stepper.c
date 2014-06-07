@@ -302,7 +302,8 @@ void st_go_idle(void)
     if ((settings.stepper_idle_lock_time != 0xff) || bit_istrue(sys.execute,EXEC_ALARM)) {
         // Force stepper dwell to lock axes for a defined amount of time to ensure the axes come to a complete
         // stop and not drift from residual inertial forces at the end of the last movement.
-        delay_ms(settings.stepper_idle_lock_time);
+#warning "TODO: the systick needs to run at a higher irq priority than tim2, else delay_ms turns into an infinite loop"
+        //delay_ms(settings.stepper_idle_lock_time);
         stepper_motor_disable();
     }
 }
