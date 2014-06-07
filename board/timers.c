@@ -147,20 +147,17 @@ void TIM2_IRQHandler(void)
 
     if ((TIMx->SR & TIM_SR_CC1IF) && (TIMx->DIER & TIM_DIER_CC1IE)) {
         TIMx->SR &= ~TIM_SR_CC1IF;
-        gpio_set(STEP_Z);
-        //step_delay_isr();
+        step_delay_isr();
     }
 
     if ((TIMx->SR & TIM_SR_CC2IF) && (TIMx->DIER & TIM_DIER_CC2IE)) {
         TIMx->SR &= ~TIM_SR_CC2IF;
-        gpio_clr(STEP_Z);
-        //step_pulse_isr();
+        step_pulse_isr();
     }
 
     if ((TIMx->SR & TIM_SR_UIF) && (TIMx->DIER & TIM_DIER_UIE)) {
         TIMx->SR &= ~TIM_SR_UIF;
-        gpio_toggle(DIRN_Z);
-        //step_period_isr();
+        step_period_isr();
     }
 }
 
