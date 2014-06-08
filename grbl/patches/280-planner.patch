@@ -1,4 +1,4 @@
-The direction controls can be on their own port and so need 32 bits.
+The direction controls can be on their own port and so need 16 bits.
 --- grbl-master/planner.h	2014-06-07 11:45:05.000000000 -0700
 +++ grbl-master/planner.h	2014-06-07 11:45:22.000000000 -0700
 @@ -32,7 +32,7 @@
@@ -6,7 +6,7 @@ The direction controls can be on their own port and so need 32 bits.
  
    // Fields used by the bresenham algorithm for tracing the line
 -  uint8_t  direction_bits;            // The direction bit set for this block (refers to *_DIRECTION_BIT in config.h)
-+  uint32_t  direction_bits;           // The direction bit set for this block (refers to *_DIRECTION_BIT in config.h)
++  uint16_t  direction_bits;           // The direction bit set for this block (refers to *_DIRECTION_BIT in config.h)
    uint32_t steps_x, steps_y, steps_z; // Step count along each axis
    int32_t  step_event_count;          // The number of step events required to complete this block
  
