@@ -1,4 +1,4 @@
-Specify the gpio-ish masks as being uint32_t to match the gpio registers on this platform.
+Specify the gpio-ish masks as being uint16_t to match the gpio registers on this platform.
 --- grbl-master/settings.h	2014-03-14 07:50:36.000000000 -0700
 +++ grbl-master/settings.h	2014-06-07 13:41:24.000000000 -0700
 @@ -61,12 +61,13 @@
@@ -6,14 +6,14 @@ Specify the gpio-ish masks as being uint32_t to match the gpio registers on this
    float default_feed_rate;
    float default_seek_rate;
 -  uint8_t invert_mask;
-+  uint32_t step_invert_mask;
-+  uint32_t dirn_invert_mask;
++  uint16_t step_invert_mask;
++  uint16_t dirn_invert_mask;
    float mm_per_arc_segment;
    float acceleration;
    float junction_deviation;
    uint8_t flags;  // Contains default boolean settings
 -  uint8_t homing_dir_mask;
-+  uint32_t homing_dir_mask;
++  uint16_t homing_dir_mask;
    float homing_feed_rate;
    float homing_seek_rate;
    uint16_t homing_debounce_delay;

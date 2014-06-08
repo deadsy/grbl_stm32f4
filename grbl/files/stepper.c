@@ -47,9 +47,9 @@ static stepper_t st;
 //----------------------------------------------------------------------------
 
 static block_t *current_block;      // A pointer to the block currently being traced
-static uint32_t step_bits;          // step bits
-static uint32_t dirn_bits;          // direction bits
-static uint32_t saved_step_bits;    // saved step bits
+static uint16_t step_bits;          // step bits
+static uint16_t dirn_bits;          // direction bits
+static uint16_t saved_step_bits;    // saved step bits
 
 //----------------------------------------------------------------------------
 
@@ -242,6 +242,8 @@ void step_period_isr(void)
       plan_discard_current_block();
     }
   }
+  step_bits ^= settings.step_invert_mask;
+  dirn_bits ^= settings.dirn_invert_mask;
 }
 
 //----------------------------------------------------------------------------
@@ -251,7 +253,7 @@ void step_period_isr(void)
 void step_pulse_isr(void)
 {
     // Reset stepping pins
-    step_wr(0);
+    step_wr(settings.step_invert_mask);
 }
 
 //----------------------------------------------------------------------------
@@ -276,8 +278,8 @@ void st_wake_up(void)
 
     if (sys.state == STATE_CYCLE) {
         // Initialize stepper output bits
-        step_bits = 0;
-        dirn_bits = 0;
+        step_bits = settings.step_invert_mask;
+        dirn_bits = settings.dirn_invert_mask;
         // Initialize step pulse timing from settings. Here to ensure updating after re-writing.
 #ifdef STEP_PULSE_DELAY
         set_step_pulse_delay(STEP_PULSE_DELAY * TICKS_PER_MICROSECOND);
@@ -323,6 +325,7 @@ void st_reset(void)
 
 void st_init(void)
 {
+    step_wr(settings.step_invert_mask);
     // Start in the idle state, but first wake up to check for keep steppers enabled option.
     st_wake_up();
     st_go_idle();

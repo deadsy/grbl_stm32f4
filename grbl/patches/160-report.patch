@@ -1,5 +1,5 @@
 No PSTR() strings on this platform.
-Added 32-bit invert masks for ports. 
+Added 16-bit invert masks for ports. 
 --- grbl-master/report.c	2014-06-07 14:36:59.000000000 -0700
 +++ grbl-master/report.c	2014-06-07 14:39:46.000000000 -0700
 @@ -35,6 +35,7 @@
@@ -17,7 +17,7 @@ Added 32-bit invert masks for ports.
 -  printPgmString(PSTR(" (default seek, mm/min)\r\n$6=")); printInteger(settings.invert_mask); 
 -  printPgmString(PSTR(" (step port invert mask, int:")); print_uint8_base2(settings.invert_mask);  
 +  printPgmString(PSTR(" (default seek, mm/min)\r\n$6=")); printInteger(settings.step_invert_mask); 
-+  printPgmString(PSTR(" (step port invert mask, int:")); print_uint32_base2(settings.step_invert_mask);  
++  printPgmString(PSTR(" (step port invert mask, int:")); print_uint16_base2(settings.step_invert_mask);  
    printPgmString(PSTR(")\r\n$7=")); printInteger(settings.stepper_idle_lock_time);
    printPgmString(PSTR(" (step idle delay, msec)\r\n$8=")); printFloat(settings.acceleration/(60*60)); // Convert from mm/min^2 for human readability
    printPgmString(PSTR(" (acceleration, mm/sec^2)\r\n$9=")); printFloat(settings.junction_deviation);
@@ -26,7 +26,7 @@ Added 32-bit invert masks for ports.
    printPgmString(PSTR(" (hard limits, bool)\r\n$17=")); printInteger(bit_istrue(settings.flags,BITFLAG_HOMING_ENABLE));
    printPgmString(PSTR(" (homing cycle, bool)\r\n$18=")); printInteger(settings.homing_dir_mask);
 -  printPgmString(PSTR(" (homing dir invert mask, int:")); print_uint8_base2(settings.homing_dir_mask);  
-+  printPgmString(PSTR(" (homing dir invert mask, int:")); print_uint32_base2(settings.homing_dir_mask);  
++  printPgmString(PSTR(" (homing dir invert mask, int:")); print_uint16_base2(settings.homing_dir_mask);  
    printPgmString(PSTR(")\r\n$19=")); printFloat(settings.homing_feed_rate);
    printPgmString(PSTR(" (homing feed, mm/min)\r\n$20=")); printFloat(settings.homing_seek_rate);
    printPgmString(PSTR(" (homing seek, mm/min)\r\n$21=")); printInteger(settings.homing_debounce_delay);

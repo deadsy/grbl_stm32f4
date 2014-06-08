@@ -42,8 +42,8 @@ Using separate 32 bit ports for dirn/step control.
 -  if (!pos_dir) { out_bits0 ^= DIRECTION_MASK; }   // Invert bits, if negative dir.
 +
 +  // Set default step/dirn bits.
-+  uint32_t step_bits0 = settings.step_invert_mask;
-+  uint32_t dirn_bits = settings.dirn_invert_mask;
++  uint16_t step_bits0 = settings.step_invert_mask;
++  uint16_t dirn_bits = settings.dirn_invert_mask;
 +  dirn_bits ^= (settings.homing_dir_mask & DIRECTION_MASK); // Apply homing direction settings
 +  if (!pos_dir) { dirn_bits ^= DIRECTION_MASK; }   // Invert bits, if negative dir.
 +  dirn_wr(dirn_bits);
@@ -57,7 +57,7 @@ Using separate 32 bit ports for dirn/step control.
    uint32_t trap_counter = MICROSECONDS_PER_ACCELERATION_TICK/2; // Acceleration trapezoid counter
 -  uint8_t out_bits;
 -  uint8_t limit_state;
-+  uint32_t step_bits;
++  uint16_t step_bits;
 +  uint32_t limit_state;
    for(;;) {
 -  

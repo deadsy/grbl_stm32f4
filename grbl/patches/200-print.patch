@@ -1,4 +1,5 @@
 No program memory space for this processor.
+Add printing of 16 bit binary numbers.
 --- grbl-master/print.c	2014-06-07 14:18:58.000000000 -0700
 +++ grbl-master/print.c	2014-06-07 14:24:55.000000000 -0700
 @@ -37,9 +37,8 @@
@@ -39,9 +40,9 @@ No program memory space for this processor.
 +    print_base2(n, 8);
 +}
 +
-+void print_uint32_base2(uint32_t n)
++void print_uint16_base2(uint32_t n)
 +{ 
-+    print_base2(n, 32);
++    print_base2(n, 16);
 +}
 +
  static void print_uint32_base10(unsigned long n)
@@ -53,7 +54,7 @@ No program memory space for this processor.
  void printInteger(long n);
  
  void print_uint8_base2(uint8_t n);
-+void print_uint32_base2(uint8_t n);
++void print_uint16_base2(uint8_t n);
  
  void printFloat(float n);
  
