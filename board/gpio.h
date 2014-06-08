@@ -36,8 +36,8 @@ Pin Assignments for STM32F4 Discovery Board
 
 PA0 = push button
 PA1 = system_reset
-PA2 = uart_tx *
-PA3 = uart_rx *
+PA2 =
+PA3 =
 PA4 = codec
 PA5 = accel
 PA6 = accel
@@ -184,10 +184,6 @@ PH1 = ph1_osc_out
 #define LIMIT_Y         GPIO_NUM(PORTD, 7)
 #define LIMIT_Z         GPIO_NUM(PORTD, 8)
 #define LIMIT_A         GPIO_NUM(PORTD, 9)
-
-// serial port
-#define UART_TX         GPIO_NUM(PORTA, 2)
-#define UART_RX         GPIO_NUM(PORTA, 3)
 
 // misc
 #define G540_KEEPALIVE  GPIO_NUM(PORTB, 7) // tim4, ch2, af2
