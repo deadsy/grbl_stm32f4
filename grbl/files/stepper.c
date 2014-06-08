@@ -127,6 +127,7 @@ void step_period_isr(void)
   if (current_block != NULL) {
     // Execute step displacement profile by bresenham line algorithm
     dirn_bits = current_block->direction_bits;
+    step_bits = 0;
     st.counter_x += current_block->steps_x;
     if (st.counter_x > 0) {
       step_bits |= (1<<X_STEP_BIT);
@@ -238,6 +239,7 @@ void step_period_isr(void)
       }
     } else {
       // If current block is finished, reset pointer
+      step_bits = 0;
       current_block = NULL;
       plan_discard_current_block();
     }
