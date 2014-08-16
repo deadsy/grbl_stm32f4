@@ -21,6 +21,218 @@ static void dump_reg(const char *base_name, const char *reg_name, const volatile
 }
 
 //-----------------------------------------------------------------------------
+// exceptions status
+
+static const char *exception_name[] = {
+    // system exceptions
+    "-",
+    "Reset",
+    "NonMaskableInt",
+    "HardFault",
+    "MemoryManagement",
+    "BusFault",
+    "UsageFault",
+    "-",
+    "-",
+    "-",
+    "-",
+    "SVCall",
+    "DebugMonitor",
+    "-",
+    "PendSV",
+    "SysTick",
+    // stm32f407 interrupts
+    "WWDG",
+    "PVD",
+    "TAMP_STAMP",
+    "RTC_WKUP",
+    "FLASH",
+    "RCC",
+    "EXTI0",
+    "EXTI1",
+    "EXTI2",
+    "EXTI3",
+    "EXTI4",
+    "DMA1_Stream0",
+    "DMA1_Stream1",
+    "DMA1_Stream2",
+    "DMA1_Stream3",
+    "DMA1_Stream4",
+    "DMA1_Stream5",
+    "DMA1_Stream6",
+    "ADC",
+    "CAN1_TX",
+    "CAN1_RX0",
+    "CAN1_RX1",
+    "CAN1_SCE",
+    "EXTI9_5",
+    "TIM1_BRK_TIM9",
+    "TIM1_UP_TIM10",
+    "TIM1_TRG_COM_TIM11",
+    "TIM1_CC",
+    "TIM2",
+    "TIM3",
+    "TIM4",
+    "I2C1_EV",
+    "I2C1_ER",
+    "I2C2_EV",
+    "I2C2_ER",
+    "SPI1",
+    "SPI2",
+    "USART1",
+    "USART2",
+    "USART3",
+    "EXTI15_10",
+    "RTC_Alarm",
+    "OTG_FS_WKUP",
+    "TIM8_BRK_TIM12",
+    "TIM8_UP_TIM13",
+    "TIM8_TRG_COM_TIM14",
+    "TIM8_CC",
+    "DMA1_Stream7",
+    "FSMC",
+    "SDIO",
+    "TIM5",
+    "SPI3",
+    "UART4",
+    "UART5",
+    "TIM6_DAC",
+    "TIM7",
+    "DMA2_Stream0",
+    "DMA2_Stream1",
+    "DMA2_Stream2",
+    "DMA2_Stream3",
+    "DMA2_Stream4",
+    "ETH",
+    "ETH_WKUP",
+    "CAN2_TX",
+    "CAN2_RX0",
+    "CAN2_RX1",
+    "CAN2_SCE",
+    "OTG_FS",
+    "DMA2_Stream5",
+    "DMA2_Stream6",
+    "DMA2_Stream7",
+    "USART6",
+    "I2C3_EV",
+    "I2C3_ER",
+    "OTG_HS_EP1_OUT",
+    "OTG_HS_EP1_IN",
+    "OTG_HS_WKUP",
+    "OTG_HS",
+    "DCMI",
+    "HASH_RNG",
+    "FPU",
+};
+
+#define NUM_EXCEPTIONS (sizeof(exception_name) / sizeof(char *))
+#define NUM_SYS_EXC 16
+
+static void print_bit(int x, char c)
+{
+    if (x == 0) {
+        printf(".");
+    } else if (x == 1) {
+        printf("%c", c);
+    } else {
+        printf(" ");
+    }
+}
+
+void display_exceptions(void)
+{
+    uint32_t group = NVIC_GetPriorityGrouping();
+    uint32_t *vector = (uint32_t *)SCB->VTOR;
+    int i;
+
+    printf("%-19s: %ld\r\n", "priority grouping", group);
+    printf("%-19s: %08lx\r\n", "vector table", (uint32_t)vector);
+    printf("Name                 Exc Irq EPA Prio Vector\r\n");
+    for (i = 0; i < NUM_EXCEPTIONS; i ++) {
+        int irq = i - NUM_SYS_EXC;
+        int priority, enabled, pending, active;
+        uint32_t pre, sub;
+        char tmp[16];
+
+        // skip reserved exceptions
+        if (*exception_name[i] == '-') {
+            continue;
+        }
+        // name
+        printf("%-19s: ", exception_name[i]);
+        // exception number
+        printf("%-3d ", i);
+        // irq number
+        if (irq >= 0) {
+            printf("%-3d ", i - NUM_SYS_EXC);
+        } else {
+            printf("-   ");
+        }
+        // enabled/pending/active
+        enabled = pending = active = -1;
+        if (irq >= 0) {
+            int idx = (irq >> 5) & 7;
+            int shift = irq & 31;
+            enabled = (NVIC->ISER[idx] >> shift) & 1;
+            pending = (NVIC->ISPR[idx] >> shift) & 1;
+            active = (NVIC->IABR[idx] >> shift) & 1;
+        } else {
+            switch (irq) {
+                case NonMaskableInt_IRQn: {
+                    pending = (SCB->ICSR >> 31) & 1;
+                    break;
+                }
+                case MemoryManagement_IRQn: {
+                    break;
+                }
+                case BusFault_IRQn: {
+                    break;
+                }
+                case UsageFault_IRQn: {
+                    break;
+                }
+                case SVCall_IRQn: {
+                    break;
+                }
+                case DebugMonitor_IRQn: {
+                    break;
+                }
+                case PendSV_IRQn: {
+                    pending = (SCB->ICSR >> 28) & 1;
+                    break;
+                }
+                case SysTick_IRQn: {
+                    enabled = (SysTick->CTRL >> 1) & 1;
+                    pending = (SCB->ICSR >> 26) & 1;
+                    break;
+                }
+            }
+        }
+        print_bit(enabled, 'e');
+        print_bit(pending, 'p');
+        print_bit(active, 'a');
+        printf(" ");
+        // priority
+        switch (irq) {
+            case -15 /*reset*/: priority = -3; break;
+            case -14 /*nmi*/: priority = -2; break;
+            case -13 /*hardfault*/: priority = -1; break;
+            default: priority = NVIC_GetPriority(irq); break;
+        }
+        if (priority < 0) {
+            sprintf(tmp, "%-4d", priority);
+        } else {
+            NVIC_DecodePriority(priority, group, &pre, &sub);
+            sprintf(tmp, "%ld.%ld ", pre, sub);
+        }
+        printf("%-4s ", tmp);
+        // vector
+        printf("%08lx ", vector[i] & ~1);
+        printf("\r\n");
+    }
+}
+
+//-----------------------------------------------------------------------------
 // TIM Registers
 
 static TIM_TypeDef *tim_base[] = {

@@ -13,6 +13,7 @@ Dump stm32f4 peripheral register contents
 
 void display_tim(int num);
 void display_usart(int num);
+void display_exceptions(void);
 
 //-----------------------------------------------------------------------------
 
