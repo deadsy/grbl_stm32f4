@@ -137,7 +137,11 @@ void step_period_isr(void)
     }
     st.counter_y += current_block->steps_y;
     if (st.counter_y > 0) {
-      step_bits |= (1<<Y_STEP_BIT);
+#if defined(AXES_XYZY)
+      step_bits |= ((1 << A_STEP_BIT) | (1 << Y_STEP_BIT));
+#else
+      step_bits |= (1 << Y_STEP_BIT);
+#endif
       st.counter_y -= st.event_count;
       if (dirn_bits & (1<<Y_DIRECTION_BIT)) { sys.position[Y_AXIS]--; }
       else { sys.position[Y_AXIS]++; }

@@ -1,7 +1,8 @@
 Specifying the KRMx01 machine and STM32F4-Discovery controller.
 The limit switch debounce logic makes them active high.
+The KRMx01 is a XYZY axis machine.
 --- grbl-master/config.h	2014-03-14 07:50:36.000000000 -0700
-+++ grbl-master/config.h	2014-06-08 07:26:10.000000000 -0700
++++ grbl-master/config.h	2014-08-17 08:24:50.000000000 -0700
 @@ -29,14 +29,14 @@
  #define config_h
  
@@ -19,7 +20,7 @@ The limit switch debounce logic makes them active high.
  
  // Define runtime command special characters. These characters are 'picked-off' directly from the
  // serial read data stream and are not passed to the grbl line execution parser. Select characters
-@@ -169,13 +169,13 @@
+@@ -169,13 +169,17 @@
  // NOTE: Uncomment to enable. The recommended delay must be > 3us and the total step pulse
  // time, which includes the Grbl settings pulse microseconds, must not exceed 127us. Reported
  // successful values for certain setups have ranged from 10 to 20us.
@@ -32,6 +33,10 @@ The limit switch debounce logic makes them active high.
  // triggered).
 -// #define LIMIT_SWITCHES_ACTIVE_HIGH
 +#define LIMIT_SWITCHES_ACTIVE_HIGH
++
++// Uncomment to make the A-axis of a 4-axis/XYZA controller match the Y axis.
++// That is: Two steppers are used to drive the Y-axis.
++#define AXES_XYZY
  
  // ---------------------------------------------------------------------------------------
  
