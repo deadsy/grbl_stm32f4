@@ -31,15 +31,23 @@ static void enable_tim_clock(TIM_TypeDef *tim)
 }
 
 // enable timer interrupts
-static void enable_tim_interrupt(TIM_TypeDef *tim)
+// set the preempt and sub priority
+static void enable_tim_interrupt(TIM_TypeDef *tim, uint32_t pre, uint32_t sub)
 {
+    uint32_t irq;
+
     if (tim == TIM2) {
-        HAL_NVIC_EnableIRQ(TIM2_IRQn);
+        irq = TIM2_IRQn;
     } else if (tim == TIM3) {
-        HAL_NVIC_EnableIRQ(TIM3_IRQn);
+        irq = TIM3_IRQn;
     } else if (tim == TIM4) {
-        HAL_NVIC_EnableIRQ(TIM4_IRQn);
+        irq = TIM4_IRQn;
+    } else {
+        return;
     }
+
+    HAL_NVIC_SetPriority(irq, pre, sub);
+    NVIC_EnableIRQ(irq);
 }
 
 //-----------------------------------------------------------------------------
@@ -84,8 +92,9 @@ static void step_timer_init(void)
     TIMx->DCR = 0;
     TIMx->DMAR = 0;
 
-    // enable the interrupt
-    enable_tim_interrupt(TIMx);
+    // Enable the interrupt - run this at high priority.
+    // we don't want other interrupts altering the step timing.
+    enable_tim_interrupt(TIMx, 0, 0);
 }
 
 void step_isr_enable(void)
@@ -202,8 +211,9 @@ static void cdc_timer_init(void)
 
     // generate update event to load registers
     TIMx->EGR = TIM_EGR_UG;
-    // enable the interrupt
-    enable_tim_interrupt(TIMx);
+
+    // enable the interrupt - run this at low priority.
+    enable_tim_interrupt(TIMx, 15, 0);
 }
 
 void cdc_timer_start(void)
@@ -229,6 +239,7 @@ void TIM3_IRQHandler(void)
 //-----------------------------------------------------------------------------
 // On the G540 a charge pump signal (>= 10KHz square wave) is used as a keepalive.
 // Use PWM mode (TIM4/CH2) to generate a 12 kHz square wave
+// There is no interrupt used.
 
 #define G540_TIMER TIM4
 #define G540_TIMER_HZ 12000

@@ -237,7 +237,7 @@ void display_exceptions(void)
             sprintf(tmp, "%-4d", priority);
         } else {
             NVIC_DecodePriority(priority, group, &pre, &sub);
-            sprintf(tmp, "%ld.%ld ", pre, sub);
+            sprintf(tmp, "%ld.%ld", pre, sub);
         }
         printf("%-4s ", tmp);
         // vector
