@@ -128,6 +128,20 @@ static const char *exception_name[] = {
 #define NUM_EXCEPTIONS (sizeof(exception_name) / sizeof(char *))
 #define NUM_SYS_EXC 16
 
+// __NVIC_PRIO_BITS = 4 for this processor
+static const char *priority_str[] = {
+    "pppp....", // 0
+    "pppp....", // 1
+    "pppp....", // 2
+    "pppp....", // 3
+    "ppps....", // 4
+    "ppss....", // 5
+    "psss....", // 6
+    "ssss....", // 7
+};
+
+#define NUM_GROUPS (sizeof(priority_str) / sizeof(char *))
+
 static void print_bit(int x, char c)
 {
     if (x == 0) {
@@ -145,7 +159,7 @@ void display_exceptions(void)
     uint32_t *vector = (uint32_t *)SCB->VTOR;
     int i;
 
-    printf("%-19s: %ld\r\n", "priority grouping", group);
+    printf("%-19s: %ld %s\r\n", "priority grouping", group, priority_str[group % NUM_GROUPS]);
     printf("%-19s: %08lx\r\n", "vector table", (uint32_t)vector);
     printf("Name                 Exc Irq EPA Prio Vector\r\n");
     for (i = 0; i < NUM_EXCEPTIONS; i ++) {
