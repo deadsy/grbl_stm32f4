@@ -124,8 +124,6 @@ int main(void)
     // Delay any output to serial until the USB CDC port is working.
     HAL_Delay(1500);
 
-    display_exceptions();
-
     grbl_main();
 
     return 0;

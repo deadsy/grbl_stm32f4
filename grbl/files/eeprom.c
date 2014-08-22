@@ -11,7 +11,7 @@ Fake EEPROM storage using RAM.
 
 //----------------------------------------------------------------------------
 
-#define EEPROM_LEN 512
+#define EEPROM_LEN 1024
 
 static int eeprom_ready = 0;
 static char eeprom_data[EEPROM_LEN];
@@ -27,7 +27,7 @@ char eeprom_get_char(unsigned int addr)
     if (!eeprom_ready) {
         eeprom_init();
     }
-    return eeprom_data[addr];
+    return eeprom_data[addr % EEPROM_LEN];
 }
 
 void eeprom_put_char( unsigned int addr, unsigned char new_value )
@@ -35,7 +35,7 @@ void eeprom_put_char( unsigned int addr, unsigned char new_value )
     if (!eeprom_ready) {
         eeprom_init();
     }
-    eeprom_data[addr] = new_value;
+    eeprom_data[addr % EEPROM_LEN] = new_value;
 }
 
 void memcpy_to_eeprom_with_checksum(unsigned int destination, char *source, unsigned int size)
