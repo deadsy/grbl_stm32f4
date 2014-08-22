@@ -193,22 +193,35 @@ void display_exceptions(void)
         } else {
             switch (irq) {
                 case NonMaskableInt_IRQn: {
+                    enabled = 1;
                     pending = (SCB->ICSR >> 31) & 1;
                     break;
                 }
                 case MemoryManagement_IRQn: {
+                    enabled = (SCB->SHCSR >> 16) & 1;
+                    pending = (SCB->SHCSR >> 13) & 1;
+                    active = (SCB->SHCSR >> 0) & 1;
                     break;
                 }
                 case BusFault_IRQn: {
+                    enabled = (SCB->SHCSR >> 17) & 1;
+                    pending = (SCB->SHCSR >> 14) & 1;
+                    active = (SCB->SHCSR >> 1) & 1;
                     break;
                 }
                 case UsageFault_IRQn: {
+                    enabled = (SCB->SHCSR >> 18) & 1;
+                    pending = (SCB->SHCSR >> 12) & 1;
+                    active = (SCB->SHCSR >> 3) & 1;
                     break;
                 }
                 case SVCall_IRQn: {
+                    pending = (SCB->SHCSR >> 15) & 1;
+                    active = (SCB->SHCSR >> 7) & 1;
                     break;
                 }
                 case DebugMonitor_IRQn: {
+                    active = (SCB->SHCSR >> 8) & 1;
                     break;
                 }
                 case PendSV_IRQn: {
