@@ -20,7 +20,7 @@ STM32F4Discovery Board
 
 GCC Toolchain
 * https://launchpad.net/gcc-arm-embedded
-* [gcc-arm-none-eabi-4_8-2014q1-20140314] (https://launchpad.net/gcc-arm-embedded/4.8/4.8-2014-q1-update/+download/gcc-arm-none-eabi-4_8-2014q1-20140314-linux.tar.bz2)
+* [gcc-arm-none-eabi-4_8-2014q2-20140609] (https://launchpad.net/gcc-arm-embedded/4.8/4.8-2014-q2-update/+download/gcc-arm-none-eabi-4_8-2014q2-20140609-linux.tar.bz2)
 
 STLink Programming Tool
 * https://github.com/texane/stlink
@@ -36,3 +36,13 @@ Gecko Drives G540 4-Axis Digital Step Drive
 
 KRMx01 CNC Router 
 * http://www.kronosrobotics.com/krmx01/
+
+## Additions
+* Support for XYZY axes operation has been added. ie- Two stepper motors, controlled in the same way, are used to drive the Y-axis.
+* All input signals (homing switches, e-stop, etc.) are debounced in software.
+
+## Status
+
+* Non-volatile EEPROM storage of configuration parameters is not currently supported. The EEPROM facility is being faked with RAM based storage. The desired machine parameters should be compiled into the firmware.
+ 
+
