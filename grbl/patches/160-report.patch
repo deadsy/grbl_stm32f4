@@ -1,7 +1,7 @@
 No PSTR() strings on this platform.
 Added 16-bit invert masks for ports. 
---- grbl-master/report.c	2014-06-07 14:36:59.000000000 -0700
-+++ grbl-master/report.c	2014-06-07 14:39:46.000000000 -0700
+--- grbl-master/report.c	2014-09-01 09:48:44.255319588 -0700
++++ grbl-master/report.c	2014-09-01 10:00:29.811862125 -0700
 @@ -35,6 +35,7 @@
  #include "gcode.h"
  #include "coolant_control.h"
@@ -31,9 +31,10 @@ Added 16-bit invert masks for ports.
    printPgmString(PSTR(" (homing feed, mm/min)\r\n$20=")); printFloat(settings.homing_seek_rate);
    printPgmString(PSTR(" (homing seek, mm/min)\r\n$21=")); printInteger(settings.homing_debounce_delay);
    printPgmString(PSTR(" (homing debounce, msec)\r\n$22=")); printFloat(settings.homing_pulloff);
-   printPgmString(PSTR(" (homing pull-off, mm)\r\n")); 
-+
-+#warning "TODO: add rd/wr for the direction port invert mask"
+-  printPgmString(PSTR(" (homing pull-off, mm)\r\n")); 
++  printPgmString(PSTR(" (homing pull-off, mm)\r\n$23=")); printInteger(settings.dirn_invert_mask); 
++  printPgmString(PSTR(" (dir port invert mask, int:")); print_uint16_base2(settings.dirn_invert_mask);  
++  printPgmString(PSTR(")\r\n"));
  }
  
  

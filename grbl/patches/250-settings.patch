@@ -17,8 +17,8 @@ Specify the gpio-ish masks as being uint16_t to match the gpio registers on this
    float homing_feed_rate;
    float homing_seek_rate;
    uint16_t homing_debounce_delay;
---- grbl-master/settings.c	2014-06-07 14:08:21.000000000 -0700
-+++ grbl-master/settings.c	2014-06-07 14:09:56.000000000 -0700
+--- grbl-master/settings.c	2014-09-01 10:30:26.331122275 -0700
++++ grbl-master/settings.c	2014-09-01 10:32:31.028809757 -0700
 @@ -19,6 +19,8 @@
    along with Grbl.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -47,3 +47,11 @@ Specify the gpio-ish masks as being uint16_t to match the gpio registers on this
      case 7: settings.stepper_idle_lock_time = round(value); break;
      case 8: settings.acceleration = value*60*60; break; // Convert to mm/min^2 for grbl internal use.
      case 9: settings.junction_deviation = fabs(value); break;
+@@ -194,6 +197,7 @@
+     case 20: settings.homing_seek_rate = value; break;
+     case 21: settings.homing_debounce_delay = round(value); break;
+     case 22: settings.homing_pulloff = value; break;
++    case 23: settings.dirn_invert_mask = trunc(value); break;
+     default: 
+       return(STATUS_INVALID_STATEMENT);
+   }

@@ -23,7 +23,7 @@ Adding machine parameters specific to the KRMx01 and G540 setup.
 +  #define DEFAULT_ACCELERATION (10.0*60*60) // 10*60*60 mm/min^2 = 10 mm/s^2
 +  #define DEFAULT_JUNCTION_DEVIATION 0.05 // mm
 +  #define DEFAULT_STEPPING_INVERT_MASK 0
-+  #define DEFAULT_DIRECTION_INVERT_MASK 0
++  #define DEFAULT_DIRECTION_INVERT_MASK (1 << Z_DIRECTION_BIT)
 +  #define DEFAULT_REPORT_INCHES 0 // false
 +  #define DEFAULT_AUTO_START 1 // true
 +  #define DEFAULT_INVERT_ST_ENABLE 0 // false

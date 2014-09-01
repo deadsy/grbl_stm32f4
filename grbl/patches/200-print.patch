@@ -1,7 +1,20 @@
 No program memory space for this processor.
 Add printing of 16 bit binary numbers.
---- grbl-master/print.c	2014-06-07 14:18:58.000000000 -0700
-+++ grbl-master/print.c	2014-06-07 14:24:55.000000000 -0700
+--- grbl-master/print.h	2014-06-07 14:28:21.000000000 -0700
++++ grbl-master/print.h	2014-06-07 14:28:34.000000000 -0700
+@@ -32,7 +32,8 @@
+ void printInteger(long n);
+ 
+ void print_uint8_base2(uint8_t n);
++void print_uint16_base2(uint16_t n);
+ 
+ void printFloat(float n);
+ 
+-#endif
+\ No newline at end of file
++#endif
+--- grbl-master/print.c	2014-09-01 10:20:50.411099174 -0700
++++ grbl-master/print.c	2014-09-01 10:26:36.102535109 -0700
 @@ -37,9 +37,8 @@
  // Print a string stored in PGM-memory
  void printPgmString(const char *s)
@@ -14,50 +27,38 @@ Add printing of 16 bit binary numbers.
  }
  
  // void printIntegerInBase(unsigned long n, unsigned long base)
-@@ -63,12 +62,12 @@
+@@ -63,18 +62,25 @@
  // 			'A' + buf[i - 1] - 10);
  // }
  
 -void print_uint8_base2(uint8_t n)
-+static void print_base2(uint32_t n, int bits)
++static void print_base2(unsigned int n, int bits)
  { 
 -	unsigned char buf[8];
-+	unsigned char buf[bits];
- 	uint8_t i = 0;
+-	uint8_t i = 0;
++    uint32_t mask = 1 << (bits - 1);
++    int i;
  
 -	for (; i < 8; i++) {
-+	for (; i < bits; i++) {
- 		buf[i] = n & 1;
- 		n >>= 1;
- 	}
-@@ -77,6 +76,17 @@
- 		serial_write('0' + buf[i - 1]);
- }
+-		buf[i] = n & 1;
+-		n >>= 1;
+-	}
++    for (i = 0; i < bits; i ++) {
++        serial_write((n & mask) ? '1' : '0');
++        mask >>= 1;
++    }
++}
  
-+
+-	for (; i > 0; i--)
+-		serial_write('0' + buf[i - 1]);
 +void print_uint8_base2(uint8_t n)
 +{ 
 +    print_base2(n, 8);
 +}
 +
-+void print_uint16_base2(uint32_t n)
++void print_uint16_base2(uint16_t n)
 +{ 
 +    print_base2(n, 16);
-+}
-+
+ }
+ 
  static void print_uint32_base10(unsigned long n)
- { 
-   unsigned char buf[10]; 
---- grbl-master/print.h	2014-06-07 14:28:21.000000000 -0700
-+++ grbl-master/print.h	2014-06-07 14:28:34.000000000 -0700
-@@ -32,7 +32,8 @@
- void printInteger(long n);
- 
- void print_uint8_base2(uint8_t n);
-+void print_uint16_base2(uint8_t n);
- 
- void printFloat(float n);
- 
--#endif
-\ No newline at end of file
-+#endif
