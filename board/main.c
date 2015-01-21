@@ -5,13 +5,19 @@
 //-----------------------------------------------------------------------------
 
 #include "stm32f4xx_hal.h"
-#include "usbd_desc.h"
-#include "usbd_cdc.h"
-#include "usbd_cdc_interface.h"
+
 #include "gpio.h"
 #include "debounce.h"
 #include "timers.h"
 #include "stm32f4_regs.h"
+
+#ifdef USB_SERIAL
+  #include "usbd_desc.h"
+  #include "usbd_cdc.h"
+  #include "usbd_cdc_interface.h"
+#else
+  #include "usart.h"
+#endif
 
 //-----------------------------------------------------------------------------
 
@@ -19,7 +25,9 @@ extern int grbl_main(void);
 
 //-----------------------------------------------------------------------------
 
+#ifdef USB_SERIAL
 USBD_HandleTypeDef hUSBDDevice;
+#endif
 
 //-----------------------------------------------------------------------------
 
@@ -116,13 +124,16 @@ int main(void)
     timers_init();
     debounce_init();
 
+#ifdef USB_SERIAL
     USBD_Init(&hUSBDDevice, &VCP_Desc, 0);
     USBD_RegisterClass(&hUSBDDevice, &USBD_CDC);
     USBD_CDC_RegisterInterface(&hUSBDDevice, &USBD_CDC_fops);
     USBD_Start(&hUSBDDevice);
-
     // Delay any output to serial until the USB CDC port is working.
     HAL_Delay(1500);
+#else
+    usart_init();
+#endif
 
     grbl_main();
 
