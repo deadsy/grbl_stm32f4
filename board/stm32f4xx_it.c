@@ -69,10 +69,12 @@ void SysTick_Handler(void)
 //-----------------------------------------------------------------------------
 // STM32F4xx Peripherals Interrupt Handlers
 
+#ifdef USB_SERIAL
 extern PCD_HandleTypeDef hpcd;
 void OTG_FS_IRQHandler(void)
 {
     HAL_PCD_IRQHandler(&hpcd);
 }
+#endif
 
 //-----------------------------------------------------------------------------

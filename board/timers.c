@@ -173,6 +173,8 @@ void TIM2_IRQHandler(void)
 //-----------------------------------------------------------------------------
 // Generate a periodic callback to the CDC interface
 
+#ifdef USB_SERIAL
+
 #define CDC_TIMER TIM3
 #define CDC_TIMER_HZ 200
 #define CDC_TIMER_PERIOD 5000
@@ -235,6 +237,8 @@ void TIM3_IRQHandler(void)
         cdc_timer_isr();
     }
 }
+
+#endif // USB_SERIAL
 
 //-----------------------------------------------------------------------------
 // On the G540 a charge pump signal (>= 10KHz square wave) is used as a keepalive.
@@ -305,7 +309,9 @@ void g540_timer_stop(void)
 void timers_init(void)
 {
     step_timer_init();
+#ifdef USB_SERIAL
     cdc_timer_init();
+#endif
     g540_timer_init();
 
     g540_timer_start();

@@ -45,6 +45,9 @@ static const GPIO_INFO gpio_info[] = {
     {SWITCH_E_STOP, GPIO_MODE_IT_FALLING, GPIO_NOPULL, 0, 0, -1},
     // g540 keepalive (tim4 function)
     {G540_KEEPALIVE, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_HIGH, GPIO_AF2_TIM4, -1},
+    // serial port (usart2 function)
+    {UART_TX, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_HIGH, GPIO_AF7_USART2, -1},
+    {UART_RX, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_HIGH, GPIO_AF7_USART2, -1},
 };
 
 //-----------------------------------------------------------------------------

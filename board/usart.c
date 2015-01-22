@@ -8,6 +8,7 @@ USART Driver
 
 #include "stm32f4xx_hal.h"
 #include "usart.h"
+#include "serial.h"
 
 //-----------------------------------------------------------------------------
 
@@ -123,6 +124,37 @@ void usart_init(void)
 
     // enable the uart
     usart->CR1 |= USART_CR1_UE;
+}
+
+//-----------------------------------------------------------------------------
+
+void serial_init(void)
+{
+    // do nothing
+}
+
+// write a character to the tx fifo ring buffer
+void serial_write(uint8_t data)
+{
+  usart_putc(data);
+}
+
+// hook up stdio output to the serial port
+int __io_putchar(int ch)
+{
+  usart_putc(ch);
+  return 0;
+}
+
+// read a character from the rx fifo ring buffer
+uint8_t serial_read(void)
+{
+  return usart_tstc() ? (uint8_t)usart_getc() : SERIAL_NO_DATA;
+}
+
+// Reset and empty data in read buffer. Used by e-stop and reset.
+void serial_reset_read_buffer(void)
+{
 }
 
 //-----------------------------------------------------------------------------
