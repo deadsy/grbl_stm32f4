@@ -116,7 +116,7 @@ void usart_init(void)
         USART_SR_RXNE | USART_SR_TC | USART_SR_TXE | USART_SR_LBD | USART_SR_CTS);
     usart->SR= val;
 
-    set_baud_rate(usart, 19200);
+    set_baud_rate(usart, 115200);
 
     // GTPR - no changes
     val = usart->GTPR;
@@ -133,7 +133,7 @@ void serial_init(void)
     // do nothing
 }
 
-// write a character to the tx fifo ring buffer
+// write a character to the tx buffer
 void serial_write(uint8_t data)
 {
   usart_putc(data);
@@ -146,10 +146,16 @@ int __io_putchar(int ch)
   return 0;
 }
 
-// read a character from the rx fifo ring buffer
+// read a character from the rx buffer
 uint8_t serial_read(void)
 {
-  return usart_tstc() ? (uint8_t)usart_getc() : SERIAL_NO_DATA;
+  if (usart_tstc()) {
+    uint8_t c = usart_getc();
+    if (!serial_rx_hook(c)) {
+      return c;
+    }
+  }
+  return SERIAL_NO_DATA;
 }
 
 // Reset and empty data in read buffer. Used by e-stop and reset.
