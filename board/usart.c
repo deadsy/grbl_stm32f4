@@ -3,12 +3,138 @@
 
 USART Driver
 
+Using USART2/AF7 mapped to PA2(tx) PA3(rx).
+
 */
 //-----------------------------------------------------------------------------
 
 #include "stm32f4xx_hal.h"
 #include "usart.h"
 #include "serial.h"
+
+//-----------------------------------------------------------------------------
+
+//#define SERIAL_POLLED
+
+//-----------------------------------------------------------------------------
+// polled driver
+
+#ifdef SERIAL_POLLED
+
+void usart_putc(char c)
+{
+    USART_TypeDef* const usart = USART2;
+    while ((usart->SR & USART_SR_TXE) == 0);
+    usart->DR = c;
+}
+
+void usart_flush(void)
+{
+}
+
+// return non-zero if we have rx data
+int usart_tstc(void)
+{
+    USART_TypeDef* const usart = USART2;
+    return (usart->SR & USART_SR_RXNE) != 0;
+}
+
+char usart_getc(void)
+{
+    USART_TypeDef* const usart = USART2;
+    return usart->DR & 255;
+}
+
+//-----------------------------------------------------------------------------
+// interrupt driven driver
+
+#else
+
+#define INC_MOD(x, s) (((x) + 1) & ((s) - 1))
+
+#define TXBUF_SIZE 8 // must be a power of 2
+#define RXBUF_SIZE 8 // must be a power of 2
+
+static uint8_t txbuf[TXBUF_SIZE];
+static uint8_t rxbuf[RXBUF_SIZE];
+static int rx_wr, rx_rd, tx_wr, tx_rd;
+static int rxbuf_overflow;
+
+#define cli() NVIC_DisableIRQ(USART2_IRQn)
+#define sei() NVIC_EnableIRQ(USART2_IRQn)
+
+void USART2_IRQHandler(void)
+{
+  USART_TypeDef* const usart = USART2;
+
+  // receive
+  while (usart->SR & USART_SR_RXNE) {
+    int rx_wr_inc = INC_MOD(rx_wr, RXBUF_SIZE);
+    if (rx_wr_inc != rx_rd) {
+      rxbuf[rx_wr] = usart->DR;
+      rx_wr = rx_wr_inc;
+    } else {
+      rxbuf_overflow ++;
+    }
+  }
+
+  // transmit
+  while (1/*TODO hw tx space*/) {
+
+    if (tx_rd != tx_wr) {
+      usart->DR = txbuf[tx_rd];
+      tx_rd = INC_MOD(tx_rd, TXBUF_SIZE);
+    } else {
+      // no more tx data, disable the tx interrupt
+      // TODO
+      break;
+    }
+  }
+
+}
+
+void usart_putc(char c)
+{
+  USART_TypeDef* const usart = USART2;
+  int tx_wr_inc = INC_MOD(tx_wr, TXBUF_SIZE);
+  // wait for space
+  while (tx_wr_inc == tx_rd);
+  // put the character in the tx buffer
+  cli();
+  txbuf[tx_wr] = c;
+  tx_wr = tx_wr_inc;
+  sei();
+  // turn on the tx interrupt
+  // TODO
+}
+
+void usart_flush(void)
+{
+}
+
+// return non-zero if we have rx data
+int usart_tstc(void)
+{
+  int status;
+  cli();
+  status = (rx_rd != rx_wr);
+  sei();
+  return status;
+}
+
+char usart_getc(void)
+{
+  char c;
+  // wait for a character
+  while (usart_tstc() == 0);
+  cli();
+  c = rxbuf[rx_rd];
+  rx_rd = INC_MOD(rx_rd, RXBUF_SIZE);
+  sei();
+  return c;
+}
+
+#endif
 
 //-----------------------------------------------------------------------------
 
@@ -50,32 +176,6 @@ static void set_baud_rate(USART_TypeDef *usart, int baud)
 }
 
 //-----------------------------------------------------------------------------
-// setup a serial port
-// Using USART2/AF7 mapped to PA2(tx) PA3(rx).
-
-void usart_putc(char c)
-{
-    USART_TypeDef* const usart = USART2;
-    while ((usart->SR & USART_SR_TXE) == 0);
-    usart->DR = c;
-}
-
-void usart_flush(void)
-{
-}
-
-// return non-zero if we have rx data
-int usart_tstc(void)
-{
-    USART_TypeDef* const usart = USART2;
-    return (usart->SR & USART_SR_RXNE) != 0;
-}
-
-char usart_getc(void)
-{
-    USART_TypeDef* const usart = USART2;
-    return usart->DR & 255;
-}
 
 void usart_init(void)
 {
@@ -122,11 +222,18 @@ void usart_init(void)
     val = usart->GTPR;
     usart->GTPR = val;
 
+#ifndef SERIAL_POLLED
+    rx_wr = rx_rd = tx_wr = tx_rd = 0;
+    rxbuf_overflow = 0;
+    NVIC_EnableIRQ(USART2_IRQn);
+#endif
+
     // enable the uart
     usart->CR1 |= USART_CR1_UE;
 }
 
 //-----------------------------------------------------------------------------
+// these are the serial api functions used by grbl and stdio
 
 void serial_init(void)
 {
@@ -161,6 +268,9 @@ uint8_t serial_read(void)
 // Reset and empty data in read buffer. Used by e-stop and reset.
 void serial_reset_read_buffer(void)
 {
+  while (usart_tstc()) {
+    usart_getc();
+  }
 }
 
 //-----------------------------------------------------------------------------
