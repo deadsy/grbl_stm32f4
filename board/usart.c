@@ -58,7 +58,7 @@ char usart_getc(void)
 static uint8_t txbuf[TXBUF_SIZE];
 static uint8_t rxbuf[RXBUF_SIZE];
 static int rx_wr, rx_rd, tx_wr, tx_rd;
-static int rxbuf_overflow;
+static int rx_errors;
 
 #define cli() NVIC_DisableIRQ(USART2_IRQn)
 #define sei() NVIC_EnableIRQ(USART2_IRQn)
@@ -67,6 +67,11 @@ void USART2_IRQHandler(void)
 {
   USART_TypeDef* const usart = USART2;
 
+  // check for rx errors
+  if (usart->SR & (USART_SR_ORE | USART_SR_PE | USART_SR_FE | USART_SR_NE)) {
+    rx_errors ++;
+  }
+
   // receive
   while (usart->SR & USART_SR_RXNE) {
     int rx_wr_inc = INC_MOD(rx_wr, RXBUF_SIZE);
@@ -74,23 +79,22 @@ void USART2_IRQHandler(void)
       rxbuf[rx_wr] = usart->DR;
       rx_wr = rx_wr_inc;
     } else {
-      rxbuf_overflow ++;
+      // rx buffer overflow
+      rx_errors ++;
     }
   }
 
   // transmit
-  while (1/*TODO hw tx space*/) {
-
+  while (usart->SR & USART_SR_TXE) {
     if (tx_rd != tx_wr) {
       usart->DR = txbuf[tx_rd];
       tx_rd = INC_MOD(tx_rd, TXBUF_SIZE);
     } else {
-      // no more tx data, disable the tx interrupt
-      // TODO
+      // no more tx data, disable the tx empty interrupt
+      usart->CR1 &= ~USART_CR1_TXEIE;
       break;
     }
   }
-
 }
 
 void usart_putc(char c)
@@ -104,8 +108,8 @@ void usart_putc(char c)
   txbuf[tx_wr] = c;
   tx_wr = tx_wr_inc;
   sei();
-  // turn on the tx interrupt
-  // TODO
+  // enable the tx empty interrupt
+  usart->CR1 |= USART_CR1_TXEIE;
 }
 
 void usart_flush(void)
@@ -224,7 +228,11 @@ void usart_init(void)
 
 #ifndef SERIAL_POLLED
     rx_wr = rx_rd = tx_wr = tx_rd = 0;
-    rxbuf_overflow = 0;
+    rx_errors = 0;
+    // enable the rx not empty interrupt
+    usart->CR1 |= USART_CR1_RXNEIE;
+    // enable USART2 interrupts
+    HAL_NVIC_SetPriority(USART2_IRQn, 10, 0);
     NVIC_EnableIRQ(USART2_IRQn);
 #endif
 
