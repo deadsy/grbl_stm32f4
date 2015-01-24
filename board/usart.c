@@ -11,6 +11,7 @@ Using USART2/AF7 mapped to PA2(tx) PA3(rx).
 #include "stm32f4xx_hal.h"
 #include "usart.h"
 #include "serial.h"
+#include "gpio.h"
 
 //-----------------------------------------------------------------------------
 
@@ -52,12 +53,12 @@ char usart_getc(void)
 
 #define INC_MOD(x, s) (((x) + 1) & ((s) - 1))
 
-#define TXBUF_SIZE 8 // must be a power of 2
-#define RXBUF_SIZE 8 // must be a power of 2
+#define TXBUF_SIZE 128 // must be a power of 2
+#define RXBUF_SIZE 512 // must be a power of 2
 
 static uint8_t txbuf[TXBUF_SIZE];
 static uint8_t rxbuf[RXBUF_SIZE];
-static int rx_wr, rx_rd, tx_wr, tx_rd;
+static volatile int rx_wr, rx_rd, tx_wr, tx_rd;
 static int rx_errors;
 
 #define cli() NVIC_DisableIRQ(USART2_IRQn)
@@ -66,17 +67,19 @@ static int rx_errors;
 void USART2_IRQHandler(void)
 {
   USART_TypeDef* const usart = USART2;
+  uint32_t status = usart->SR;
 
   // check for rx errors
-  if (usart->SR & (USART_SR_ORE | USART_SR_PE | USART_SR_FE | USART_SR_NE)) {
+  if (status & (USART_SR_ORE | USART_SR_PE | USART_SR_FE | USART_SR_NE)) {
     rx_errors ++;
   }
 
   // receive
-  while (usart->SR & USART_SR_RXNE) {
+  if (status & USART_SR_RXNE) {
+    uint8_t c = usart->DR;
     int rx_wr_inc = INC_MOD(rx_wr, RXBUF_SIZE);
     if (rx_wr_inc != rx_rd) {
-      rxbuf[rx_wr] = usart->DR;
+      rxbuf[rx_wr] = c;
       rx_wr = rx_wr_inc;
     } else {
       // rx buffer overflow
@@ -85,15 +88,19 @@ void USART2_IRQHandler(void)
   }
 
   // transmit
-  while (usart->SR & USART_SR_TXE) {
+  if (status & USART_SR_TXE) {
     if (tx_rd != tx_wr) {
       usart->DR = txbuf[tx_rd];
       tx_rd = INC_MOD(tx_rd, TXBUF_SIZE);
     } else {
       // no more tx data, disable the tx empty interrupt
       usart->CR1 &= ~USART_CR1_TXEIE;
-      break;
     }
+  }
+
+  // indicate any rx errors
+  if (rx_errors) {
+    gpio_set(LED_BLUE);
   }
 }
 
@@ -231,7 +238,7 @@ void usart_init(void)
     rx_errors = 0;
     // enable the rx not empty interrupt
     usart->CR1 |= USART_CR1_RXNEIE;
-    // enable USART2 interrupts
+    // enable USART2 interrupt
     HAL_NVIC_SetPriority(USART2_IRQn, 10, 0);
     NVIC_EnableIRQ(USART2_IRQn);
 #endif

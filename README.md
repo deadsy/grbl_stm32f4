@@ -44,5 +44,5 @@ KRMx01 CNC Router
 ## Status
 
 * Non-volatile EEPROM storage of configuration parameters is not currently supported. The EEPROM facility is being faked with RAM based storage. The desired machine parameters should be compiled into the firmware.
- 
 
+* The CDC USB serial device implemented on the board is not as reliable as it needs to be. Pending bug fixes the option of a normal serial port using the USART hardware has been implemented. This can be enabled in the makefile by setting "USB_SERIAL = 0".

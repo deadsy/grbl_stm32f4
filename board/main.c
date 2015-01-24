@@ -134,9 +134,7 @@ int main(void)
 #else
     usart_init();
 #endif
-
     grbl_main();
-
     return 0;
 }
 
