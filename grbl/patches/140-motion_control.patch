@@ -1,5 +1,5 @@
---- grbl-master/motion_control.c	2014-04-08 22:52:02.000000000 -0700
-+++ grbl-master/motion_control.c	2014-04-08 22:53:42.000000000 -0700
+--- grbl-master/motion_control.c	2015-01-25 07:43:00.508659352 -0800
++++ grbl-master/motion_control.c	2015-01-25 08:58:10.837118132 -0800
 @@ -33,6 +33,7 @@
  #include "planner.h"
  #include "limits.h"
@@ -17,6 +17,15 @@
    
    limits_go_home(); // Perform homing routine.
  
+@@ -222,7 +223,7 @@
+ 
+   // The machine should now be homed and machine zero has been located. Upon completion, 
+   // reset system position and sync internal position vectors.
+-  clear_vector_float(sys.position); // Set machine zero
++  clear_vector(sys.position); // Set machine zero
+   sys_sync_current_position();
+   sys.state = STATE_IDLE; // Set system state to IDLE to complete motion and indicate homed.
+   
 @@ -252,7 +253,7 @@
    sys_sync_current_position();
  
