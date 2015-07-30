@@ -17,6 +17,7 @@ USB_SERIAL = 0
 
 # grbl sources
 GRBL_DIR = ./$(GRBL)/grbl-master
+
 SRC = $(GRBL_DIR)/coolant_control.c \
       $(GRBL_DIR)/delay.c \
       $(GRBL_DIR)/eeprom.c \
@@ -32,7 +33,12 @@ SRC = $(GRBL_DIR)/coolant_control.c \
       $(GRBL_DIR)/settings.c \
       $(GRBL_DIR)/spindle_control.c \
       $(GRBL_DIR)/stepper.c \
-      $(GRBL_DIR)/serial.c \
+      $(GRBL_DIR)/serial.c
+
+ifeq ($(GRBL), grbl_0.9j)
+SRC += $(GRBL_DIR)/probe.c \
+       $(GRBL_DIR)/system.c
+endif
 
 # hal sources
 HAL_DIR = ./hal/src
@@ -126,3 +132,4 @@ clean:
 	-rm $(OUTPUT).map	
 	-rm $(OUTPUT).bin	
 	make -C $(GRBL) clean
+
