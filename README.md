@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This a port of the grbl g-code interpreter to the STM32F4 SoC
+This a port of the grbl 0.8c g-code interpreter to the STM32F4 SoC
 
 The STM32F4 SoC has attractive features for a realtime G-Code interpreter and machine controller.
 
@@ -20,13 +20,12 @@ STM32F4Discovery Board
 
 GCC Toolchain
 * https://launchpad.net/gcc-arm-embedded
-* [gcc-arm-none-eabi-4_8-2014q2-20140609] (https://launchpad.net/gcc-arm-embedded/4.8/4.8-2014-q2-update/+download/gcc-arm-none-eabi-4_8-2014q2-20140609-linux.tar.bz2)
+* [gcc-arm-none-eabi-4_9-2015q2] (https://launchpad.net/gcc-arm-embedded/4.9/4.9-2015-q2-update/+download/gcc-arm-none-eabi-4_9-2015q2-20150609-linux.tar.bz2)
 
 STLink Programming Tool
 * https://github.com/texane/stlink
 
 ## Target CNC Machine
-
 This code is a straight port of grbl and is adaptable to many stepper drivers and CNC machines.
 
 My test and development has used:
@@ -38,11 +37,11 @@ KRMx01 CNC Router
 * http://www.kronosrobotics.com/krmx01/
 
 ## Additions
+
 * Support for XYZY axes operation has been added. ie- Two stepper motors, controlled in the same way, are used to drive the Y-axis.
 * All input signals (homing switches, e-stop, etc.) are debounced in software.
 
 ## Status
 
 * Non-volatile EEPROM storage of configuration parameters is not currently supported. The EEPROM facility is being faked with RAM based storage. The desired machine parameters should be compiled into the firmware.
-
 * The CDC USB serial device implemented on the board is not as reliable as it needs to be. Pending bug fixes the option of a normal serial port using the USART hardware has been implemented. This can be enabled in the makefile by setting "USB_SERIAL = 0".
