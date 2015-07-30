@@ -1,0 +1,38 @@
+--- grbl-master/config.h	2015-07-30 07:30:46.516829824 -0700
++++ grbl-master/config.h	2015-07-30 07:38:32.586976599 -0700
+@@ -31,14 +31,14 @@
+ 
+ 
+ // Default settings. Used when resetting EEPROM. Change to desired name in defaults.h
+-#define DEFAULTS_GENERIC
++#define DEFAULTS_KRMX01
+ 
+ // Serial baud rate
+ #define BAUD_RATE 115200
+ 
+ // Default cpu mappings. Grbl officially supports the Arduino Uno only. Other processor types
+ // may exist from user-supplied templates or directly user-defined in cpu_map.h
+-#define CPU_MAP_ATMEGA328P // Arduino Uno CPU
++#define CPU_MAP_STM32F4_DISCOVERY
+ 
+ // Define realtime command special characters. These characters are 'picked-off' directly from the
+ // serial read data stream and are not passed to the grbl line execution parser. Select characters
+@@ -316,7 +316,7 @@
+ // NOTE: Uncomment to enable. The recommended delay must be > 3us, and, when added with the
+ // user-supplied step pulse time, the total time must not exceed 127us. Reported successful
+ // values for certain setups have ranged from 5 to 20us.
+-// #define STEP_PULSE_DELAY 10 // Step pulse delay in microseconds. Default disabled.
++#define STEP_PULSE_DELAY 5 // Step pulse delay in microseconds. Default disabled.
+ 
+ // The number of linear motions in the planner buffer to be planned at any give time. The vast
+ // majority of RAM that Grbl uses is based on this buffer size. Only increase if there is extra 
+@@ -382,6 +382,9 @@
+ // NOTE: This option has no effect if SOFTWARE_DEBOUNCE is enabled.
+ // #define HARD_LIMIT_FORCE_STATE_CHECK // Default disabled. Uncomment to enable.
+ 
++// Uncomment to make the A-axis of a 4-axis/XYZA controller match the Y axis.
++// That is: Two steppers are used to drive the Y-axis.
++#define AXES_XYZY
+ 
+ // ---------------------------------------------------------------------------------------
+ // COMPILE-TIME ERROR CHECKING OF DEFINE VALUES:

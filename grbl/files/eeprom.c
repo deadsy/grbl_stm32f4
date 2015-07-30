@@ -22,7 +22,7 @@ static void eeprom_init(void)
     eeprom_ready = 1;
 }
 
-char eeprom_get_char(unsigned int addr)
+unsigned char eeprom_get_char(unsigned int addr)
 {
     if (!eeprom_ready) {
         eeprom_init();

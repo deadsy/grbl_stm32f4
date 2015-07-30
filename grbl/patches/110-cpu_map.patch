@@ -1,0 +1,13 @@
+--- grbl-master/cpu_map.h	2015-07-30 07:41:43.848995153 -0700
++++ grbl-master/cpu_map.h	2015-07-30 07:43:01.517078378 -0700
+@@ -37,6 +37,10 @@
+   #include "cpu_map/cpu_map_atmega2560.h"
+ #endif
+ 
++#ifdef CPU_MAP_STM32F4_DISCOVERY
++  #include "cpu_map/cpu_map_stm32f4_discovery.h"
++#endif
++
+ /* 
+ #ifdef CPU_MAP_CUSTOM_PROC
+   // For a custom pin map or different processor, copy and edit one of the available cpu
