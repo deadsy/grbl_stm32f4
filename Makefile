@@ -11,12 +11,10 @@ X_GDB = $(XTOOLS_DIR)/bin/arm-none-eabi-gdb
 
 OUTPUT = grbl_stm32f4
 
-GRBL = grbl_0.8c
-
 USB_SERIAL = 0
 
 # grbl sources
-GRBL_DIR = ./$(GRBL)/grbl-master
+GRBL_DIR = ./grbl/grbl-master
 
 SRC = $(GRBL_DIR)/coolant_control.c \
       $(GRBL_DIR)/delay.c \
@@ -33,12 +31,7 @@ SRC = $(GRBL_DIR)/coolant_control.c \
       $(GRBL_DIR)/settings.c \
       $(GRBL_DIR)/spindle_control.c \
       $(GRBL_DIR)/stepper.c \
-      $(GRBL_DIR)/serial.c
-
-ifeq ($(GRBL), grbl_0.9j)
-SRC += $(GRBL_DIR)/probe.c \
-       $(GRBL_DIR)/system.c
-endif
+      $(GRBL_DIR)/serial.c \
 
 # hal sources
 HAL_DIR = ./hal/src
@@ -124,12 +117,12 @@ program:
 	st-flash write $(OUTPUT).bin 0x08000000
 
 grbl_src:
-	make -C $(GRBL) all
+	make -C grbl all
 
 clean:
 	-rm $(OBJ)	
 	-rm $(OUTPUT)
 	-rm $(OUTPUT).map	
 	-rm $(OUTPUT).bin	
-	make -C $(GRBL) clean
+	make -C grbl clean
 
