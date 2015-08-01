@@ -1,0 +1,14 @@
+--- grbl-master/defaults.h	2015-07-31 21:16:37.422492892 -0700
++++ grbl-master/defaults.h	2015-07-31 21:20:24.549292100 -0700
+@@ -83,6 +83,11 @@
+   #include "defaults/defaults_oxcnc.h"
+ #endif
+ 
++#ifdef DEFAULTS_KRMX01
++  // Description: KRMx01 CNC Router with Gecko G540 4-Axis Digital Step Drive
++  #include "defaults/defaults_krmx01.h"
++#endif
++
+ #ifdef DEFAULTS_SIMULATOR
+   // Settings only for Grbl Simulator (www.github.com/grbl/grbl-sim)
+   #include "defaults/defaults_simulator.h"

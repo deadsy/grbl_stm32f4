@@ -20,7 +20,7 @@ SRC = $(GRBL_DIR)/coolant_control.c \
       $(GRBL_DIR)/delay.c \
       $(GRBL_DIR)/eeprom.c \
       $(GRBL_DIR)/gcode.c \
-      $(GRBL_DIR)/limits.c \
+      $(GRBL_DIR)/serial.c \
       $(GRBL_DIR)/main.c \
       $(GRBL_DIR)/motion_control.c \
       $(GRBL_DIR)/nuts_bolts.c \
@@ -30,10 +30,11 @@ SRC = $(GRBL_DIR)/coolant_control.c \
       $(GRBL_DIR)/report.c \
       $(GRBL_DIR)/settings.c \
       $(GRBL_DIR)/spindle_control.c \
-      $(GRBL_DIR)/stepper.c \
-      $(GRBL_DIR)/serial.c \
       $(GRBL_DIR)/probe.c \
-      $(GRBL_DIR)/system.c \
+#      $(GRBL_DIR)/system.c \
+#      $(GRBL_DIR)/limits.c \
+#      $(GRBL_DIR)/stepper.c \
+
 
 # hal sources
 HAL_DIR = ./hal/src
@@ -88,7 +89,7 @@ INC += $(USB_DIR)/cdc
 INCLUDE = $(addprefix -I,$(INC))
 
 # compiler flags
-CFLAGS = -Wall
+CFLAGS = -Wall -Werror
 CFLAGS += -O
 CFLAGS += -mlittle-endian -mthumb -mcpu=cortex-m4 -mthumb-interwork
 CFLAGS += -mfloat-abi=hard -mfpu=fpv4-sp-d16

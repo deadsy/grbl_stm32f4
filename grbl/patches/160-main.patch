@@ -1,0 +1,19 @@
+--- grbl-master/main.c	2015-07-31 20:53:47.537311399 -0700
++++ grbl-master/main.c	2015-07-31 20:54:04.584950438 -0700
+@@ -26,7 +26,7 @@
+ system_t sys; 
+ 
+ 
+-int main(void)
++int grbl_main(void)
+ {
+   // Initialize system upon power-up.
+   serial_init();   // Setup serial baud rate and interrupts
+@@ -36,7 +36,6 @@
+   
+   memset(&sys, 0, sizeof(sys));  // Clear all system variables
+   sys.abort = true;   // Set abort to complete initialization
+-  sei(); // Enable interrupts
+ 
+   // Check for power-up and set system alarm if homing is enabled to force homing cycle
+   // by setting Grbl's alarm state. Alarm locks out all g-code commands, including the

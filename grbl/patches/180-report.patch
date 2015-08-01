@@ -1,0 +1,10 @@
+--- grbl-master/report.c	2015-07-31 21:09:09.466276478 -0700
++++ grbl-master/report.c	2015-07-31 21:09:32.830478281 -0700
+@@ -28,6 +28,7 @@
+ 
+ #include "grbl.h"
+ 
++#define PSTR(x) (x)
+ 
+ // Handles the primary confirmation protocol response for streaming interfaces and human-feedback.
+ // For every incoming line, this method responds with an 'ok' for a successful command or an 

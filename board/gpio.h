@@ -293,6 +293,7 @@ static inline void spindle_on(void) {}
 static inline void spindle_off(void) {}
 static inline void spindle_fwd(void) {}
 static inline void spindle_rev(void) {}
+static inline void spindle_rpm(float rpm) {}
 
 //-----------------------------------------------------------------------------
 // stepper motor enable/disable
