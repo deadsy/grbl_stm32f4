@@ -85,10 +85,10 @@ static void SystemClock_Config(void)
 //-----------------------------------------------------------------------------
 
 void limits_isr(void);
-void buttons_isr(uint32_t buttons);
+void control_isr(void);
 
 int limits_enabled = 0;
-int buttons_enabled = 0;
+int controls_enabled = 0;
 
 void debounce_on_handler(uint32_t bits)
 {
@@ -102,8 +102,8 @@ void debounce_on_handler(uint32_t bits)
     }
 
     // check machine switches
-    if (buttons_enabled && (bits & BUTTON_MASK)) {
-        buttons_isr(bits);
+    if (controls_enabled && (bits & CONTROL_MASK)) {
+        control_isr();
     }
 }
 

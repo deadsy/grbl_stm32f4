@@ -288,4 +288,18 @@ void serial_reset_read_buffer(void)
   }
 }
 
+// Returns the number of bytes used in the RX serial buffer.
+uint8_t serial_get_rx_buffer_count(void)
+{
+  // TODO
+  return 0;
+}
+
+// Returns the number of bytes used in the TX serial buffer.
+uint8_t serial_get_tx_buffer_count(void)
+{
+  // TODO
+  return 0;
+}
+
 //-----------------------------------------------------------------------------

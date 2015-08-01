@@ -20,21 +20,20 @@ SRC = $(GRBL_DIR)/coolant_control.c \
       $(GRBL_DIR)/delay.c \
       $(GRBL_DIR)/eeprom.c \
       $(GRBL_DIR)/gcode.c \
-      $(GRBL_DIR)/serial.c \
+      $(GRBL_DIR)/limits.c \
       $(GRBL_DIR)/main.c \
       $(GRBL_DIR)/motion_control.c \
       $(GRBL_DIR)/nuts_bolts.c \
       $(GRBL_DIR)/planner.c \
       $(GRBL_DIR)/print.c \
+      $(GRBL_DIR)/probe.c \
       $(GRBL_DIR)/protocol.c \
       $(GRBL_DIR)/report.c \
       $(GRBL_DIR)/settings.c \
       $(GRBL_DIR)/spindle_control.c \
-      $(GRBL_DIR)/probe.c \
-#      $(GRBL_DIR)/system.c \
-#      $(GRBL_DIR)/limits.c \
-#      $(GRBL_DIR)/stepper.c \
-
+      $(GRBL_DIR)/serial.c \
+      $(GRBL_DIR)/stepper.c \
+      $(GRBL_DIR)/system.c \
 
 # hal sources
 HAL_DIR = ./hal/src

@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This a port of the grbl 0.8c g-code interpreter to the STM32F4 SoC
+This a port of the grbl 0.9j g-code interpreter to the STM32F4 SoC
 
 The STM32F4 SoC has attractive features for a realtime G-Code interpreter and machine controller.
 

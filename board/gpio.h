@@ -255,30 +255,33 @@ static inline void dirn_wr(uint32_t x)
 // The input gpios are spread out across several ports. We read and pack them into a
 // single uint32_t and debounce them together.
 
-// debounced input switches
-#define RESET_MACHINE_BIT 7
-#define FEED_HOLD_BIT 6 // not connected
-#define CYCLE_START_BIT 5 // not connected
-#define X_LIMIT_BIT 4
-#define Y_LIMIT_BIT 3
-#define Z_LIMIT_BIT 2
-#define A_LIMIT_BIT 1
-#define PUSH_BUTTON_BIT 0
+// bit assignment for the debounced state - not all of these are used
+#define RESET_BIT 0
+#define FEED_HOLD_BIT 1
+#define CYCLE_START_BIT 2
+#define SAFETY_DOOR_BIT 3
+#define PROBE_BIT 4
+#define X_LIMIT_BIT 5
+#define Y_LIMIT_BIT 6
+#define Z_LIMIT_BIT 7
+#define A_LIMIT_BIT 8
+#define PUSH_BUTTON_BIT 9
 
-extern int buttons_enabled;
+extern int controls_enabled;
 extern int limits_enabled;
 
 #define LIMIT_MASK ((1 << X_LIMIT_BIT) | (1 << Y_LIMIT_BIT) | (1 << Z_LIMIT_BIT) | (1 << A_LIMIT_BIT))
-#define BUTTON_MASK (1 << RESET_MACHINE_BIT)
+#define CONTROL_MASK ((1 << RESET_BIT) | (1 << FEED_HOLD_BIT) | (1 << CYCLE_START_BIT) | (1 << SAFETY_DOOR_BIT))
+#define PROBE_MASK (1 << PROBE_BIT)
 
 static inline uint32_t debounce_input(void)
 {
-    // pack the gpio inputs to be debounced into the uint32_t debounce state
+    // map the gpio inputs to be debounced into the uint32_t debounce state
     return ((gpio_rd(LIMIT_X) << X_LIMIT_BIT) |
             (gpio_rd(LIMIT_Y) << Y_LIMIT_BIT) |
             (gpio_rd(LIMIT_Z) << Z_LIMIT_BIT) |
             (gpio_rd(LIMIT_A) << A_LIMIT_BIT) |
-            (gpio_rd(SWITCH_E_STOP) << RESET_MACHINE_BIT) |
+            (gpio_rd(SWITCH_E_STOP) << RESET_BIT) |
             (gpio_rd(PUSH_BUTTON) << PUSH_BUTTON_BIT));
 }
 
