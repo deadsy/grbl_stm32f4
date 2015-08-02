@@ -36,6 +36,8 @@ Gecko Drives G540 4-Axis Digital Step Drive
 KRMx01 CNC Router 
 * http://www.kronosrobotics.com/krmx01/
 
+![grbl_stm32f4 hardware](https://github.com/deadsy/grbl_stm32f4/blob/development/pics/img_5749.jpg "grbl_stm32f4 hardware")
+
 ## Additions
 
 * Support for XYZY axes operation has been added. ie- Two stepper motors, controlled in the same way, are used to drive the Y-axis.
