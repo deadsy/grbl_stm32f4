@@ -1,5 +1,5 @@
---- grbl-master/config.h	2015-07-30 07:30:46.516829824 -0700
-+++ grbl-master/config.h	2015-07-30 07:38:32.586976599 -0700
+--- grbl-master/config.h	2015-07-17 07:19:57.000000000 -0700
++++ grbl-master/config.h	2015-08-02 09:57:32.628588606 -0700
 @@ -31,14 +31,14 @@
  
  
@@ -17,6 +17,15 @@
  
  // Define realtime command special characters. These characters are 'picked-off' directly from the
  // serial read data stream and are not passed to the grbl line execution parser. Select characters
+@@ -200,7 +200,7 @@
+ // frequencies below 10kHz, where the aliasing between axes of multi-axis motions can cause audible 
+ // noise and shake your machine. At even lower step frequencies, AMASS adapts and provides even better
+ // step smoothing. See stepper.c for more details on the AMASS system works.
+-#define ADAPTIVE_MULTI_AXIS_STEP_SMOOTHING  // Default enabled. Comment to disable.
++//#define ADAPTIVE_MULTI_AXIS_STEP_SMOOTHING  // Default enabled. Comment to disable.
+ 
+ // Sets the maximum step rate allowed to be written as a Grbl setting. This option enables an error 
+ // check in the settings module to prevent settings values that will exceed this limitation. The maximum
 @@ -316,7 +316,7 @@
  // NOTE: Uncomment to enable. The recommended delay must be > 3us, and, when added with the
  // user-supplied step pulse time, the total time must not exceed 127us. Reported successful
