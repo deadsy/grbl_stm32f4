@@ -17,8 +17,8 @@ This file has the board specific routines to allow this.
 
 // The highest timer rate is (168/2) = 84MHz
 // We divide it by 4 to give a counter rate of 21 MHz.
-// ie 1 us == 21
-#define TICKS_PER_MICROSECOND 21
+#define TIMER_HZ 21000000
+#define TICKS_PER_MICROSECOND (TIMER_HZ/1000000)
 
 void step_isr_enable(void);
 void step_isr_disable(void);

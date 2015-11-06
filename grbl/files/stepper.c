@@ -37,9 +37,9 @@ Derived from grbl stepper.c.
 // and timer accuracy.  Do not alter these settings unless you know what you are doing.
 #define MAX_AMASS_LEVEL 3
 // AMASS_LEVEL0: Normal operation. No AMASS. No upper cutoff frequency. Starts at LEVEL1 cutoff frequency.
-#define AMASS_LEVEL1 (F_CPU/8000) // Over-drives ISR (x2). Defined as F_CPU/(Cutoff frequency in Hz)
-#define AMASS_LEVEL2 (F_CPU/4000) // Over-drives ISR (x4)
-#define AMASS_LEVEL3 (F_CPU/2000) // Over-drives ISR (x8)
+#define AMASS_LEVEL1 (TIMER_HZ/8000) // Over-drives ISR (x2). Defined as TIMER_HZ/(Cutoff frequency in Hz)
+#define AMASS_LEVEL2 (TIMER_HZ/4000) // Over-drives ISR (x4)
+#define AMASS_LEVEL3 (TIMER_HZ/2000) // Over-drives ISR (x8)
 
 #endif
 //----------------------------------------------------------------------------
