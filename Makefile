@@ -44,6 +44,10 @@ SRC += $(HAL_DIR)/stm32f4xx_hal.c \
        $(HAL_DIR)/stm32f4xx_hal_tim.c \
        $(HAL_DIR)/stm32f4xx_hal_tim_ex.c \
 
+# rtt logging
+RTT_DIR = ./rtt
+SRC += $(RTT_DIR)/SEGGER_RTT.c \
+
 # board sources
 BOARD_DIR = ./board
 SRC += $(BOARD_DIR)/main.c \
