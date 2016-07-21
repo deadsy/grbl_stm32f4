@@ -9,7 +9,6 @@
 #include "gpio.h"
 #include "debounce.h"
 #include "timers.h"
-#include "stm32f4_regs.h"
 
 #ifdef USB_SERIAL
   #include "usbd_desc.h"
