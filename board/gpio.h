@@ -197,12 +197,12 @@ PH1 = ph1_osc_out
 
 static inline void gpio_clr(int n)
 {
-    GPIO_BASE(n)->BSRRH = GPIO_BIT(n);
+    GPIO_BASE(n)->BSRR = 1 << (GPIO_PIN(n) + 16);
 }
 
 static inline void gpio_set(int n)
 {
-    GPIO_BASE(n)->BSRRL = GPIO_BIT(n);
+    GPIO_BASE(n)->BSRR = 1 << GPIO_PIN(n);
 }
 
 static inline void gpio_toggle(int n)

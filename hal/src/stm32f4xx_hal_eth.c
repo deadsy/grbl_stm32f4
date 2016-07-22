@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    stm32f4xx_hal_eth.c
   * @author  MCD Application Team
-  * @version V1.0.0
-  * @date    18-February-2014
+  * @version V1.5.0
+  * @date    06-May-2016
   * @brief   ETH HAL module driver.
   *          This file provides firmware functions to manage the following 
   *          functionalities of the Ethernet (ETH) peripheral:
@@ -26,9 +26,9 @@
 
       (#)Initialize the ETH low level resources through the HAL_ETH_MspInit() API:
           (##) Enable the Ethernet interface clock using 
-               (+++) __ETHMAC_CLK_ENABLE();
-               (+++) __ETHMACTX_CLK_ENABLE();
-               (+++) __ETHMACRX_CLK_ENABLE();
+               (+++) __HAL_RCC_ETHMAC_CLK_ENABLE();
+               (+++) __HAL_RCC_ETHMACTX_CLK_ENABLE();
+               (+++) __HAL_RCC_ETHMACRX_CLK_ENABLE();
            
           (##) Initialize the related GPIO clocks
           (##) Configure Ethernet pin-out
@@ -63,12 +63,15 @@
       
       (#) Configure the Ethernet DMA after ETH peripheral initialization
           HAL_ETH_ConfigDMA(); all DMA parameters should be filled.
+      
+      -@- The PTP protocol and the DMA descriptors ring mode are not supported 
+          in this driver
 
   @endverbatim
   ******************************************************************************
   * @attention
   *
-  * <h2><center>&copy; COPYRIGHT(c) 2014 STMicroelectronics</center></h2>
+  * <h2><center>&copy; COPYRIGHT(c) 2016 STMicroelectronics</center></h2>
   *
   * Redistribution and use in source and binary forms, with or without modification,
   * are permitted provided that the following conditions are met:
@@ -102,20 +105,34 @@
   * @{
   */
 
-/** @defgroup ETH 
+/** @defgroup ETH ETH 
   * @brief ETH HAL module driver
   * @{
   */
 
 #ifdef HAL_ETH_MODULE_ENABLED
 
-#if defined(STM32F407xx) || defined(STM32F417xx) || defined(STM32F427xx) || defined(STM32F437xx) || defined(STM32F429xx) || defined(STM32F439xx)
+#if defined(STM32F407xx) || defined(STM32F417xx) || defined(STM32F427xx) || defined(STM32F437xx) ||\
+    defined(STM32F429xx) || defined(STM32F439xx) || defined(STM32F469xx) || defined(STM32F479xx)
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
+/** @defgroup ETH_Private_Constants ETH Private Constants
+  * @{
+  */
+#define ETH_TIMEOUT_SWRESET                ((uint32_t)500U)  
+#define ETH_TIMEOUT_LINKED_STATE          ((uint32_t)5000U)  
+#define ETH_TIMEOUT_AUTONEGO_COMPLETED    ((uint32_t)5000U)  
+
+/**
+  * @}
+  */
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 /* Private function prototypes -----------------------------------------------*/
+/** @defgroup ETH_Private_Functions ETH Private Functions
+  * @{
+  */
 static void ETH_MACDMAConfig(ETH_HandleTypeDef *heth, uint32_t err);
 static void ETH_MACAddressConfig(ETH_HandleTypeDef *heth, uint32_t MacAddr, uint8_t *Addr);
 static void ETH_MACReceptionEnable(ETH_HandleTypeDef *heth);
@@ -127,15 +144,19 @@ static void ETH_DMATransmissionDisable(ETH_HandleTypeDef *heth);
 static void ETH_DMAReceptionEnable(ETH_HandleTypeDef *heth);
 static void ETH_DMAReceptionDisable(ETH_HandleTypeDef *heth);
 static void ETH_FlushTransmitFIFO(ETH_HandleTypeDef *heth);
+static void ETH_Delay(uint32_t mdelay);
 
+/**
+  * @}
+  */
 /* Private functions ---------------------------------------------------------*/
 
-/** @defgroup ETH_Private_Functions
+/** @defgroup ETH_Exported_Functions ETH Exported Functions
   * @{
   */
 
-/** @defgroup ETH_Group1 Initialization and de-initialization functions 
-  *  @brief    Initialization and Configuration functions 
+/** @defgroup ETH_Exported_Functions_Group1 Initialization and de-initialization functions 
+  *  @brief   Initialization and Configuration functions 
   *
   @verbatim    
   ===============================================================================
@@ -152,14 +173,15 @@ static void ETH_FlushTransmitFIFO(ETH_HandleTypeDef *heth);
 /**
   * @brief  Initializes the Ethernet MAC and DMA according to default
   *         parameters.
-  * @param  heth: ETH handle
+  * @param  heth: pointer to a ETH_HandleTypeDef structure that contains
+  *         the configuration information for ETHERNET module
   * @retval HAL status
   */
 HAL_StatusTypeDef HAL_ETH_Init(ETH_HandleTypeDef *heth)
 {
-  uint32_t tmpreg = 0, phyreg = 0;
-  uint32_t hclk = 60000000;
-  uint32_t timeout = 0;
+  uint32_t tmpreg1 = 0U, phyreg = 0U;
+  uint32_t hclk = 60000000U;
+  uint32_t tickstart = 0U;
   uint32_t err = ETH_SUCCESS;
   
   /* Check the ETH peripheral state */
@@ -176,12 +198,14 @@ HAL_StatusTypeDef HAL_ETH_Init(ETH_HandleTypeDef *heth)
   
   if(heth->State == HAL_ETH_STATE_RESET)
   {
+    /* Allocate lock resource and initialize it */
+    heth->Lock = HAL_UNLOCKED;
     /* Init the low level hardware : GPIO, CLOCK, NVIC. */
     HAL_ETH_MspInit(heth);
   }
   
   /* Enable SYSCFG Clock */
-  __SYSCFG_CLK_ENABLE();
+  __HAL_RCC_SYSCFG_CLK_ENABLE();
   
   /* Select MII or RMII Mode*/
   SYSCFG->PMC &= ~(SYSCFG_PMC_MII_RMII_SEL);
@@ -192,49 +216,64 @@ HAL_StatusTypeDef HAL_ETH_Init(ETH_HandleTypeDef *heth)
   /* After reset all the registers holds their respective reset values */
   (heth->Instance)->DMABMR |= ETH_DMABMR_SR;
   
+  /* Get tick */
+  tickstart = HAL_GetTick();
+  
   /* Wait for software reset */
   while (((heth->Instance)->DMABMR & ETH_DMABMR_SR) != (uint32_t)RESET)
   {
+    /* Check for the Timeout */
+    if((HAL_GetTick() - tickstart ) > ETH_TIMEOUT_SWRESET)
+    {     
+      heth->State= HAL_ETH_STATE_TIMEOUT;
+  
+      /* Process Unlocked */
+      __HAL_UNLOCK(heth);
+    
+      /* Note: The SWR is not performed if the ETH_RX_CLK or the ETH_TX_CLK are  
+         not available, please check your external PHY or the IO configuration */
+      return HAL_TIMEOUT;
+    }
   }
   
   /*-------------------------------- MAC Initialization ----------------------*/
   /* Get the ETHERNET MACMIIAR value */
-  tmpreg = (heth->Instance)->MACMIIAR;
+  tmpreg1 = (heth->Instance)->MACMIIAR;
   /* Clear CSR Clock Range CR[2:0] bits */
-  tmpreg &= MACMIIAR_CR_MASK;
+  tmpreg1 &= ETH_MACMIIAR_CR_MASK;
   
   /* Get hclk frequency value */
   hclk = HAL_RCC_GetHCLKFreq();
   
   /* Set CR bits depending on hclk value */
-  if((hclk >= 20000000)&&(hclk < 35000000))
+  if((hclk >= 20000000U)&&(hclk < 35000000U))
   {
     /* CSR Clock Range between 20-35 MHz */
-    tmpreg |= (uint32_t)ETH_MACMIIAR_CR_Div16;
+    tmpreg1 |= (uint32_t)ETH_MACMIIAR_CR_Div16;
   }
-  else if((hclk >= 35000000)&&(hclk < 60000000))
+  else if((hclk >= 35000000U)&&(hclk < 60000000U))
   {
     /* CSR Clock Range between 35-60 MHz */ 
-    tmpreg |= (uint32_t)ETH_MACMIIAR_CR_Div26;
+    tmpreg1 |= (uint32_t)ETH_MACMIIAR_CR_Div26;
   }  
-  else if((hclk >= 60000000)&&(hclk < 100000000))
+  else if((hclk >= 60000000U)&&(hclk < 100000000U))
   {
     /* CSR Clock Range between 60-100 MHz */ 
-    tmpreg |= (uint32_t)ETH_MACMIIAR_CR_Div42;
+    tmpreg1 |= (uint32_t)ETH_MACMIIAR_CR_Div42;
   }  
-  else if((hclk >= 100000000)&&(hclk < 150000000))
+  else if((hclk >= 100000000U)&&(hclk < 150000000U))
   {
     /* CSR Clock Range between 100-150 MHz */ 
-    tmpreg |= (uint32_t)ETH_MACMIIAR_CR_Div62;
+    tmpreg1 |= (uint32_t)ETH_MACMIIAR_CR_Div62;
   }
-  else /* ((hclk >= 150000000)&&(hclk <= 168000000)) */
+  else /* ((hclk >= 150000000)&&(hclk <= 183000000)) */
   {
-    /* CSR Clock Range between 150-168 MHz */ 
-    tmpreg |= (uint32_t)ETH_MACMIIAR_CR_Div102;    
+    /* CSR Clock Range between 150-183 MHz */ 
+    tmpreg1 |= (uint32_t)ETH_MACMIIAR_CR_Div102;    
   }
   
   /* Write to ETHERNET MAC MIIAR: Configure the ETHERNET CSR Clock Range */
-  (heth->Instance)->MACMIIAR = (uint32_t)tmpreg;
+  (heth->Instance)->MACMIIAR = (uint32_t)tmpreg1;
   
   /*-------------------- PHY initialization and configuration ----------------*/
   /* Put the PHY in reset mode */
@@ -258,30 +297,32 @@ HAL_StatusTypeDef HAL_ETH_Init(ETH_HandleTypeDef *heth)
   
   if((heth->Init).AutoNegotiation != ETH_AUTONEGOTIATION_DISABLE)
   {
+    /* Get tick */
+    tickstart = HAL_GetTick();
+    
     /* We wait for linked status */
     do
     {
-      timeout++;
       HAL_ETH_ReadPHYRegister(heth, PHY_BSR, &phyreg);
-    } while (((phyreg & PHY_LINKED_STATUS) != PHY_LINKED_STATUS) && (timeout < PHY_READ_TO));
+      
+      /* Check for the Timeout */
+      if((HAL_GetTick() - tickstart ) > ETH_TIMEOUT_LINKED_STATE)
+      {
+        /* In case of write timeout */
+        err = ETH_ERROR;
+      
+        /* Config MAC and DMA */
+        ETH_MACDMAConfig(heth, err);
+        
+        heth->State= HAL_ETH_STATE_READY;
+  
+        /* Process Unlocked */
+        __HAL_UNLOCK(heth);
     
-    if(timeout == PHY_READ_TO)
-    {
-      /* In case of write timeout */
-      err = ETH_ERROR;
-      
-      /* Config MAC and DMA */
-      ETH_MACDMAConfig(heth, err);
-      
-      /* Set the ETH peripheral state to READY */
-      heth->State = HAL_ETH_STATE_READY;
-      
-      /* Return HAL_ERROR */
-      return HAL_ERROR;
-    }
-    
-    /* Reset Timeout counter */
-    timeout = 0; 
+        return HAL_TIMEOUT;
+      }
+    } while (((phyreg & PHY_LINKED_STATUS) != PHY_LINKED_STATUS));
+
     
     /* Enable Auto-Negotiation */
     if((HAL_ETH_WritePHYRegister(heth, PHY_BCR, PHY_AUTONEGOTIATION)) != HAL_OK)
@@ -299,16 +340,37 @@ HAL_StatusTypeDef HAL_ETH_Init(ETH_HandleTypeDef *heth)
       return HAL_ERROR;   
     }
     
+    /* Get tick */
+    tickstart = HAL_GetTick();
+    
     /* Wait until the auto-negotiation will be completed */
     do
     {
-      timeout++;
       HAL_ETH_ReadPHYRegister(heth, PHY_BSR, &phyreg);
-    } while (((phyreg & PHY_AUTONEGO_COMPLETE) != PHY_AUTONEGO_COMPLETE) && (timeout < PHY_READ_TO));
+      
+      /* Check for the Timeout */
+      if((HAL_GetTick() - tickstart ) > ETH_TIMEOUT_AUTONEGO_COMPLETED)
+      {
+        /* In case of write timeout */
+        err = ETH_ERROR;
+      
+        /* Config MAC and DMA */
+        ETH_MACDMAConfig(heth, err);
+        
+        heth->State= HAL_ETH_STATE_READY;
+  
+        /* Process Unlocked */
+        __HAL_UNLOCK(heth);
     
-    if(timeout == PHY_READ_TO)
+        return HAL_TIMEOUT;
+      }
+      
+    } while (((phyreg & PHY_AUTONEGO_COMPLETE) != PHY_AUTONEGO_COMPLETE));
+    
+    /* Read the result of the auto-negotiation */
+    if((HAL_ETH_ReadPHYRegister(heth, PHY_SR, &phyreg)) != HAL_OK)
     {
-      /* In case of timeout */
+      /* In case of write timeout */
       err = ETH_ERROR;
       
       /* Config MAC and DMA */
@@ -318,14 +380,8 @@ HAL_StatusTypeDef HAL_ETH_Init(ETH_HandleTypeDef *heth)
       heth->State = HAL_ETH_STATE_READY;
       
       /* Return HAL_ERROR */
-      return HAL_ERROR;
+      return HAL_ERROR;   
     }
-    
-    /* Reset Timeout counter */
-    timeout = 0;
-    
-    /* Read the result of the auto-negotiation */
-    HAL_ETH_ReadPHYRegister(heth, PHY_SR, &phyreg);
     
     /* Configure the MAC with the Duplex Mode fixed by the auto-negotiation process */
     if((phyreg & PHY_DUPLEX_STATUS) != (uint32_t)RESET)
@@ -357,8 +413,8 @@ HAL_StatusTypeDef HAL_ETH_Init(ETH_HandleTypeDef *heth)
     assert_param(IS_ETH_DUPLEX_MODE(heth->Init.DuplexMode));
     
     /* Set MAC Speed and Duplex Mode */
-    if(HAL_ETH_WritePHYRegister(heth, PHY_BCR, ((uint16_t)((heth->Init).DuplexMode >> 3) |
-                                                (uint16_t)((heth->Init).Speed >> 1))) != HAL_OK)
+    if(HAL_ETH_WritePHYRegister(heth, PHY_BCR, ((uint16_t)((heth->Init).DuplexMode >> 3U) |
+                                                (uint16_t)((heth->Init).Speed >> 1U))) != HAL_OK)
     {
       /* In case of write timeout */
       err = ETH_ERROR;
@@ -389,7 +445,8 @@ HAL_StatusTypeDef HAL_ETH_Init(ETH_HandleTypeDef *heth)
 
 /**
   * @brief  De-Initializes the ETH peripheral. 
-  * @param  heth: ETH handle
+  * @param  heth: pointer to a ETH_HandleTypeDef structure that contains
+  *         the configuration information for ETHERNET module
   * @retval HAL status
   */
 HAL_StatusTypeDef HAL_ETH_DeInit(ETH_HandleTypeDef *heth)
@@ -412,7 +469,8 @@ HAL_StatusTypeDef HAL_ETH_DeInit(ETH_HandleTypeDef *heth)
 
 /**
   * @brief  Initializes the DMA Tx descriptors in chain mode.
-  * @param  heth: ETH handle  
+  * @param  heth: pointer to a ETH_HandleTypeDef structure that contains
+  *         the configuration information for ETHERNET module  
   * @param  DMATxDescTab: Pointer to the first Tx desc list 
   * @param  TxBuff: Pointer to the first TxBuffer list
   * @param  TxBuffCount: Number of the used Tx desc in the list
@@ -420,7 +478,7 @@ HAL_StatusTypeDef HAL_ETH_DeInit(ETH_HandleTypeDef *heth)
   */
 HAL_StatusTypeDef HAL_ETH_DMATxDescListInit(ETH_HandleTypeDef *heth, ETH_DMADescTypeDef *DMATxDescTab, uint8_t *TxBuff, uint32_t TxBuffCount)
 {
-  uint32_t i = 0;
+  uint32_t i = 0U;
   ETH_DMADescTypeDef *dmatxdesc;
   
   /* Process Locked */
@@ -433,7 +491,7 @@ HAL_StatusTypeDef HAL_ETH_DMATxDescListInit(ETH_HandleTypeDef *heth, ETH_DMADesc
   heth->TxDesc = DMATxDescTab;
   
   /* Fill each DMATxDesc descriptor with the right values */   
-  for(i=0; i < TxBuffCount; i++)
+  for(i=0U; i < TxBuffCount; i++)
   {
     /* Get the pointer on the ith member of the Tx Desc list */
     dmatxdesc = DMATxDescTab + i;
@@ -451,10 +509,10 @@ HAL_StatusTypeDef HAL_ETH_DMATxDescListInit(ETH_HandleTypeDef *heth, ETH_DMADesc
     }
     
     /* Initialize the next descriptor with the Next Descriptor Polling Enable */
-    if(i < (TxBuffCount-1))
+    if(i < (TxBuffCount-1U))
     {
       /* Set next descriptor address register with next descriptor base address */
-      dmatxdesc->Buffer2NextDescAddr = (uint32_t)(DMATxDescTab+i+1);
+      dmatxdesc->Buffer2NextDescAddr = (uint32_t)(DMATxDescTab+i+1U);
     }
     else
     {
@@ -478,7 +536,8 @@ HAL_StatusTypeDef HAL_ETH_DMATxDescListInit(ETH_HandleTypeDef *heth, ETH_DMADesc
 
 /**
   * @brief  Initializes the DMA Rx descriptors in chain mode.
-  * @param  heth: ETH handle  
+  * @param  heth: pointer to a ETH_HandleTypeDef structure that contains
+  *         the configuration information for ETHERNET module  
   * @param  DMARxDescTab: Pointer to the first Rx desc list 
   * @param  RxBuff: Pointer to the first RxBuffer list
   * @param  RxBuffCount: Number of the used Rx desc in the list
@@ -486,7 +545,7 @@ HAL_StatusTypeDef HAL_ETH_DMATxDescListInit(ETH_HandleTypeDef *heth, ETH_DMADesc
   */
 HAL_StatusTypeDef HAL_ETH_DMARxDescListInit(ETH_HandleTypeDef *heth, ETH_DMADescTypeDef *DMARxDescTab, uint8_t *RxBuff, uint32_t RxBuffCount)
 {
-  uint32_t i = 0;
+  uint32_t i = 0U;
   ETH_DMADescTypeDef *DMARxDesc;
   
   /* Process Locked */
@@ -499,7 +558,7 @@ HAL_StatusTypeDef HAL_ETH_DMARxDescListInit(ETH_HandleTypeDef *heth, ETH_DMADesc
   heth->RxDesc = DMARxDescTab; 
   
   /* Fill each DMARxDesc descriptor with the right values */
-  for(i=0; i < RxBuffCount; i++)
+  for(i=0U; i < RxBuffCount; i++)
   {
     /* Get the pointer on the ith member of the Rx Desc list */
     DMARxDesc = DMARxDescTab+i;
@@ -520,10 +579,10 @@ HAL_StatusTypeDef HAL_ETH_DMARxDescListInit(ETH_HandleTypeDef *heth, ETH_DMADesc
     }
     
     /* Initialize the next descriptor with the Next Descriptor Polling Enable */
-    if(i < (RxBuffCount-1))
+    if(i < (RxBuffCount-1U))
     {
       /* Set next descriptor address register with next descriptor base address */
-      DMARxDesc->Buffer2NextDescAddr = (uint32_t)(DMARxDescTab+i+1); 
+      DMARxDesc->Buffer2NextDescAddr = (uint32_t)(DMARxDescTab+i+1U); 
     }
     else
     {
@@ -547,11 +606,14 @@ HAL_StatusTypeDef HAL_ETH_DMARxDescListInit(ETH_HandleTypeDef *heth, ETH_DMADesc
 
 /**
   * @brief  Initializes the ETH MSP.
-  * @param  heth: ETH handle
+  * @param  heth: pointer to a ETH_HandleTypeDef structure that contains
+  *         the configuration information for ETHERNET module
   * @retval None
   */
 __weak void HAL_ETH_MspInit(ETH_HandleTypeDef *heth)
 {
+  /* Prevent unused argument(s) compilation warning */
+  UNUSED(heth);
   /* NOTE : This function Should not be modified, when the callback is needed,
   the HAL_ETH_MspInit could be implemented in the user file
   */
@@ -559,11 +621,14 @@ __weak void HAL_ETH_MspInit(ETH_HandleTypeDef *heth)
 
 /**
   * @brief  DeInitializes ETH MSP.
-  * @param  heth: ETH handle
+  * @param  heth: pointer to a ETH_HandleTypeDef structure that contains
+  *         the configuration information for ETHERNET module
   * @retval None
   */
 __weak void HAL_ETH_MspDeInit(ETH_HandleTypeDef *heth)
 {
+  /* Prevent unused argument(s) compilation warning */
+  UNUSED(heth);
   /* NOTE : This function Should not be modified, when the callback is needed,
   the HAL_ETH_MspDeInit could be implemented in the user file
   */
@@ -573,7 +638,7 @@ __weak void HAL_ETH_MspDeInit(ETH_HandleTypeDef *heth)
   * @}
   */
 
-/** @defgroup ETH_Group2 IO operation functions 
+/** @defgroup ETH_Exported_Functions_Group2 IO operation functions 
   *  @brief   Data transfers functions 
   *
   @verbatim   
@@ -588,7 +653,7 @@ __weak void HAL_ETH_MspDeInit(ETH_HandleTypeDef *heth)
             HAL_ETH_GetReceivedFrame_IT();
         (+) Read from an External PHY register
             HAL_ETH_ReadPHYRegister();
-        (+) Writo to an External PHY register
+        (+) Write to an External PHY register
             HAL_ETH_WritePHYRegister();
 
   @endverbatim
@@ -598,13 +663,14 @@ __weak void HAL_ETH_MspDeInit(ETH_HandleTypeDef *heth)
 
 /**
   * @brief  Sends an Ethernet frame. 
-  * @param  heth: ETH handle
+  * @param  heth: pointer to a ETH_HandleTypeDef structure that contains
+  *         the configuration information for ETHERNET module
   * @param  FrameLength: Amount of data to be sent
   * @retval HAL status
   */
 HAL_StatusTypeDef HAL_ETH_TransmitFrame(ETH_HandleTypeDef *heth, uint32_t FrameLength)
 {
-  uint32_t bufcount = 0, size = 0, i = 0;
+  uint32_t bufcount = 0U, size = 0U, i = 0U;
   
   /* Process Locked */
   __HAL_LOCK(heth);
@@ -612,7 +678,7 @@ HAL_StatusTypeDef HAL_ETH_TransmitFrame(ETH_HandleTypeDef *heth, uint32_t FrameL
   /* Set the ETH peripheral state to BUSY */
   heth->State = HAL_ETH_STATE_BUSY;
   
-  if (FrameLength == 0) 
+  if (FrameLength == 0U) 
   {
     /* Set ETH HAL state to READY */
     heth->State = HAL_ETH_STATE_READY;
@@ -646,9 +712,9 @@ HAL_StatusTypeDef HAL_ETH_TransmitFrame(ETH_HandleTypeDef *heth, uint32_t FrameL
   }
   else 
   {  
-    bufcount = 1;
+    bufcount = 1U;
   }
-  if (bufcount == 1)
+  if (bufcount == 1U)
   {
     /* Set LAST and FIRST segment */
     heth->TxDesc->Status |=ETH_DMATXDESC_FS|ETH_DMATXDESC_LS;
@@ -661,12 +727,12 @@ HAL_StatusTypeDef HAL_ETH_TransmitFrame(ETH_HandleTypeDef *heth, uint32_t FrameL
   }
   else
   {
-    for (i=0; i< bufcount; i++)
+    for (i=0U; i< bufcount; i++)
     {
       /* Clear FIRST and LAST segment bits */
       heth->TxDesc->Status &= ~(ETH_DMATXDESC_FS | ETH_DMATXDESC_LS);
       
-      if (i == 0) 
+      if (i == 0U) 
       {
         /* Setting the first segment bit */
         heth->TxDesc->Status |= ETH_DMATXDESC_FS;  
@@ -675,11 +741,11 @@ HAL_StatusTypeDef HAL_ETH_TransmitFrame(ETH_HandleTypeDef *heth, uint32_t FrameL
       /* Program size */
       heth->TxDesc->ControlBufferSize = (ETH_TX_BUF_SIZE & ETH_DMATXDESC_TBS1);
       
-      if (i == (bufcount-1))
+      if (i == (bufcount-1U))
       {
         /* Setting the last segment bit */
         heth->TxDesc->Status |= ETH_DMATXDESC_LS;
-        size = FrameLength - (bufcount-1)*ETH_TX_BUF_SIZE;
+        size = FrameLength - (bufcount-1U)*ETH_TX_BUF_SIZE;
         heth->TxDesc->ControlBufferSize = (size & ETH_DMATXDESC_TBS1);
       }
       
@@ -696,7 +762,7 @@ HAL_StatusTypeDef HAL_ETH_TransmitFrame(ETH_HandleTypeDef *heth, uint32_t FrameL
     /* Clear TBUS ETHERNET DMA flag */
     (heth->Instance)->DMASR = ETH_DMASR_TBUS;
     /* Resume DMA transmission*/
-    (heth->Instance)->DMATPDR = 0;
+    (heth->Instance)->DMATPDR = 0U;
   }
   
   /* Set ETH HAL State to Ready */
@@ -711,12 +777,13 @@ HAL_StatusTypeDef HAL_ETH_TransmitFrame(ETH_HandleTypeDef *heth, uint32_t FrameL
 
 /**
   * @brief  Checks for received frames. 
-  * @param  heth: ETH handle
+  * @param  heth: pointer to a ETH_HandleTypeDef structure that contains
+  *         the configuration information for ETHERNET module
   * @retval HAL status
   */
 HAL_StatusTypeDef HAL_ETH_GetReceivedFrame(ETH_HandleTypeDef *heth)
 {
-  uint32_t framelength = 0;
+  uint32_t framelength = 0U;
   
   /* Process Locked */
   __HAL_LOCK(heth);
@@ -735,7 +802,7 @@ HAL_StatusTypeDef HAL_ETH_GetReceivedFrame(ETH_HandleTypeDef *heth)
       (heth->RxFrameInfos).SegCount++;
       
       /* Check if last segment is first segment: one segment contains the frame */
-      if ((heth->RxFrameInfos).SegCount == 1)
+      if ((heth->RxFrameInfos).SegCount == 1U)
       {
         (heth->RxFrameInfos).FSRxDesc =heth->RxDesc;
       }
@@ -743,7 +810,7 @@ HAL_StatusTypeDef HAL_ETH_GetReceivedFrame(ETH_HandleTypeDef *heth)
       heth->RxFrameInfos.LSRxDesc = heth->RxDesc;
       
       /* Get the Frame Length of the received packet: substruct 4 bytes of the CRC */
-      framelength = (((heth->RxDesc)->Status & ETH_DMARXDESC_FL) >> ETH_DMARXDESC_FRAMELENGTHSHIFT) - 4;
+      framelength = (((heth->RxDesc)->Status & ETH_DMARXDESC_FL) >> ETH_DMARXDESC_FRAMELENGTHSHIFT) - 4U;
       heth->RxFrameInfos.length = framelength;
       
       /* Get the address of the buffer start address */
@@ -765,7 +832,7 @@ HAL_StatusTypeDef HAL_ETH_GetReceivedFrame(ETH_HandleTypeDef *heth)
     {
       (heth->RxFrameInfos).FSRxDesc = heth->RxDesc;
       (heth->RxFrameInfos).LSRxDesc = NULL;
-      (heth->RxFrameInfos).SegCount = 1;
+      (heth->RxFrameInfos).SegCount = 1U;
       /* Point to next descriptor */
       heth->RxDesc = (ETH_DMADescTypeDef*) (heth->RxDesc->Buffer2NextDescAddr);
     }
@@ -784,17 +851,19 @@ HAL_StatusTypeDef HAL_ETH_GetReceivedFrame(ETH_HandleTypeDef *heth)
   /* Process Unlocked */
   __HAL_UNLOCK(heth);
   
+  /* Return function status */
   return HAL_ERROR;
 }
 
 /**
   * @brief  Gets the Received frame in interrupt mode. 
-  * @param  heth: ETH handle
+  * @param  heth: pointer to a ETH_HandleTypeDef structure that contains
+  *         the configuration information for ETHERNET module
   * @retval HAL status
   */
 HAL_StatusTypeDef HAL_ETH_GetReceivedFrame_IT(ETH_HandleTypeDef *heth)
 {
-  uint32_t descriptorscancounter = 0;
+  uint32_t descriptorscancounter = 0U;
   
   /* Process Locked */
   __HAL_LOCK(heth);
@@ -813,7 +882,7 @@ HAL_StatusTypeDef HAL_ETH_GetReceivedFrame_IT(ETH_HandleTypeDef *heth)
     if((heth->RxDesc->Status & (ETH_DMARXDESC_FS | ETH_DMARXDESC_LS)) == (uint32_t)ETH_DMARXDESC_FS)
     { 
       heth->RxFrameInfos.FSRxDesc = heth->RxDesc;
-      heth->RxFrameInfos.SegCount = 1;   
+      heth->RxFrameInfos.SegCount = 1U;   
       /* Point to next descriptor */
       heth->RxDesc = (ETH_DMADescTypeDef*) (heth->RxDesc->Buffer2NextDescAddr);
     }
@@ -836,13 +905,13 @@ HAL_StatusTypeDef HAL_ETH_GetReceivedFrame_IT(ETH_HandleTypeDef *heth)
       (heth->RxFrameInfos.SegCount)++;
       
       /* Check if last segment is first segment: one segment contains the frame */
-      if ((heth->RxFrameInfos.SegCount) == 1)
+      if ((heth->RxFrameInfos.SegCount) == 1U)
       {
         heth->RxFrameInfos.FSRxDesc = heth->RxDesc;
       }
       
       /* Get the Frame Length of the received packet: substruct 4 bytes of the CRC */
-      heth->RxFrameInfos.length = (((heth->RxDesc)->Status & ETH_DMARXDESC_FL) >> ETH_DMARXDESC_FRAMELENGTHSHIFT) - 4;
+      heth->RxFrameInfos.length = (((heth->RxDesc)->Status & ETH_DMARXDESC_FL) >> ETH_DMARXDESC_FRAMELENGTHSHIFT) - 4U;
       
       /* Get the address of the buffer start address */ 
       heth->RxFrameInfos.buffer =((heth->RxFrameInfos).FSRxDesc)->Buffer1Addr;
@@ -868,12 +937,13 @@ HAL_StatusTypeDef HAL_ETH_GetReceivedFrame_IT(ETH_HandleTypeDef *heth)
   __HAL_UNLOCK(heth);
   
   /* Return function status */
-  return HAL_OK;
+  return HAL_ERROR;
 }
 
 /**
   * @brief  This function handles ETH interrupt request.
-  * @param  heth: ETH handle
+  * @param  heth: pointer to a ETH_HandleTypeDef structure that contains
+  *         the configuration information for ETHERNET module
   * @retval HAL status
   */
 void HAL_ETH_IRQHandler(ETH_HandleTypeDef *heth)
@@ -932,11 +1002,14 @@ void HAL_ETH_IRQHandler(ETH_HandleTypeDef *heth)
 
 /**
   * @brief  Tx Transfer completed callbacks.
-  * @param  heth: ETH handle
+  * @param  heth: pointer to a ETH_HandleTypeDef structure that contains
+  *         the configuration information for ETHERNET module
   * @retval None
   */
 __weak void HAL_ETH_TxCpltCallback(ETH_HandleTypeDef *heth)
 {
+  /* Prevent unused argument(s) compilation warning */
+  UNUSED(heth);
   /* NOTE : This function Should not be modified, when the callback is needed,
   the HAL_ETH_TxCpltCallback could be implemented in the user file
   */ 
@@ -944,11 +1017,14 @@ __weak void HAL_ETH_TxCpltCallback(ETH_HandleTypeDef *heth)
 
 /**
   * @brief  Rx Transfer completed callbacks.
-  * @param  heth: ETH handle
+  * @param  heth: pointer to a ETH_HandleTypeDef structure that contains
+  *         the configuration information for ETHERNET module
   * @retval None
   */
 __weak void HAL_ETH_RxCpltCallback(ETH_HandleTypeDef *heth)
 {
+  /* Prevent unused argument(s) compilation warning */
+  UNUSED(heth);
   /* NOTE : This function Should not be modified, when the callback is needed,
   the HAL_ETH_TxCpltCallback could be implemented in the user file
   */ 
@@ -956,11 +1032,14 @@ __weak void HAL_ETH_RxCpltCallback(ETH_HandleTypeDef *heth)
 
 /**
   * @brief  Ethernet transfer error callbacks
-  * @param  heth: ETH handle
+  * @param  heth: pointer to a ETH_HandleTypeDef structure that contains
+  *         the configuration information for ETHERNET module
   * @retval None
   */
 __weak void HAL_ETH_ErrorCallback(ETH_HandleTypeDef *heth)
 {
+  /* Prevent unused argument(s) compilation warning */
+  UNUSED(heth);
   /* NOTE : This function Should not be modified, when the callback is needed,
   the HAL_ETH_TxCpltCallback could be implemented in the user file
   */ 
@@ -968,20 +1047,20 @@ __weak void HAL_ETH_ErrorCallback(ETH_HandleTypeDef *heth)
 
 /**
   * @brief  Reads a PHY register
-  * @param heth: ETH handle                 
+  * @param  heth: pointer to a ETH_HandleTypeDef structure that contains
+  *         the configuration information for ETHERNET module                  
   * @param PHYReg: PHY register address, is the index of one of the 32 PHY register. 
   *                This parameter can be one of the following values: 
-  *                   @arg PHY_BCR: Transceiver Basic Control Register 
-  *                   @arg PHY_BSR: Transceiver Basic Status Register   
-  *                   @arg More PHY register could be read depending on the used PHY
+  *                   PHY_BCR: Transceiver Basic Control Register, 
+  *                   PHY_BSR: Transceiver Basic Status Register.   
+  *                   More PHY register could be read depending on the used PHY
   * @param RegValue: PHY register value                  
-  * @retval HAL_TIMEOUT: in case of timeout
-  *         MACMIIDR register value: Data read from the selected PHY register (correct read )
+  * @retval HAL status
   */
 HAL_StatusTypeDef HAL_ETH_ReadPHYRegister(ETH_HandleTypeDef *heth, uint16_t PHYReg, uint32_t *RegValue)
 {
-  uint32_t tmpreg = 0;     
-  uint32_t timeout = 0;
+  uint32_t tmpreg1 = 0U;     
+  uint32_t tickstart = 0U;
   
   /* Check parameters */
   assert_param(IS_ETH_PHY_ADDRESS(heth->Init.PhyAddress));
@@ -995,34 +1074,38 @@ HAL_StatusTypeDef HAL_ETH_ReadPHYRegister(ETH_HandleTypeDef *heth, uint16_t PHYR
   heth->State = HAL_ETH_STATE_BUSY_RD;
   
   /* Get the ETHERNET MACMIIAR value */
-  tmpreg = heth->Instance->MACMIIAR;
+  tmpreg1 = heth->Instance->MACMIIAR;
   
   /* Keep only the CSR Clock Range CR[2:0] bits value */
-  tmpreg &= ~MACMIIAR_CR_MASK;
+  tmpreg1 &= ~ETH_MACMIIAR_CR_MASK;
   
   /* Prepare the MII address register value */
-  tmpreg |=(((uint32_t)heth->Init.PhyAddress << 11) & ETH_MACMIIAR_PA); /* Set the PHY device address   */
-  tmpreg |=(((uint32_t)PHYReg<<6) & ETH_MACMIIAR_MR);                   /* Set the PHY register address */
-  tmpreg &= ~ETH_MACMIIAR_MW;                                           /* Set the read mode            */
-  tmpreg |= ETH_MACMIIAR_MB;                                            /* Set the MII Busy bit         */
+  tmpreg1 |=(((uint32_t)heth->Init.PhyAddress << 11U) & ETH_MACMIIAR_PA); /* Set the PHY device address   */
+  tmpreg1 |=(((uint32_t)PHYReg<<6U) & ETH_MACMIIAR_MR);                   /* Set the PHY register address */
+  tmpreg1 &= ~ETH_MACMIIAR_MW;                                           /* Set the read mode            */
+  tmpreg1 |= ETH_MACMIIAR_MB;                                            /* Set the MII Busy bit         */
   
   /* Write the result value into the MII Address register */
-  heth->Instance->MACMIIAR = tmpreg;
+  heth->Instance->MACMIIAR = tmpreg1;
+  
+  /* Get tick */
+  tickstart = HAL_GetTick();
   
   /* Check for the Busy flag */
-  do
+  while((tmpreg1 & ETH_MACMIIAR_MB) == ETH_MACMIIAR_MB)
   {
-    timeout++;
-    tmpreg = heth->Instance->MACMIIAR;
-  } while (((tmpreg & ETH_MACMIIAR_MB) == ETH_MACMIIAR_MB) && (timeout < PHY_READ_TO));
+    /* Check for the Timeout */
+    if((HAL_GetTick() - tickstart ) > PHY_READ_TO)
+    {
+      heth->State= HAL_ETH_STATE_READY;
   
-  /* Return ERROR in case of timeout */
-  if(timeout == PHY_READ_TO)
-  {
-    /* Set ETH HAL State to READY */
-    heth->State = HAL_ETH_STATE_READY;
-    /* Return HAL_TIMEOUT */
-    return HAL_TIMEOUT;
+      /* Process Unlocked */
+      __HAL_UNLOCK(heth);
+    
+      return HAL_TIMEOUT;
+    }
+    
+    tmpreg1 = heth->Instance->MACMIIAR;
   }
   
   /* Get MACMIIDR value */
@@ -1037,18 +1120,19 @@ HAL_StatusTypeDef HAL_ETH_ReadPHYRegister(ETH_HandleTypeDef *heth, uint16_t PHYR
 
 /**
   * @brief  Writes to a PHY register.
-  * @param  heth: ETH handle  
+  * @param  heth: pointer to a ETH_HandleTypeDef structure that contains
+  *         the configuration information for ETHERNET module  
   * @param  PHYReg: PHY register address, is the index of one of the 32 PHY register. 
   *          This parameter can be one of the following values: 
-  *             @arg PHY_BCR: Transceiver Control Register  
-  *             @arg More PHY register could be written depending on the used PHY
+  *             PHY_BCR: Transceiver Control Register.  
+  *             More PHY register could be written depending on the used PHY
   * @param  RegValue: the value to write
   * @retval HAL status
   */
 HAL_StatusTypeDef HAL_ETH_WritePHYRegister(ETH_HandleTypeDef *heth, uint16_t PHYReg, uint32_t RegValue)
 {
-  uint32_t tmpreg = 0;
-  uint32_t timeout = 0;
+  uint32_t tmpreg1 = 0U;
+  uint32_t tickstart = 0U;
   
   /* Check parameters */
   assert_param(IS_ETH_PHY_ADDRESS(heth->Init.PhyAddress));
@@ -1062,37 +1146,41 @@ HAL_StatusTypeDef HAL_ETH_WritePHYRegister(ETH_HandleTypeDef *heth, uint16_t PHY
   heth->State = HAL_ETH_STATE_BUSY_WR;
   
   /* Get the ETHERNET MACMIIAR value */
-  tmpreg = heth->Instance->MACMIIAR;
+  tmpreg1 = heth->Instance->MACMIIAR;
   
   /* Keep only the CSR Clock Range CR[2:0] bits value */
-  tmpreg &= ~MACMIIAR_CR_MASK;
+  tmpreg1 &= ~ETH_MACMIIAR_CR_MASK;
   
   /* Prepare the MII register address value */
-  tmpreg |=(((uint32_t)heth->Init.PhyAddress<<11) & ETH_MACMIIAR_PA); /* Set the PHY device address */
-  tmpreg |=(((uint32_t)PHYReg<<6) & ETH_MACMIIAR_MR);                 /* Set the PHY register address */
-  tmpreg |= ETH_MACMIIAR_MW;                                          /* Set the write mode */
-  tmpreg |= ETH_MACMIIAR_MB;                                          /* Set the MII Busy bit */
+  tmpreg1 |=(((uint32_t)heth->Init.PhyAddress<<11U) & ETH_MACMIIAR_PA); /* Set the PHY device address */
+  tmpreg1 |=(((uint32_t)PHYReg<<6U) & ETH_MACMIIAR_MR);                 /* Set the PHY register address */
+  tmpreg1 |= ETH_MACMIIAR_MW;                                           /* Set the write mode */
+  tmpreg1 |= ETH_MACMIIAR_MB;                                           /* Set the MII Busy bit */
   
   /* Give the value to the MII data register */
   heth->Instance->MACMIIDR = (uint16_t)RegValue;
   
   /* Write the result value into the MII Address register */
-  heth->Instance->MACMIIAR = tmpreg;
+  heth->Instance->MACMIIAR = tmpreg1;
+  
+  /* Get tick */
+  tickstart = HAL_GetTick();
   
   /* Check for the Busy flag */
-  do
+  while((tmpreg1 & ETH_MACMIIAR_MB) == ETH_MACMIIAR_MB)
   {
-    timeout++;
-    tmpreg = heth->Instance->MACMIIAR;
-  } while (((tmpreg & ETH_MACMIIAR_MB) == ETH_MACMIIAR_MB) && (timeout < PHY_WRITE_TO));
+    /* Check for the Timeout */
+    if((HAL_GetTick() - tickstart ) > PHY_WRITE_TO)
+    {
+      heth->State= HAL_ETH_STATE_READY;
   
-  /* Return TIMETOUT in case of timeout */
-  if(timeout == PHY_WRITE_TO)
-  {
-    /* Set ETH HAL State to READY */
-    heth->State = HAL_ETH_STATE_READY;
+      /* Process Unlocked */
+      __HAL_UNLOCK(heth);
     
-    return HAL_TIMEOUT;
+      return HAL_TIMEOUT;
+    }
+    
+    tmpreg1 = heth->Instance->MACMIIAR;
   }
   
   /* Set ETH HAL State to READY */
@@ -1106,7 +1194,7 @@ HAL_StatusTypeDef HAL_ETH_WritePHYRegister(ETH_HandleTypeDef *heth, uint16_t PHY
   * @}
   */
 
-/** @defgroup ETH_Group3 Peripheral Control functions
+/** @defgroup ETH_Exported_Functions_Group3 Peripheral Control functions
  *  @brief    Peripheral Control functions 
  *
 @verbatim   
@@ -1129,7 +1217,8 @@ HAL_StatusTypeDef HAL_ETH_WritePHYRegister(ETH_HandleTypeDef *heth, uint16_t PHY
 
  /**
   * @brief  Enables Ethernet MAC and DMA reception/transmission 
-  * @param  heth: ETH handle
+  * @param  heth: pointer to a ETH_HandleTypeDef structure that contains
+  *         the configuration information for ETHERNET module
   * @retval HAL status
   */
 HAL_StatusTypeDef HAL_ETH_Start(ETH_HandleTypeDef *heth)
@@ -1167,7 +1256,8 @@ HAL_StatusTypeDef HAL_ETH_Start(ETH_HandleTypeDef *heth)
 
 /**
   * @brief  Stop Ethernet MAC and DMA reception/transmission 
-  * @param  heth: ETH handle
+  * @param  heth: pointer to a ETH_HandleTypeDef structure that contains
+  *         the configuration information for ETHERNET module
   * @retval HAL status
   */
 HAL_StatusTypeDef HAL_ETH_Stop(ETH_HandleTypeDef *heth)
@@ -1205,13 +1295,14 @@ HAL_StatusTypeDef HAL_ETH_Stop(ETH_HandleTypeDef *heth)
 
 /**
   * @brief  Set ETH MAC Configuration.
-  * @param  heth: ETH handle
+  * @param  heth: pointer to a ETH_HandleTypeDef structure that contains
+  *         the configuration information for ETHERNET module
   * @param  macconf: MAC Configuration structure  
   * @retval HAL status
   */
 HAL_StatusTypeDef HAL_ETH_ConfigMAC(ETH_HandleTypeDef *heth, ETH_MACInitTypeDef *macconf)
 {
-  uint32_t tmpreg = 0;
+  uint32_t tmpreg1 = 0U;
   
   /* Process Locked */
   __HAL_LOCK(heth);
@@ -1241,7 +1332,7 @@ HAL_StatusTypeDef HAL_ETH_ConfigMAC(ETH_HandleTypeDef *heth, ETH_MACInitTypeDef 
     assert_param(IS_ETH_CONTROL_FRAMES(macconf->PassControlFrames));
     assert_param(IS_ETH_BROADCAST_FRAMES_RECEPTION(macconf->BroadcastFramesReception));
     assert_param(IS_ETH_DESTINATION_ADDR_FILTER(macconf->DestinationAddrFilter));
-    assert_param(IS_ETH_PROMISCIOUS_MODE(macconf->PromiscuousMode));
+    assert_param(IS_ETH_PROMISCUOUS_MODE(macconf->PromiscuousMode));
     assert_param(IS_ETH_MULTICAST_FRAMES_FILTER(macconf->MulticastFramesFilter));
     assert_param(IS_ETH_UNICAST_FRAMES_FILTER(macconf->UnicastFramesFilter));
     assert_param(IS_ETH_PAUSE_TIME(macconf->PauseTime));
@@ -1255,11 +1346,11 @@ HAL_StatusTypeDef HAL_ETH_ConfigMAC(ETH_HandleTypeDef *heth, ETH_MACInitTypeDef 
     
     /*------------------------ ETHERNET MACCR Configuration --------------------*/
     /* Get the ETHERNET MACCR value */
-    tmpreg = (heth->Instance)->MACCR;
+    tmpreg1 = (heth->Instance)->MACCR;
     /* Clear WD, PCE, PS, TE and RE bits */
-    tmpreg &= MACCR_CLEAR_MASK;
+    tmpreg1 &= ETH_MACCR_CLEAR_MASK;
     
-    tmpreg |= (uint32_t)(macconf->Watchdog | 
+    tmpreg1 |= (uint32_t)(macconf->Watchdog | 
                          macconf->Jabber | 
                          macconf->InterFrameGap |
                          macconf->CarrierSense |
@@ -1274,13 +1365,13 @@ HAL_StatusTypeDef HAL_ETH_ConfigMAC(ETH_HandleTypeDef *heth, ETH_MACInitTypeDef 
                          macconf->DeferralCheck);
     
     /* Write to ETHERNET MACCR */
-    (heth->Instance)->MACCR = (uint32_t)tmpreg;
+    (heth->Instance)->MACCR = (uint32_t)tmpreg1;
     
     /* Wait until the write operation will be taken into account :
     at least four TX_CLK/RX_CLK clock cycles */
-    tmpreg = (heth->Instance)->MACCR;
+    tmpreg1 = (heth->Instance)->MACCR;
     HAL_Delay(ETH_REG_WRITE_DELAY);
-    (heth->Instance)->MACCR = tmpreg; 
+    (heth->Instance)->MACCR = tmpreg1; 
     
     /*----------------------- ETHERNET MACFFR Configuration --------------------*/ 
     /* Write to ETHERNET MACFFR */  
@@ -1295,9 +1386,9 @@ HAL_StatusTypeDef HAL_ETH_ConfigMAC(ETH_HandleTypeDef *heth, ETH_MACInitTypeDef 
      
      /* Wait until the write operation will be taken into account :
      at least four TX_CLK/RX_CLK clock cycles */
-     tmpreg = (heth->Instance)->MACFFR;
+     tmpreg1 = (heth->Instance)->MACFFR;
      HAL_Delay(ETH_REG_WRITE_DELAY);
-     (heth->Instance)->MACFFR = tmpreg;
+     (heth->Instance)->MACFFR = tmpreg1;
      
      /*--------------- ETHERNET MACHTHR and MACHTLR Configuration ---------------*/
      /* Write to ETHERNET MACHTHR */
@@ -1308,11 +1399,11 @@ HAL_StatusTypeDef HAL_ETH_ConfigMAC(ETH_HandleTypeDef *heth, ETH_MACInitTypeDef 
      /*----------------------- ETHERNET MACFCR Configuration --------------------*/
      
      /* Get the ETHERNET MACFCR value */  
-     tmpreg = (heth->Instance)->MACFCR;
+     tmpreg1 = (heth->Instance)->MACFCR;
      /* Clear xx bits */
-     tmpreg &= MACFCR_CLEAR_MASK;
+     tmpreg1 &= ETH_MACFCR_CLEAR_MASK;
      
-     tmpreg |= (uint32_t)((macconf->PauseTime << 16) | 
+     tmpreg1 |= (uint32_t)((macconf->PauseTime << 16U) | 
                           macconf->ZeroQuantaPause |
                           macconf->PauseLowThreshold |
                           macconf->UnicastPauseFrameDetect | 
@@ -1320,13 +1411,13 @@ HAL_StatusTypeDef HAL_ETH_ConfigMAC(ETH_HandleTypeDef *heth, ETH_MACInitTypeDef 
                           macconf->TransmitFlowControl); 
      
      /* Write to ETHERNET MACFCR */
-     (heth->Instance)->MACFCR = (uint32_t)tmpreg;
+     (heth->Instance)->MACFCR = (uint32_t)tmpreg1;
      
      /* Wait until the write operation will be taken into account :
      at least four TX_CLK/RX_CLK clock cycles */
-     tmpreg = (heth->Instance)->MACFCR;
+     tmpreg1 = (heth->Instance)->MACFCR;
      HAL_Delay(ETH_REG_WRITE_DELAY);
-     (heth->Instance)->MACFCR = tmpreg;
+     (heth->Instance)->MACFCR = tmpreg1;
      
      /*----------------------- ETHERNET MACVLANTR Configuration -----------------*/
      (heth->Instance)->MACVLANTR = (uint32_t)(macconf->VLANTagComparison | 
@@ -1334,29 +1425,29 @@ HAL_StatusTypeDef HAL_ETH_ConfigMAC(ETH_HandleTypeDef *heth, ETH_MACInitTypeDef 
       
       /* Wait until the write operation will be taken into account :
       at least four TX_CLK/RX_CLK clock cycles */
-      tmpreg = (heth->Instance)->MACVLANTR;
+      tmpreg1 = (heth->Instance)->MACVLANTR;
       HAL_Delay(ETH_REG_WRITE_DELAY);
-      (heth->Instance)->MACVLANTR = tmpreg;
+      (heth->Instance)->MACVLANTR = tmpreg1;
   }
   else /* macconf == NULL : here we just configure Speed and Duplex mode */
   {
     /*------------------------ ETHERNET MACCR Configuration --------------------*/
     /* Get the ETHERNET MACCR value */
-    tmpreg = (heth->Instance)->MACCR;
+    tmpreg1 = (heth->Instance)->MACCR;
     
     /* Clear FES and DM bits */
-    tmpreg &= ~((uint32_t)0x00004800);
+    tmpreg1 &= ~((uint32_t)0x00004800U);
     
-    tmpreg |= (uint32_t)(heth->Init.Speed | heth->Init.DuplexMode);
+    tmpreg1 |= (uint32_t)(heth->Init.Speed | heth->Init.DuplexMode);
     
     /* Write to ETHERNET MACCR */
-    (heth->Instance)->MACCR = (uint32_t)tmpreg;
+    (heth->Instance)->MACCR = (uint32_t)tmpreg1;
     
     /* Wait until the write operation will be taken into account:
     at least four TX_CLK/RX_CLK clock cycles */
-    tmpreg = (heth->Instance)->MACCR;
+    tmpreg1 = (heth->Instance)->MACCR;
     HAL_Delay(ETH_REG_WRITE_DELAY);
-    (heth->Instance)->MACCR = tmpreg;
+    (heth->Instance)->MACCR = tmpreg1;
   }
   
   /* Set the ETH state to Ready */
@@ -1371,13 +1462,14 @@ HAL_StatusTypeDef HAL_ETH_ConfigMAC(ETH_HandleTypeDef *heth, ETH_MACInitTypeDef 
 
 /**
   * @brief  Sets ETH DMA Configuration.
-  * @param  heth: ETH handle
+  * @param  heth: pointer to a ETH_HandleTypeDef structure that contains
+  *         the configuration information for ETHERNET module
   * @param  dmaconf: DMA Configuration structure  
   * @retval HAL status
   */
 HAL_StatusTypeDef HAL_ETH_ConfigDMA(ETH_HandleTypeDef *heth, ETH_DMAInitTypeDef *dmaconf)
 {
-  uint32_t tmpreg = 0;
+  uint32_t tmpreg1 = 0U;
 
   /* Process Locked */
   __HAL_LOCK(heth);
@@ -1405,11 +1497,11 @@ HAL_StatusTypeDef HAL_ETH_ConfigDMA(ETH_HandleTypeDef *heth, ETH_DMAInitTypeDef 
   
   /*----------------------- ETHERNET DMAOMR Configuration --------------------*/
   /* Get the ETHERNET DMAOMR value */
-  tmpreg = (heth->Instance)->DMAOMR;
+  tmpreg1 = (heth->Instance)->DMAOMR;
   /* Clear xx bits */
-  tmpreg &= DMAOMR_CLEAR_MASK;
+  tmpreg1 &= ETH_DMAOMR_CLEAR_MASK;
 
-  tmpreg |= (uint32_t)(dmaconf->DropTCPIPChecksumErrorFrame | 
+  tmpreg1 |= (uint32_t)(dmaconf->DropTCPIPChecksumErrorFrame | 
                        dmaconf->ReceiveStoreForward |
                        dmaconf->FlushReceivedFrame |
                        dmaconf->TransmitStoreForward | 
@@ -1420,13 +1512,13 @@ HAL_StatusTypeDef HAL_ETH_ConfigDMA(ETH_HandleTypeDef *heth, ETH_DMAInitTypeDef 
                        dmaconf->SecondFrameOperate);
 
   /* Write to ETHERNET DMAOMR */
-  (heth->Instance)->DMAOMR = (uint32_t)tmpreg;
+  (heth->Instance)->DMAOMR = (uint32_t)tmpreg1;
 
   /* Wait until the write operation will be taken into account:
   at least four TX_CLK/RX_CLK clock cycles */
-  tmpreg = (heth->Instance)->DMAOMR;
+  tmpreg1 = (heth->Instance)->DMAOMR;
   HAL_Delay(ETH_REG_WRITE_DELAY);
-  (heth->Instance)->DMAOMR = tmpreg;
+  (heth->Instance)->DMAOMR = tmpreg1;
 
   /*----------------------- ETHERNET DMABMR Configuration --------------------*/
   (heth->Instance)->DMABMR = (uint32_t)(dmaconf->AddressAlignedBeats | 
@@ -1434,15 +1526,15 @@ HAL_StatusTypeDef HAL_ETH_ConfigDMA(ETH_HandleTypeDef *heth, ETH_DMAInitTypeDef 
                                          dmaconf->RxDMABurstLength | /* !! if 4xPBL is selected for Tx or Rx it is applied for the other */
                                          dmaconf->TxDMABurstLength |
                                          dmaconf->EnhancedDescriptorFormat |
-                                         (dmaconf->DescriptorSkipLength << 2) |
+                                         (dmaconf->DescriptorSkipLength << 2U) |
                                          dmaconf->DMAArbitration | 
                                          ETH_DMABMR_USP); /* Enable use of separate PBL for Rx and Tx */
 
    /* Wait until the write operation will be taken into account:
       at least four TX_CLK/RX_CLK clock cycles */
-   tmpreg = (heth->Instance)->DMABMR;
+   tmpreg1 = (heth->Instance)->DMABMR;
    HAL_Delay(ETH_REG_WRITE_DELAY);
-   (heth->Instance)->DMABMR = tmpreg;
+   (heth->Instance)->DMABMR = tmpreg1;
 
    /* Set the ETH state to Ready */
    heth->State= HAL_ETH_STATE_READY;
@@ -1458,7 +1550,7 @@ HAL_StatusTypeDef HAL_ETH_ConfigDMA(ETH_HandleTypeDef *heth, ETH_DMAInitTypeDef 
   * @}
   */
 
-/** @defgroup ETH_Group4 Peripheral State functions 
+/** @defgroup ETH_Exported_Functions_Group4 Peripheral State functions 
   *  @brief   Peripheral State functions 
   *
   @verbatim   
@@ -1478,7 +1570,8 @@ HAL_StatusTypeDef HAL_ETH_ConfigDMA(ETH_HandleTypeDef *heth, ETH_DMAInitTypeDef 
 
 /**
   * @brief  Return the ETH HAL state
-  * @param  heth: ETH handle
+  * @param  heth: pointer to a ETH_HandleTypeDef structure that contains
+  *         the configuration information for ETHERNET module
   * @retval HAL state
   */
 HAL_ETH_StateTypeDef HAL_ETH_GetState(ETH_HandleTypeDef *heth)
@@ -1490,10 +1583,19 @@ HAL_ETH_StateTypeDef HAL_ETH_GetState(ETH_HandleTypeDef *heth)
 /**
   * @}
   */
+  
+/**
+  * @}
+  */
+  
+/** @addtogroup ETH_Private_Functions
+  * @{
+  */
 
 /**
   * @brief  Configures Ethernet MAC and DMA with default parameters.
-  * @param  heth: ETH handle
+  * @param  heth: pointer to a ETH_HandleTypeDef structure that contains
+  *         the configuration information for ETHERNET module
   * @param  err: Ethernet Init error
   * @retval HAL status
   */
@@ -1501,7 +1603,7 @@ static void ETH_MACDMAConfig(ETH_HandleTypeDef *heth, uint32_t err)
 {
   ETH_MACInitTypeDef macinit;
   ETH_DMAInitTypeDef dmainit;
-  uint32_t tmpreg = 0;
+  uint32_t tmpreg1 = 0U;
   
   if (err != ETH_SUCCESS) /* Auto-negotiation failed */
   {
@@ -1536,25 +1638,25 @@ static void ETH_MACDMAConfig(ETH_HandleTypeDef *heth, uint32_t err)
   macinit.PassControlFrames = ETH_PASSCONTROLFRAMES_BLOCKALL;
   macinit.BroadcastFramesReception = ETH_BROADCASTFRAMESRECEPTION_ENABLE;
   macinit.DestinationAddrFilter = ETH_DESTINATIONADDRFILTER_NORMAL;
-  macinit.PromiscuousMode = ETH_PROMISCIOUSMODE_DISABLE;
+  macinit.PromiscuousMode = ETH_PROMISCUOUS_MODE_DISABLE;
   macinit.MulticastFramesFilter = ETH_MULTICASTFRAMESFILTER_PERFECT;
   macinit.UnicastFramesFilter = ETH_UNICASTFRAMESFILTER_PERFECT;
-  macinit.HashTableHigh = 0x0;
-  macinit.HashTableLow = 0x0;
-  macinit.PauseTime = 0x0;
+  macinit.HashTableHigh = 0x0U;
+  macinit.HashTableLow = 0x0U;
+  macinit.PauseTime = 0x0U;
   macinit.ZeroQuantaPause = ETH_ZEROQUANTAPAUSE_DISABLE;
   macinit.PauseLowThreshold = ETH_PAUSELOWTHRESHOLD_MINUS4;
   macinit.UnicastPauseFrameDetect = ETH_UNICASTPAUSEFRAMEDETECT_DISABLE;
   macinit.ReceiveFlowControl = ETH_RECEIVEFLOWCONTROL_DISABLE;
   macinit.TransmitFlowControl = ETH_TRANSMITFLOWCONTROL_DISABLE;
   macinit.VLANTagComparison = ETH_VLANTAGCOMPARISON_16BIT;
-  macinit.VLANTagIdentifier = 0x0;
+  macinit.VLANTagIdentifier = 0x0U;
   
   /*------------------------ ETHERNET MACCR Configuration --------------------*/
   /* Get the ETHERNET MACCR value */
-  tmpreg = (heth->Instance)->MACCR;
+  tmpreg1 = (heth->Instance)->MACCR;
   /* Clear WD, PCE, PS, TE and RE bits */
-  tmpreg &= MACCR_CLEAR_MASK;
+  tmpreg1 &= ETH_MACCR_CLEAR_MASK;
   /* Set the WD bit according to ETH Watchdog value */
   /* Set the JD: bit according to ETH Jabber value */
   /* Set the IFG bit according to ETH InterFrameGap value */
@@ -1568,7 +1670,7 @@ static void ETH_MACDMAConfig(ETH_HandleTypeDef *heth, uint32_t err)
   /* Set the ACS bit according to ETH AutomaticPadCRCStrip value */
   /* Set the BL bit according to ETH BackOffLimit value */
   /* Set the DC bit according to ETH DeferralCheck value */
-  tmpreg |= (uint32_t)(macinit.Watchdog | 
+  tmpreg1 |= (uint32_t)(macinit.Watchdog | 
                        macinit.Jabber | 
                        macinit.InterFrameGap |
                        macinit.CarrierSense |
@@ -1583,13 +1685,13 @@ static void ETH_MACDMAConfig(ETH_HandleTypeDef *heth, uint32_t err)
                        macinit.DeferralCheck);
   
   /* Write to ETHERNET MACCR */
-  (heth->Instance)->MACCR = (uint32_t)tmpreg;
+  (heth->Instance)->MACCR = (uint32_t)tmpreg1;
   
   /* Wait until the write operation will be taken into account:
      at least four TX_CLK/RX_CLK clock cycles */
-  tmpreg = (heth->Instance)->MACCR;
+  tmpreg1 = (heth->Instance)->MACCR;
   HAL_Delay(ETH_REG_WRITE_DELAY);
-  (heth->Instance)->MACCR = tmpreg; 
+  (heth->Instance)->MACCR = tmpreg1; 
   
   /*----------------------- ETHERNET MACFFR Configuration --------------------*/ 
   /* Set the RA bit according to ETH ReceiveAll value */
@@ -1612,9 +1714,9 @@ static void ETH_MACDMAConfig(ETH_HandleTypeDef *heth, uint32_t err)
    
    /* Wait until the write operation will be taken into account:
       at least four TX_CLK/RX_CLK clock cycles */
-   tmpreg = (heth->Instance)->MACFFR;
+   tmpreg1 = (heth->Instance)->MACFFR;
    HAL_Delay(ETH_REG_WRITE_DELAY);
-   (heth->Instance)->MACFFR = tmpreg;
+   (heth->Instance)->MACFFR = tmpreg1;
    
    /*--------------- ETHERNET MACHTHR and MACHTLR Configuration --------------*/
    /* Write to ETHERNET MACHTHR */
@@ -1625,9 +1727,9 @@ static void ETH_MACDMAConfig(ETH_HandleTypeDef *heth, uint32_t err)
    /*----------------------- ETHERNET MACFCR Configuration -------------------*/
    
    /* Get the ETHERNET MACFCR value */  
-   tmpreg = (heth->Instance)->MACFCR;
+   tmpreg1 = (heth->Instance)->MACFCR;
    /* Clear xx bits */
-   tmpreg &= MACFCR_CLEAR_MASK;
+   tmpreg1 &= ETH_MACFCR_CLEAR_MASK;
    
    /* Set the PT bit according to ETH PauseTime value */
    /* Set the DZPQ bit according to ETH ZeroQuantaPause value */
@@ -1635,7 +1737,7 @@ static void ETH_MACDMAConfig(ETH_HandleTypeDef *heth, uint32_t err)
    /* Set the UP bit according to ETH UnicastPauseFrameDetect value */
    /* Set the RFE bit according to ETH ReceiveFlowControl value */
    /* Set the TFE bit according to ETH TransmitFlowControl value */ 
-   tmpreg |= (uint32_t)((macinit.PauseTime << 16) | 
+   tmpreg1 |= (uint32_t)((macinit.PauseTime << 16U) | 
                         macinit.ZeroQuantaPause |
                         macinit.PauseLowThreshold |
                         macinit.UnicastPauseFrameDetect | 
@@ -1643,13 +1745,13 @@ static void ETH_MACDMAConfig(ETH_HandleTypeDef *heth, uint32_t err)
                         macinit.TransmitFlowControl); 
    
    /* Write to ETHERNET MACFCR */
-   (heth->Instance)->MACFCR = (uint32_t)tmpreg;
+   (heth->Instance)->MACFCR = (uint32_t)tmpreg1;
    
    /* Wait until the write operation will be taken into account:
    at least four TX_CLK/RX_CLK clock cycles */
-   tmpreg = (heth->Instance)->MACFCR;
+   tmpreg1 = (heth->Instance)->MACFCR;
    HAL_Delay(ETH_REG_WRITE_DELAY);
-   (heth->Instance)->MACFCR = tmpreg;
+   (heth->Instance)->MACFCR = tmpreg1;
    
    /*----------------------- ETHERNET MACVLANTR Configuration ----------------*/
    /* Set the ETV bit according to ETH VLANTagComparison value */
@@ -1659,9 +1761,9 @@ static void ETH_MACDMAConfig(ETH_HandleTypeDef *heth, uint32_t err)
     
     /* Wait until the write operation will be taken into account:
        at least four TX_CLK/RX_CLK clock cycles */
-    tmpreg = (heth->Instance)->MACVLANTR;
+    tmpreg1 = (heth->Instance)->MACVLANTR;
     HAL_Delay(ETH_REG_WRITE_DELAY);
-    (heth->Instance)->MACVLANTR = tmpreg;
+    (heth->Instance)->MACVLANTR = tmpreg1;
     
     /* Ethernet DMA default initialization ************************************/
     dmainit.DropTCPIPChecksumErrorFrame = ETH_DROPTCPIPCHECKSUMERRORFRAME_ENABLE;
@@ -1678,13 +1780,13 @@ static void ETH_MACDMAConfig(ETH_HandleTypeDef *heth, uint32_t err)
     dmainit.RxDMABurstLength = ETH_RXDMABURSTLENGTH_32BEAT;
     dmainit.TxDMABurstLength = ETH_TXDMABURSTLENGTH_32BEAT;
     dmainit.EnhancedDescriptorFormat = ETH_DMAENHANCEDDESCRIPTOR_ENABLE;
-    dmainit.DescriptorSkipLength = 0x0;
+    dmainit.DescriptorSkipLength = 0x0U;
     dmainit.DMAArbitration = ETH_DMAARBITRATION_ROUNDROBIN_RXTX_1_1;
     
     /* Get the ETHERNET DMAOMR value */
-    tmpreg = (heth->Instance)->DMAOMR;
+    tmpreg1 = (heth->Instance)->DMAOMR;
     /* Clear xx bits */
-    tmpreg &= DMAOMR_CLEAR_MASK;
+    tmpreg1 &= ETH_DMAOMR_CLEAR_MASK;
     
     /* Set the DT bit according to ETH DropTCPIPChecksumErrorFrame value */
     /* Set the RSF bit according to ETH ReceiveStoreForward value */
@@ -1695,7 +1797,7 @@ static void ETH_MACDMAConfig(ETH_HandleTypeDef *heth, uint32_t err)
     /* Set the FUF bit according to ETH ForwardUndersizedGoodFrames value */
     /* Set the RTC bit according to ETH ReceiveThresholdControl value */
     /* Set the OSF bit according to ETH SecondFrameOperate value */
-    tmpreg |= (uint32_t)(dmainit.DropTCPIPChecksumErrorFrame | 
+    tmpreg1 |= (uint32_t)(dmainit.DropTCPIPChecksumErrorFrame | 
                          dmainit.ReceiveStoreForward |
                          dmainit.FlushReceivedFrame |
                          dmainit.TransmitStoreForward | 
@@ -1706,13 +1808,13 @@ static void ETH_MACDMAConfig(ETH_HandleTypeDef *heth, uint32_t err)
                          dmainit.SecondFrameOperate);
     
     /* Write to ETHERNET DMAOMR */
-    (heth->Instance)->DMAOMR = (uint32_t)tmpreg;
+    (heth->Instance)->DMAOMR = (uint32_t)tmpreg1;
     
     /* Wait until the write operation will be taken into account:
        at least four TX_CLK/RX_CLK clock cycles */
-    tmpreg = (heth->Instance)->DMAOMR;
+    tmpreg1 = (heth->Instance)->DMAOMR;
     HAL_Delay(ETH_REG_WRITE_DELAY);
-    (heth->Instance)->DMAOMR = tmpreg;
+    (heth->Instance)->DMAOMR = tmpreg1;
     
     /*----------------------- ETHERNET DMABMR Configuration ------------------*/
     /* Set the AAL bit according to ETH AddressAlignedBeats value */
@@ -1727,15 +1829,15 @@ static void ETH_MACDMAConfig(ETH_HandleTypeDef *heth, uint32_t err)
                                           dmainit.RxDMABurstLength |    /* !! if 4xPBL is selected for Tx or Rx it is applied for the other */
                                           dmainit.TxDMABurstLength |
                                           dmainit.EnhancedDescriptorFormat |
-                                          (dmainit.DescriptorSkipLength << 2) |
+                                          (dmainit.DescriptorSkipLength << 2U) |
                                           dmainit.DMAArbitration |
                                           ETH_DMABMR_USP); /* Enable use of separate PBL for Rx and Tx */
      
      /* Wait until the write operation will be taken into account:
         at least four TX_CLK/RX_CLK clock cycles */
-     tmpreg = (heth->Instance)->DMABMR;
+     tmpreg1 = (heth->Instance)->DMABMR;
      HAL_Delay(ETH_REG_WRITE_DELAY);
-     (heth->Instance)->DMABMR = tmpreg;
+     (heth->Instance)->DMABMR = tmpreg1;
 
      if((heth->Init).RxMode == ETH_RXINTERRUPT_MODE)
      {
@@ -1749,7 +1851,8 @@ static void ETH_MACDMAConfig(ETH_HandleTypeDef *heth, uint32_t err)
 
 /**
   * @brief  Configures the selected MAC address.
-  * @param  heth: ETH handle
+  * @param  heth: pointer to a ETH_HandleTypeDef structure that contains
+  *         the configuration information for ETHERNET module
   * @param  MacAddr: The MAC address to configure
   *          This parameter can be one of the following values:
   *             @arg ETH_MAC_Address0: MAC Address0 
@@ -1761,101 +1864,106 @@ static void ETH_MACDMAConfig(ETH_HandleTypeDef *heth, uint32_t err)
   */
 static void ETH_MACAddressConfig(ETH_HandleTypeDef *heth, uint32_t MacAddr, uint8_t *Addr)
 {
-  uint32_t tmpreg;
+  uint32_t tmpreg1;
   
   /* Check the parameters */
   assert_param(IS_ETH_MAC_ADDRESS0123(MacAddr));
   
   /* Calculate the selected MAC address high register */
-  tmpreg = ((uint32_t)Addr[5] << 8) | (uint32_t)Addr[4];
+  tmpreg1 = ((uint32_t)Addr[5U] << 8U) | (uint32_t)Addr[4U];
   /* Load the selected MAC address high register */
-  (*(__IO uint32_t *)((uint32_t)(ETH_MAC_ADDR_HBASE + MacAddr))) = tmpreg;
+  (*(__IO uint32_t *)((uint32_t)(ETH_MAC_ADDR_HBASE + MacAddr))) = tmpreg1;
   /* Calculate the selected MAC address low register */
-  tmpreg = ((uint32_t)Addr[3] << 24) | ((uint32_t)Addr[2] << 16) | ((uint32_t)Addr[1] << 8) | Addr[0];
+  tmpreg1 = ((uint32_t)Addr[3U] << 24U) | ((uint32_t)Addr[2U] << 16U) | ((uint32_t)Addr[1U] << 8U) | Addr[0U];
   
   /* Load the selected MAC address low register */
-  (*(__IO uint32_t *)((uint32_t)(ETH_MAC_ADDR_LBASE + MacAddr))) = tmpreg;
+  (*(__IO uint32_t *)((uint32_t)(ETH_MAC_ADDR_LBASE + MacAddr))) = tmpreg1;
 }
 
 /**
   * @brief  Enables the MAC transmission.
-  * @param  heth: ETH handle  
+  * @param  heth: pointer to a ETH_HandleTypeDef structure that contains
+  *         the configuration information for ETHERNET module  
   * @retval None
   */
 static void ETH_MACTransmissionEnable(ETH_HandleTypeDef *heth)
 { 
-  __IO uint32_t tmpreg = 0;
+  __IO uint32_t tmpreg1 = 0U;
   
   /* Enable the MAC transmission */
   (heth->Instance)->MACCR |= ETH_MACCR_TE;
   
   /* Wait until the write operation will be taken into account:
      at least four TX_CLK/RX_CLK clock cycles */
-  tmpreg = (heth->Instance)->MACCR;
-  HAL_Delay(ETH_REG_WRITE_DELAY);
-  (heth->Instance)->MACCR = tmpreg;
+  tmpreg1 = (heth->Instance)->MACCR;
+  ETH_Delay(ETH_REG_WRITE_DELAY);
+  (heth->Instance)->MACCR = tmpreg1;
 }
 
 /**
   * @brief  Disables the MAC transmission.
-  * @param  heth: ETH handle  
+  * @param  heth: pointer to a ETH_HandleTypeDef structure that contains
+  *         the configuration information for ETHERNET module  
   * @retval None
   */
 static void ETH_MACTransmissionDisable(ETH_HandleTypeDef *heth)
 { 
-  __IO uint32_t tmpreg = 0;
+  __IO uint32_t tmpreg1 = 0U;
   
   /* Disable the MAC transmission */
   (heth->Instance)->MACCR &= ~ETH_MACCR_TE;
   
   /* Wait until the write operation will be taken into account:
      at least four TX_CLK/RX_CLK clock cycles */
-  tmpreg = (heth->Instance)->MACCR;
-  HAL_Delay(ETH_REG_WRITE_DELAY);
-  (heth->Instance)->MACCR = tmpreg;
+  tmpreg1 = (heth->Instance)->MACCR;
+  ETH_Delay(ETH_REG_WRITE_DELAY);
+  (heth->Instance)->MACCR = tmpreg1;
 }
 
 /**
   * @brief  Enables the MAC reception.
-  * @param  heth: ETH handle   
+  * @param  heth: pointer to a ETH_HandleTypeDef structure that contains
+  *         the configuration information for ETHERNET module   
   * @retval None
   */
 static void ETH_MACReceptionEnable(ETH_HandleTypeDef *heth)
 { 
-  __IO uint32_t tmpreg = 0;
+  __IO uint32_t tmpreg1 = 0U;
   
   /* Enable the MAC reception */
   (heth->Instance)->MACCR |= ETH_MACCR_RE;
   
   /* Wait until the write operation will be taken into account:
      at least four TX_CLK/RX_CLK clock cycles */
-  tmpreg = (heth->Instance)->MACCR;
-  HAL_Delay(ETH_REG_WRITE_DELAY);
-  (heth->Instance)->MACCR = tmpreg;
+  tmpreg1 = (heth->Instance)->MACCR;
+  ETH_Delay(ETH_REG_WRITE_DELAY);
+  (heth->Instance)->MACCR = tmpreg1;
 }
 
 /**
   * @brief  Disables the MAC reception.
-  * @param  heth: ETH handle   
+  * @param  heth: pointer to a ETH_HandleTypeDef structure that contains
+  *         the configuration information for ETHERNET module   
   * @retval None
   */
 static void ETH_MACReceptionDisable(ETH_HandleTypeDef *heth)
 { 
-  __IO uint32_t tmpreg = 0;
+  __IO uint32_t tmpreg1 = 0U;
   
   /* Disable the MAC reception */
   (heth->Instance)->MACCR &= ~ETH_MACCR_RE; 
   
   /* Wait until the write operation will be taken into account:
      at least four TX_CLK/RX_CLK clock cycles */
-  tmpreg = (heth->Instance)->MACCR;
-  HAL_Delay(ETH_REG_WRITE_DELAY);
-  (heth->Instance)->MACCR = tmpreg;
+  tmpreg1 = (heth->Instance)->MACCR;
+  ETH_Delay(ETH_REG_WRITE_DELAY);
+  (heth->Instance)->MACCR = tmpreg1;
 }
 
 /**
   * @brief  Enables the DMA transmission.
-  * @param  heth: ETH handle   
+  * @param  heth: pointer to a ETH_HandleTypeDef structure that contains
+  *         the configuration information for ETHERNET module   
   * @retval None
   */
 static void ETH_DMATransmissionEnable(ETH_HandleTypeDef *heth)
@@ -1866,7 +1974,8 @@ static void ETH_DMATransmissionEnable(ETH_HandleTypeDef *heth)
 
 /**
   * @brief  Disables the DMA transmission.
-  * @param  heth: ETH handle   
+  * @param  heth: pointer to a ETH_HandleTypeDef structure that contains
+  *         the configuration information for ETHERNET module   
   * @retval None
   */
 static void ETH_DMATransmissionDisable(ETH_HandleTypeDef *heth)
@@ -1877,7 +1986,8 @@ static void ETH_DMATransmissionDisable(ETH_HandleTypeDef *heth)
 
 /**
   * @brief  Enables the DMA reception.
-  * @param  heth: ETH handle 
+  * @param  heth: pointer to a ETH_HandleTypeDef structure that contains
+  *         the configuration information for ETHERNET module 
   * @retval None
   */
 static void ETH_DMAReceptionEnable(ETH_HandleTypeDef *heth)
@@ -1888,7 +1998,8 @@ static void ETH_DMAReceptionEnable(ETH_HandleTypeDef *heth)
 
 /**
   * @brief  Disables the DMA reception.
-  * @param  heth: ETH handle 
+  * @param  heth: pointer to a ETH_HandleTypeDef structure that contains
+  *         the configuration information for ETHERNET module 
   * @retval None
   */
 static void ETH_DMAReceptionDisable(ETH_HandleTypeDef *heth)
@@ -1899,28 +2010,45 @@ static void ETH_DMAReceptionDisable(ETH_HandleTypeDef *heth)
 
 /**
   * @brief  Clears the ETHERNET transmit FIFO.
-  * @param  heth: ETH handle
+  * @param  heth: pointer to a ETH_HandleTypeDef structure that contains
+  *         the configuration information for ETHERNET module
   * @retval None
   */
 static void ETH_FlushTransmitFIFO(ETH_HandleTypeDef *heth)
 {
-  __IO uint32_t tmpreg = 0;
+  __IO uint32_t tmpreg1 = 0U;
   
   /* Set the Flush Transmit FIFO bit */
   (heth->Instance)->DMAOMR |= ETH_DMAOMR_FTF;
   
   /* Wait until the write operation will be taken into account:
      at least four TX_CLK/RX_CLK clock cycles */
-  tmpreg = (heth->Instance)->DMAOMR;
-  HAL_Delay(ETH_REG_WRITE_DELAY);
-  (heth->Instance)->DMAOMR = tmpreg;
+  tmpreg1 = (heth->Instance)->DMAOMR;
+  ETH_Delay(ETH_REG_WRITE_DELAY);
+  (heth->Instance)->DMAOMR = tmpreg1;
+}
+
+/**
+  * @brief  This function provides delay (in milliseconds) based on CPU cycles method.
+  * @param  mdelay: specifies the delay time length, in milliseconds.
+  * @retval None
+  */
+static void ETH_Delay(uint32_t mdelay)
+{
+  __IO uint32_t Delay = mdelay * (SystemCoreClock / 8 / 1000);
+  do 
+  {
+    __NOP();
+  } 
+  while (Delay --);
 }
 
 /**
   * @}
   */
 
-#endif /* STM32F405xx || STM32F415xx || STM32F407xx || STM32F417xx || STM32F427xx || STM32F437xx || STM32F429xx || STM32F439xx */
+#endif /* STM32F405xx || STM32F415xx || STM32F407xx || STM32F417xx || STM32F427xx ||\
+          STM32F437xx || STM32F429xx || STM32F439xx || STM32F469xx || STM32F479xx */
 #endif /* HAL_ETH_MODULE_ENABLED */
 /**
   * @}

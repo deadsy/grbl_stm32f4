@@ -2,13 +2,13 @@
   ******************************************************************************
   * @file    usbd_ioreq.c
   * @author  MCD Application Team
-  * @version V2.0.0
-  * @date    18-February-2014
+  * @version V2.4.2
+  * @date    11-December-2015
   * @brief   This file provides the IO requests APIs for control endpoints.
   ******************************************************************************
   * @attention
   *
-  * <h2><center>&copy; COPYRIGHT 2014 STMicroelectronics</center></h2>
+  * <h2><center>&copy; COPYRIGHT 2015 STMicroelectronics</center></h2>
   *
   * Licensed under MCD-ST Liberty SW License Agreement V2, (the "License");
   * You may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "usbd_ioreq.h"
 
-/** @addtogroup STM32_USB_OTG_DEVICE_LIBRARY
+/** @addtogroup STM32_USB_DEVICE_LIBRARY
   * @{
   */
 
@@ -127,7 +127,7 @@ USBD_StatusTypeDef  USBD_CtlContinueSendData (USBD_HandleTypeDef  *pdev,
 /**
 * @brief  USBD_CtlPrepareRx
 *         receive data on the ctl pipe
-* @param  pdev: USB OTG device instance
+* @param  pdev: device instance
 * @param  buff: pointer to data buffer
 * @param  len: length of data to be received
 * @retval status
@@ -152,7 +152,7 @@ USBD_StatusTypeDef  USBD_CtlPrepareRx (USBD_HandleTypeDef  *pdev,
 /**
 * @brief  USBD_CtlContinueRx
 *         continue receive data on the ctl pipe
-* @param  pdev: USB OTG device instance
+* @param  pdev: device instance
 * @param  buff: pointer to data buffer
 * @param  len: length of data to be received
 * @retval status
@@ -171,7 +171,7 @@ USBD_StatusTypeDef  USBD_CtlContinueRx (USBD_HandleTypeDef  *pdev,
 /**
 * @brief  USBD_CtlSendStatus
 *         send zero lzngth packet on the ctl pipe
-* @param  pdev: USB OTG device instance
+* @param  pdev: device instance
 * @retval status
 */
 USBD_StatusTypeDef  USBD_CtlSendStatus (USBD_HandleTypeDef  *pdev)
@@ -189,7 +189,7 @@ USBD_StatusTypeDef  USBD_CtlSendStatus (USBD_HandleTypeDef  *pdev)
 /**
 * @brief  USBD_CtlReceiveStatus
 *         receive zero lzngth packet on the ctl pipe
-* @param  pdev: USB OTG device instance
+* @param  pdev: device instance
 * @retval status
 */
 USBD_StatusTypeDef  USBD_CtlReceiveStatus (USBD_HandleTypeDef  *pdev)
@@ -210,8 +210,8 @@ USBD_StatusTypeDef  USBD_CtlReceiveStatus (USBD_HandleTypeDef  *pdev)
 /**
 * @brief  USBD_GetRxCount
 *         returns the received data length
-* @param  pdev: USB OTG device instance
-*         epnum: endpoint index
+* @param  pdev: device instance
+* @param  ep_addr: endpoint address
 * @retval Rx Data blength
 */
 uint16_t  USBD_GetRxCount (USBD_HandleTypeDef  *pdev , uint8_t ep_addr)

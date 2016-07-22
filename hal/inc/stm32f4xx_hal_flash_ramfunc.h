@@ -1,11 +1,11 @@
 /**
   ******************************************************************************
-  * @file    system_stm32f4xx.h
+  * @file    stm32f4xx_hal_flash_ramfunc.h
   * @author  MCD Application Team
-  * @version V2.5.0
-  * @date    22-April-2016
-  * @brief   CMSIS Cortex-M4 Device System Source File for STM32F4xx devices.       
-  ******************************************************************************  
+  * @version V1.5.0
+  * @date    06-May-2016
+  * @brief   Header file of FLASH RAMFUNC driver.
+  ******************************************************************************
   * @attention
   *
   * <h2><center>&copy; COPYRIGHT(c) 2016 STMicroelectronics</center></h2>
@@ -32,91 +32,66 @@
   * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
   * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   *
-  ******************************************************************************  
+  ******************************************************************************
   */ 
 
-/** @addtogroup CMSIS
-  * @{
-  */
-
-/** @addtogroup stm32f4xx_system
-  * @{
-  */  
-  
-/**
-  * @brief Define to prevent recursive inclusion
-  */
-#ifndef __SYSTEM_STM32F4XX_H
-#define __SYSTEM_STM32F4XX_H
+/* Define to prevent recursive inclusion -------------------------------------*/
+#ifndef __STM32F4xx_FLASH_RAMFUNC_H
+#define __STM32F4xx_FLASH_RAMFUNC_H
 
 #ifdef __cplusplus
  extern "C" {
-#endif 
+#endif
+#if defined(STM32F410Tx) || defined(STM32F410Cx) || defined(STM32F410Rx) || defined(STM32F411xE) || defined(STM32F446xx) || defined(STM32F412Zx) ||\
+    defined(STM32F412Vx) || defined(STM32F412Rx) || defined(STM32F412Cx)  
 
-/** @addtogroup STM32F4xx_System_Includes
+/* Includes ------------------------------------------------------------------*/
+#include "stm32f4xx_hal_def.h"
+
+/** @addtogroup STM32F4xx_HAL_Driver
   * @{
   */
+
+/** @addtogroup FLASH_RAMFUNC
+  * @{
+  */
+
+/* Exported types ------------------------------------------------------------*/
+/* Exported macro ------------------------------------------------------------*/
+/* Exported functions --------------------------------------------------------*/
+/** @addtogroup FLASH_RAMFUNC_Exported_Functions
+  * @{
+  */
+
+/** @addtogroup FLASH_RAMFUNC_Exported_Functions_Group1
+  * @{
+  */   
+__RAM_FUNC HAL_FLASHEx_StopFlashInterfaceClk(void);
+__RAM_FUNC HAL_FLASHEx_StartFlashInterfaceClk(void);
+__RAM_FUNC HAL_FLASHEx_EnableFlashSleepMode(void);
+__RAM_FUNC HAL_FLASHEx_DisableFlashSleepMode(void);
+/**
+  * @}
+  */ 
 
 /**
   * @}
   */
 
-
-/** @addtogroup STM32F4xx_System_Exported_types
-  * @{
-  */
-  /* This variable is updated in three ways:
-      1) by calling CMSIS function SystemCoreClockUpdate()
-      2) by calling HAL API function HAL_RCC_GetSysClockFreq()
-      3) each time HAL_RCC_ClockConfig() is called to configure the system clock frequency 
-         Note: If you use this function to configure the system clock; then there
-               is no need to call the 2 first functions listed above, since SystemCoreClock
-               variable is updated automatically.
-  */
-extern uint32_t SystemCoreClock;          /*!< System Clock Frequency (Core Clock) */
-
+/**
+  * @}
+  */ 
 
 /**
   * @}
   */
 
-/** @addtogroup STM32F4xx_System_Exported_Constants
-  * @{
-  */
-
-/**
-  * @}
-  */
-
-/** @addtogroup STM32F4xx_System_Exported_Macros
-  * @{
-  */
-
-/**
-  * @}
-  */
-
-/** @addtogroup STM32F4xx_System_Exported_Functions
-  * @{
-  */
-  
-extern void SystemInit(void);
-extern void SystemCoreClockUpdate(void);
-/**
-  * @}
-  */
-
+#endif /* STM32F410xx || STM32F411xE || STM32F446xx || STM32F412Zx || STM32F412Vx || STM32F412Rx || STM32F412Cx */  
 #ifdef __cplusplus
 }
 #endif
 
-#endif /*__SYSTEM_STM32F4XX_H */
 
-/**
-  * @}
-  */
-  
-/**
-  * @}
-  */  
+#endif /* __STM32F4xx_FLASH_RAMFUNC_H */
+
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

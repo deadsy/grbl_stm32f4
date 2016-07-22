@@ -1,18 +1,33 @@
 #!/usr/bin/python
-
 # copy selcted sdk files from the unzipped sdk into the grbl_stm32f4 source
 
-sdk_dir = '/sdk'
-hal_src = sdk_dir + '/'
-hal_inc = sdk_dir + '/'
-usbd_core = sdk_dir + '/'
-usbd_cdc = sdk_dir + '/'
-cmsis = sdk_dir + '/'
+import os
+import filecmp
+import shutil
 
-grbl_dir = '/grbl'
+sdk_dir = '/home/jasonh/work/hw_docs/st/cube/STM32Cube_FW_F4_V1.12.0/'
+grbl_dir = '/home/jasonh/work/grbl_stm32f4/'
+
+hal = sdk_dir + 'Drivers/STM32F4xx_HAL_Driver/'
+hal_src = hal + 'Src/'
+hal_inc = hal + 'Inc/'
+
+usbd_core = sdk_dir + 'Middlewares/ST/STM32_USB_Device_Library/Core/'
+usbd_core_inc = usbd_core + 'Inc/'
+usbd_core_src = usbd_core + 'Src/'
+
+usbd_cdc = sdk_dir + 'Middlewares/ST/STM32_USB_Device_Library/Class/CDC/'
+usbd_cdc_inc = usbd_cdc + 'Inc/'
+usbd_cdc_src = usbd_cdc + 'Src/'
+
+cmsis = sdk_dir + 'Drivers/CMSIS/'
+cmsis_inc = cmsis + 'Include/'
+cmsis_dev = cmsis + 'Device/ST/STM32F4xx/Include/'
 
 sdk_files = (
   # HAL include files
+  (hal_inc + 'Legacy/stm32_hal_legacy.h', 'hal/inc/Legacy'),
+  (hal_inc + 'stm32f4xx_hal_flash_ramfunc.h', 'hal/inc'),
   (hal_inc + 'stm32f4xx_hal_adc_ex.h', 'hal/inc'),
   (hal_inc + 'stm32f4xx_hal_adc.h', 'hal/inc'),
   (hal_inc + 'stm32f4xx_hal_can.h', 'hal/inc'),
@@ -127,29 +142,46 @@ sdk_files = (
   (hal_src + 'stm32f4xx_ll_sdmmc.c', 'hal/src'),
   (hal_src + 'stm32f4xx_ll_usb.c', 'hal/src'),
   # USB Device core
-  (usbd_core + 'usbd_core.c', 'usb/core'),
-  (usbd_core + 'usbd_core.h', 'usb/core'),
-  (usbd_core + 'usbd_ctlreq.c', 'usb/core'),
-  (usbd_core + 'usbd_ctlreq.h', 'usb/core'),
-  (usbd_core + 'usbd_def.h', 'usb/core'),
-  (usbd_core + 'usbd_ioreq.c', 'usb/core'),
-  (usbd_core + 'usbd_ioreq.h', 'usb/core'),
+  (usbd_core_src + 'usbd_core.c', 'usb/core'),
+  (usbd_core_src + 'usbd_ctlreq.c', 'usb/core'),
+  (usbd_core_src + 'usbd_ioreq.c', 'usb/core'),
+  (usbd_core_inc + 'usbd_core.h', 'usb/core'),
+  (usbd_core_inc + 'usbd_ctlreq.h', 'usb/core'),
+  (usbd_core_inc + 'usbd_def.h', 'usb/core'),
+  (usbd_core_inc + 'usbd_ioreq.h', 'usb/core'),
   # USB Device CDC
-  (usbd_cdc + 'usbd_cdc.c', 'usb/cdc'),
-  (usbd_cdc + 'usbd_cdc.h', 'usb/cdc'),
+  (usbd_cdc_src + 'usbd_cdc.c', 'usb/cdc'),
+  (usbd_cdc_inc + 'usbd_cdc.h', 'usb/cdc'),
   # CMSIS
-  (cmsis + 'core_cm4.h', 'cmsis'),
-  (cmsis + 'core_cm4_simd.h', 'cmsis'),
-  (cmsis + 'core_cmFunc.h', 'cmsis'),
-  (cmsis + 'core_cmInstr.h', 'cmsis'),
-  (cmsis + 'stm32f407xx.h', 'cmsis'),
-  (cmsis + 'stm32f4xx.h', 'cmsis'),
-  (cmsis + 'system_stm32f4xx.h', 'cmsis'),
+  (cmsis_inc + 'core_cm4.h', 'cmsis'),
+  (cmsis_inc + 'cmsis_gcc.h', 'cmsis'),
+  (cmsis_inc + 'core_cmSimd.h', 'cmsis'),
+  (cmsis_inc + 'core_cmFunc.h', 'cmsis'),
+  (cmsis_inc + 'core_cmInstr.h', 'cmsis'),
+  # CMSIS Device
+  (cmsis_dev + 'stm32f407xx.h', 'cmsis'),
+  (cmsis_dev + 'stm32f4xx.h', 'cmsis'),
+  (cmsis_dev + 'system_stm32f4xx.h', 'cmsis'),
 )
 
 def main():
   for (src, dst) in sdk_files:
-    dst = '%s/%s' % (grbl_dir, dst)
-    print 'cp %s %s' % (src, dst)
+
+    dst = grbl_dir + dst + '/' + src.split('/')[-1]
+
+    if not os.path.exists(src):
+      print('src %s does not exist' % src)
+      continue
+
+    #if not os.path.exists(dst):
+    #  print('dst %s does not exist' % dst)
+    #  continue
+
+    #if not filecmp.cmp(src, dst, shallow = False):
+    #  print('%s and %s do not match' % (src, dst))
+
+    #print src, dst
+
+    shutil.copyfile(src, dst)
 
 main()
