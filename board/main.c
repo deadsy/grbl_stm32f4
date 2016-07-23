@@ -5,6 +5,7 @@
 //-----------------------------------------------------------------------------
 
 #include "stm32f4xx_hal.h"
+#include "SEGGER_RTT.h"
 
 #include "gpio.h"
 #include "debounce.h"
@@ -119,9 +120,15 @@ int main(void)
 {
     HAL_Init();
     SystemClock_Config();
+    SEGGER_RTT_Init();
     gpio_init();
     timers_init();
     debounce_init();
+
+    SEGGER_RTT_TerminalOut(0, "msg1on0");
+    SEGGER_RTT_TerminalOut(0, "message2on0");
+    SEGGER_RTT_TerminalOut(1, "msg3on1");
+    SEGGER_RTT_TerminalOut(1, "message4on1");
 
 #ifdef USB_SERIAL
     USBD_Init(&hUSBDDevice, &VCP_Desc, 0);

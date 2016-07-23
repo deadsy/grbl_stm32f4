@@ -11,7 +11,7 @@ X_GDB = $(XTOOLS_DIR)/bin/arm-none-eabi-gdb
 
 OUTPUT = grbl_stm32f4
 
-USB_SERIAL = 0
+USB_SERIAL = 1
 
 # grbl sources
 GRBL_DIR = ./grbl/grbl-master
@@ -85,6 +85,7 @@ OBJ += $(BOARD_DIR)/start.o
 INC = .
 INC += ./cmsis
 INC += ./hal/inc
+INC += $(RTT_DIR)
 INC += $(BOARD_DIR)
 INC += $(GRBL_DIR)
 INC += $(USB_DIR)/core
