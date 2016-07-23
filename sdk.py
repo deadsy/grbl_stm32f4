@@ -63,6 +63,7 @@ sdk_files = (
   (hal_inc + 'stm32f4xx_hal_nor.h', 'hal/inc'),
   (hal_inc + 'stm32f4xx_hal_pccard.h', 'hal/inc'),
   (hal_inc + 'stm32f4xx_hal_pcd.h', 'hal/inc'),
+  (hal_inc + 'stm32f4xx_hal_pcd_ex.h', 'hal/inc'),
   (hal_inc + 'stm32f4xx_hal_pwr_ex.h', 'hal/inc'),
   (hal_inc + 'stm32f4xx_hal_pwr.h', 'hal/inc'),
   (hal_inc + 'stm32f4xx_hal_rcc_ex.h', 'hal/inc'),
@@ -85,6 +86,8 @@ sdk_files = (
   (hal_inc + 'stm32f4xx_ll_fsmc.h', 'hal/inc'),
   (hal_inc + 'stm32f4xx_ll_sdmmc.h', 'hal/inc'),
   (hal_inc + 'stm32f4xx_ll_usb.h', 'hal/inc'),
+
+
   # HAL source files
   (hal_src + 'stm32f4xx_hal_adc.c', 'hal/src'),
   (hal_src + 'stm32f4xx_hal_adc_ex.c', 'hal/src'),
@@ -119,6 +122,7 @@ sdk_files = (
   (hal_src + 'stm32f4xx_hal_nor.c', 'hal/src'),
   (hal_src + 'stm32f4xx_hal_pccard.c', 'hal/src'),
   (hal_src + 'stm32f4xx_hal_pcd.c', 'hal/src'),
+  (hal_src + 'stm32f4xx_hal_pcd_ex.c', 'hal/src'),
   (hal_src + 'stm32f4xx_hal_pwr.c', 'hal/src'),
   (hal_src + 'stm32f4xx_hal_pwr_ex.c', 'hal/src'),
   (hal_src + 'stm32f4xx_hal_rcc.c', 'hal/src'),

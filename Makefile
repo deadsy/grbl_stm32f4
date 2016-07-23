@@ -70,7 +70,9 @@ ifeq ($(USB_SERIAL), 1)
          $(BOARD_DIR)/usbd_cdc_interface.c \
          $(HAL_DIR)/stm32f4xx_ll_usb.c \
          $(HAL_DIR)/stm32f4xx_hal_pcd.c \
-         $(HAL_DIR)/stm32f4xx_hal_dma.c
+         $(HAL_DIR)/stm32f4xx_hal_pcd_ex.c \
+         $(HAL_DIR)/stm32f4xx_hal_dma.c \
+
 else
   # uart sources
   SRC += $(BOARD_DIR)/usart.c
