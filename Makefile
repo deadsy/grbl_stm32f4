@@ -1,8 +1,8 @@
 
 # cross compilation tools
-XTOOLS_DIR = /opt/gcc-arm-none-eabi-4_9-2015q2
+XTOOLS_DIR = /opt/gcc-arm-none-eabi-5_4-2016q2
 X_LIBC_DIR = $(XTOOLS_DIR)/arm-none-eabi/lib/armv7e-m/fpu
-X_LIBGCC_DIR = $(XTOOLS_DIR)/lib/gcc/arm-none-eabi/4.9.3/armv7e-m/fpu
+X_LIBGCC_DIR = $(XTOOLS_DIR)/lib/gcc/arm-none-eabi/5.4.1/armv7e-m/fpu
 X_CC = $(XTOOLS_DIR)/bin/arm-none-eabi-gcc
 X_OBJCOPY = $(XTOOLS_DIR)/bin/arm-none-eabi-objcopy
 X_AR = $(XTOOLS_DIR)/bin/arm-none-eabi-ar
