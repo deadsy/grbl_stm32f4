@@ -1,6 +1,5 @@
 GRBL = grbl-master
 WORK_DIR = $(GRBL)
-
 TARFILE = $(GRBL).tar.bz2
 
 PATCHFILES = $(sort $(wildcard patches/*.patch))
@@ -15,6 +14,7 @@ all:
 	tar jxf $(TARFILE)
 	$(PATCH_CMD)
 	cd files; tar -c -f - * | (cd ../$(WORK_DIR) ; tar xfp -)
+	make -C $(WORK_DIR) libgrbl.a
 
 clean:
 	-rm -rf $(WORK_DIR)
