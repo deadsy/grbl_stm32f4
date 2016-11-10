@@ -54,7 +54,7 @@ static const GPIO_INFO gpio_info[] = {
 
 void gpio_init(void)
 {
-    int i;
+    unsigned int i;
 
     for (i = 0; i < sizeof(gpio_info)/sizeof(GPIO_INFO); i ++) {
         const GPIO_INFO *gpio = &gpio_info[i];
