@@ -10,7 +10,6 @@ Using USART2/AF7 mapped to PA2(tx) PA3(rx).
 
 #include "stm32f4xx_hal.h"
 #include "usart.h"
-#include "serial.h"
 #include "gpio.h"
 
 //-----------------------------------------------------------------------------
@@ -22,28 +21,24 @@ Using USART2/AF7 mapped to PA2(tx) PA3(rx).
 
 #ifdef SERIAL_POLLED
 
-void usart_putc(char c)
-{
-    USART_TypeDef* const usart = USART2;
-    while ((usart->SR & USART_SR_TXE) == 0);
-    usart->DR = c;
+void usart_putc(char c) {
+  USART_TypeDef* const usart = USART2;
+  while ((usart->SR & USART_SR_TXE) == 0);
+  usart->DR = c;
 }
 
-void usart_flush(void)
-{
+void usart_flush(void) {
 }
 
 // return non-zero if we have rx data
-int usart_tstc(void)
-{
-    USART_TypeDef* const usart = USART2;
-    return (usart->SR & USART_SR_RXNE) != 0;
+int usart_tstc(void) {
+  USART_TypeDef* const usart = USART2;
+  return (usart->SR & USART_SR_RXNE) != 0;
 }
 
-char usart_getc(void)
-{
-    USART_TypeDef* const usart = USART2;
-    return usart->DR & 255;
+char usart_getc(void) {
+  USART_TypeDef* const usart = USART2;
+  return usart->DR & 255;
 }
 
 //-----------------------------------------------------------------------------
@@ -64,8 +59,7 @@ static int rx_errors;
 #define cli() NVIC_DisableIRQ(USART2_IRQn)
 #define sei() NVIC_EnableIRQ(USART2_IRQn)
 
-void USART2_IRQHandler(void)
-{
+void USART2_IRQHandler(void) {
   USART_TypeDef* const usart = USART2;
   uint32_t status = usart->SR;
 
@@ -104,8 +98,7 @@ void USART2_IRQHandler(void)
   }
 }
 
-void usart_putc(char c)
-{
+void usart_putc(char c) {
   USART_TypeDef* const usart = USART2;
   int tx_wr_inc = INC_MOD(tx_wr, TXBUF_SIZE);
   // wait for space
@@ -119,22 +112,15 @@ void usart_putc(char c)
   usart->CR1 |= USART_CR1_TXEIE;
 }
 
-void usart_flush(void)
-{
+void usart_flush(void) {
 }
 
 // return non-zero if we have rx data
-int usart_tstc(void)
-{
-  int status;
-  cli();
-  status = (rx_rd != rx_wr);
-  sei();
-  return status;
+int usart_tstc(void) {
+  return rx_rd != rx_wr;
 }
 
-char usart_getc(void)
-{
+char usart_getc(void) {
   char c;
   // wait for a character
   while (usart_tstc() == 0);
@@ -150,46 +136,43 @@ char usart_getc(void)
 //-----------------------------------------------------------------------------
 
 // enable the peripheral clock for the usart
-static void enable_usart_clock(USART_TypeDef *usart)
-{
-    if (usart == USART1) {
-        RCC->APB2ENR |= RCC_APB2ENR_USART1EN;
-    } else if (usart == USART2) {
-        RCC->APB1ENR |= RCC_APB1ENR_USART2EN;
-    } else if (usart == USART3) {
-        RCC->APB1ENR |= RCC_APB1ENR_USART3EN;
-    } else if (usart == UART4) {
-        RCC->APB1ENR |= RCC_APB1ENR_UART4EN;
-    } else if (usart == UART5) {
-        RCC->APB1ENR |= RCC_APB1ENR_UART5EN;
-    } else if (usart == USART6) {
-        RCC->APB2ENR |= RCC_APB2ENR_USART6EN;
-    }
+static void enable_usart_clock(USART_TypeDef *usart) {
+  if (usart == USART1) {
+    RCC->APB2ENR |= RCC_APB2ENR_USART1EN;
+  } else if (usart == USART2) {
+    RCC->APB1ENR |= RCC_APB1ENR_USART2EN;
+  } else if (usart == USART3) {
+    RCC->APB1ENR |= RCC_APB1ENR_USART3EN;
+  } else if (usart == UART4) {
+    RCC->APB1ENR |= RCC_APB1ENR_UART4EN;
+  } else if (usart == UART5) {
+    RCC->APB1ENR |= RCC_APB1ENR_UART5EN;
+  } else if (usart == USART6) {
+    RCC->APB2ENR |= RCC_APB2ENR_USART6EN;
+  }
 }
 
 //-----------------------------------------------------------------------------
 
-static void set_baud_rate(USART_TypeDef *usart, int baud)
-{
-    if (usart->CR1 & USART_CR1_OVER8) {
-        if (usart == USART1 || usart == USART6) {
-            usart->BRR = __UART_BRR_SAMPLING8(HAL_RCC_GetPCLK2Freq(), baud);
-        } else {
-            usart->BRR = __UART_BRR_SAMPLING8(HAL_RCC_GetPCLK1Freq(), baud);
-        }
+static void set_baud_rate(USART_TypeDef *usart, int baud) {
+  if (usart->CR1 & USART_CR1_OVER8) {
+    if (usart == USART1 || usart == USART6) {
+      usart->BRR = __UART_BRR_SAMPLING8(HAL_RCC_GetPCLK2Freq(), baud);
     } else {
-        if (usart == USART1 || usart == USART6) {
-            usart->BRR = __UART_BRR_SAMPLING16(HAL_RCC_GetPCLK2Freq(), baud);
-        } else {
-            usart->BRR = __UART_BRR_SAMPLING16(HAL_RCC_GetPCLK1Freq(), baud);
-        }
+      usart->BRR = __UART_BRR_SAMPLING8(HAL_RCC_GetPCLK1Freq(), baud);
     }
+  } else {
+    if (usart == USART1 || usart == USART6) {
+      usart->BRR = __UART_BRR_SAMPLING16(HAL_RCC_GetPCLK2Freq(), baud);
+    } else {
+      usart->BRR = __UART_BRR_SAMPLING16(HAL_RCC_GetPCLK1Freq(), baud);
+    }
+  }
 }
 
 //-----------------------------------------------------------------------------
 
-void usart_init(void)
-{
+void usart_init(void) {
     USART_TypeDef* const usart = USART2;
     uint32_t val;
 
@@ -248,58 +231,54 @@ void usart_init(void)
 }
 
 //-----------------------------------------------------------------------------
-// these are the serial api functions used by grbl and stdio
 
-void serial_init(void)
-{
-    // do nothing
+// write a buffer of character to the serial port
+// return the number of characters written.
+ssize_t serial_write(const void *buf, size_t count) {
+  char *cbuf = (char*)buf;
+  size_t i;
+  for (i = 0; i < count; i ++) {
+    usart_putc(cbuf[i]);
+  }
+  return count;
 }
 
-// write a character to the tx buffer
-void serial_write(uint8_t data)
-{
-  usart_putc(data);
-}
-
-// hook up stdio output to the serial port
-int __io_putchar(int ch)
-{
-  usart_putc(ch);
+int serial_flush(void) {
+  usart_flush();
   return 0;
 }
 
-// read a character from the rx buffer
-uint8_t serial_read(void)
-{
-  if (usart_tstc()) {
-    uint8_t c = usart_getc();
-    if (!serial_rx_hook(c)) {
-      return c;
+// read a character from the serial port, return the number of characters read
+// timeout = 0 : return immediately if there is no character
+// timeout < 0 : wait until we have a character
+// timeout > 0 : wait for n ticks (ms)
+int serial_getc(char *c, int timeout) {
+  if (timeout == 0) {
+    // no timeout
+    if (usart_tstc()) {
+      *c = usart_getc();
+      return 1;
+    } else {
+      // no character
+      return 0;
     }
+  } else if (timeout < 0) {
+    // wait forever
+    while (usart_tstc() == 0);
+    *c = usart_getc();
+    return 1;
+  } else {
+    // defined timeout
+    uint32_t to = HAL_GetTick() + timeout;
+    while (HAL_GetTick() < to) {
+      if (usart_tstc()) {
+        *c = usart_getc();
+        return 1;
+      }
+    }
+    // timeout
+    return -1;
   }
-  return SERIAL_NO_DATA;
-}
-
-// Reset and empty data in read buffer. Used by e-stop and reset.
-void serial_reset_read_buffer(void)
-{
-  while (usart_tstc()) {
-    usart_getc();
-  }
-}
-
-// Returns the number of bytes used in the RX serial buffer.
-uint8_t serial_get_rx_buffer_count(void)
-{
-  // TODO
-  return 0;
-}
-
-// Returns the number of bytes used in the TX serial buffer.
-uint8_t serial_get_tx_buffer_count(void)
-{
-  // TODO
-  return 0;
 }
 
 //-----------------------------------------------------------------------------
