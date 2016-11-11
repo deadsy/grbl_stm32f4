@@ -41,6 +41,5 @@ X_CFLAGS += -Wno-unused-parameter
 libgrbl.a: $(OBJ)
 	$(X_AR) rcs $@ $(OBJ)
 
-# Clean up
 clean:
 	rm -f *.o *.a

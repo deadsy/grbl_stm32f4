@@ -1,7 +1,7 @@
 TOP = ../../../..
 include $(TOP)/mk/common.mk
 
-OUTPUT = grbl_stm32f4
+OUTPUT = grbl
 
 #USB_SERIAL = 1
 
@@ -94,14 +94,11 @@ X_CFLAGS += -Wno-strict-prototypes
 .c.o:
 	$(X_GCC) $(INCLUDE) $(DEFINE) $(X_CFLAGS) -c $< -o $@
 
-.PHONY: all program clean
+.PHONY: all clean
 
 all: $(OBJ)
 	$(X_GCC) $(X_CFLAGS) $(X_LDFLAGS) $(OBJ) -lgrbl -lm -o $(OUTPUT)
 	$(X_OBJCOPY) -O binary $(OUTPUT) $(OUTPUT).bin
-
-program: 
-	st-flash write $(OUTPUT).bin 0x08000000
 
 clean:
 	-rm $(OBJ)	
