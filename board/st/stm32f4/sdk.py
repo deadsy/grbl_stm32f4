@@ -5,8 +5,10 @@ import os
 import filecmp
 import shutil
 
-sdk_dir = '/home/jasonh/work/hw_docs/st/cube/STM32Cube_FW_F4_V1.12.0/'
-grbl_dir = '/home/jasonh/work/grbl_stm32f4/'
+home_dir = '/home/jasonh/work/jasonh/'
+
+sdk_dir = home_dir + 'hw_docs/st/cube/STM32Cube_FW_F4_V1.16.0/'
+grbl_dir = home_dir + 'grbl_stm32f4/board/st/stm32f4/'
 
 hal = sdk_dir + 'Drivers/STM32F4xx_HAL_Driver/'
 hal_src = hal + 'Src/'
@@ -173,9 +175,9 @@ def main():
 
     dst = grbl_dir + dst + '/' + src.split('/')[-1]
 
-    if not os.path.exists(src):
-      print('src %s does not exist' % src)
-      continue
+    #if not os.path.exists(src):
+    #  print('src %s does not exist' % src)
+    #  continue
 
     #if not os.path.exists(dst):
     #  print('dst %s does not exist' % dst)
