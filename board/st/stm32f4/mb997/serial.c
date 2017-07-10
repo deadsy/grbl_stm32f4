@@ -39,16 +39,19 @@ void serial_reset_read_buffer(void) {
   }
 }
 
+// Returns the number of bytes available in the RX serial buffer.
+int serial_get_rx_buffer_available(void) {
+  return usart_rxbuf_avail();
+}
+
 // Returns the number of bytes used in the RX serial buffer.
-uint8_t serial_get_rx_buffer_count(void) {
-  // TODO
-  return 0;
+int serial_get_rx_buffer_count(void) {
+  return usart_rxbuf_used();
 }
 
 // Returns the number of bytes used in the TX serial buffer.
-uint8_t serial_get_tx_buffer_count(void) {
-  // TODO
-  return 0;
+int serial_get_tx_buffer_count(void) {
+  return usart_txbuf_used();
 }
 
 //-----------------------------------------------------------------------------

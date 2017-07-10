@@ -1,24 +1,25 @@
 TOP = ../..
 include $(TOP)/mk/common.mk
 
-SRC = coolant_control.c \
-      delay.c \
-      eeprom.c \
-      gcode.c \
-      limits.c \
-      main.c \
-      motion_control.c \
-      nuts_bolts.c \
-      planner.c \
-      print.c \
-      probe.c \
-      protocol.c \
-      report.c \
-      settings.c \
-      spindle_control.c \
-      serial.c \
-      stepper.c \
-      system.c \
+SRC = grbl/coolant_control.c \
+      grbl/delay.c \
+      grbl/eeprom.c \
+      grbl/gcode.c \
+      grbl/jog.c \
+      grbl/limits.c \
+      grbl/main.c \
+      grbl/motion_control.c \
+      grbl/nuts_bolts.c \
+      grbl/planner.c \
+      grbl/print.c \
+      grbl/probe.c \
+      grbl/protocol.c \
+      grbl/report.c \
+      grbl/settings.c \
+      grbl/spindle_control.c \
+      grbl/serial.c \
+      grbl/stepper.c \
+      grbl/system.c \
 
 OBJ = $(SRC:.c=.o)
 
@@ -36,7 +37,7 @@ X_CFLAGS += -Wno-strict-prototypes
 X_CFLAGS += -Wno-unused-parameter
 
 .c.o:
-	$(X_GCC) $(INCLUDE) $(DEFINE) $(X_CFLAGS) -c $*.c
+	$(X_GCC) $(INCLUDE) $(DEFINE) $(X_CFLAGS) -c $< -o $@
 
 libgrbl.a: $(OBJ)
 	$(X_AR) rcs $@ $(OBJ)

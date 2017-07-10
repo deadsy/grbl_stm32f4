@@ -53,7 +53,7 @@ char usart_getc(void) {
 
 static uint8_t txbuf[TXBUF_SIZE];
 static uint8_t rxbuf[RXBUF_SIZE];
-static volatile int rx_wr, rx_rd, tx_wr, tx_rd;
+static volatile int rx_wr, rx_rd, rx_n, tx_wr, tx_rd, tx_n;
 static int rx_errors;
 
 #define cli() NVIC_DisableIRQ(USART2_IRQn)
@@ -75,6 +75,7 @@ void USART2_IRQHandler(void) {
     if (rx_wr_inc != rx_rd) {
       rxbuf[rx_wr] = c;
       rx_wr = rx_wr_inc;
+      rx_n ++;
     } else {
       // rx buffer overflow
       rx_errors ++;
@@ -86,6 +87,7 @@ void USART2_IRQHandler(void) {
     if (tx_rd != tx_wr) {
       usart->DR = txbuf[tx_rd];
       tx_rd = INC_MOD(tx_rd, TXBUF_SIZE);
+      tx_n --;
     } else {
       // no more tx data, disable the tx empty interrupt
       usart->CR1 &= ~USART_CR1_TXEIE;
@@ -107,6 +109,7 @@ void usart_putc(char c) {
   cli();
   txbuf[tx_wr] = c;
   tx_wr = tx_wr_inc;
+  tx_n ++;
   sei();
   // enable the tx empty interrupt
   usart->CR1 |= USART_CR1_TXEIE;
@@ -127,8 +130,25 @@ char usart_getc(void) {
   cli();
   c = rxbuf[rx_rd];
   rx_rd = INC_MOD(rx_rd, RXBUF_SIZE);
+  rx_n --;
   sei();
   return c;
+}
+
+int usart_rxbuf_used(void) {
+  return rx_n;
+}
+
+int usart_rxbuf_avail(void) {
+  return RXBUF_SIZE - rx_n - 1;
+}
+
+int usart_txbuf_used(void) {
+  return tx_n;
+}
+
+int usart_txbuf_avail(void) {
+  return TXBUF_SIZE - tx_n - 1;
 }
 
 #endif
@@ -217,7 +237,7 @@ void usart_init(void) {
     usart->GTPR = val;
 
 #ifndef SERIAL_POLLED
-    rx_wr = rx_rd = tx_wr = tx_rd = 0;
+    rx_wr = rx_rd = rx_n = tx_wr = tx_rd = tx_n = 0;
     rx_errors = 0;
     // enable the rx not empty interrupt
     usart->CR1 |= USART_CR1_RXNEIE;

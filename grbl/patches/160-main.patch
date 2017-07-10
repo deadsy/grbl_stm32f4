@@ -1,7 +1,7 @@
---- grbl-master/main.c	2015-07-31 20:53:47.537311399 -0700
-+++ grbl-master/main.c	2015-07-31 20:54:04.584950438 -0700
-@@ -26,7 +26,7 @@
- system_t sys; 
+--- ./grbl/main.c	2017-07-09 11:08:40.578038201 -0700
++++ ./grbl/main.c	2017-07-09 11:09:27.274364778 -0700
+@@ -33,7 +33,7 @@
+ volatile uint8_t sys_rt_exec_accessory_override; // Global realtime executor bitflag variable for spindle/coolant overrides.
  
  
 -int main(void)
@@ -9,11 +9,11 @@
  {
    // Initialize system upon power-up.
    serial_init();   // Setup serial baud rate and interrupts
-@@ -36,7 +36,6 @@
-   
-   memset(&sys, 0, sizeof(sys));  // Clear all system variables
-   sys.abort = true;   // Set abort to complete initialization
+@@ -42,7 +42,6 @@
+   system_init();   // Configure pinout pins and pin-change interrupt
+ 
+   memset(sys_position,0,sizeof(sys_position)); // Clear machine position.
 -  sei(); // Enable interrupts
  
-   // Check for power-up and set system alarm if homing is enabled to force homing cycle
-   // by setting Grbl's alarm state. Alarm locks out all g-code commands, including the
+   // Initialize system state.
+   #ifdef FORCE_INITIALIZATION_ALARM

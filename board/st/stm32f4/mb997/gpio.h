@@ -256,10 +256,10 @@ static inline void dirn_wr(uint32_t x)
 // single uint32_t and debounce them together.
 
 // bit assignment for the debounced state - not all of these are used
-#define RESET_BIT 0
-#define FEED_HOLD_BIT 1
-#define CYCLE_START_BIT 2
-#define SAFETY_DOOR_BIT 3
+#define CONTROL_RESET_BIT 0
+#define CONTROL_FEED_HOLD_BIT 1
+#define CONTROL_CYCLE_START_BIT 2
+#define CONTROL_SAFETY_DOOR_BIT 3
 #define PROBE_BIT 4
 #define X_LIMIT_BIT 5
 #define Y_LIMIT_BIT 6
@@ -271,7 +271,7 @@ extern int controls_enabled;
 extern int limits_enabled;
 
 #define LIMIT_MASK ((1 << X_LIMIT_BIT) | (1 << Y_LIMIT_BIT) | (1 << Z_LIMIT_BIT) | (1 << A_LIMIT_BIT))
-#define CONTROL_MASK ((1 << RESET_BIT) | (1 << FEED_HOLD_BIT) | (1 << CYCLE_START_BIT) | (1 << SAFETY_DOOR_BIT))
+#define CONTROL_MASK ((1 << CONTROL_RESET_BIT) | (1 << CONTROL_FEED_HOLD_BIT) | (1 << CONTROL_CYCLE_START_BIT) | (1 << CONTROL_SAFETY_DOOR_BIT))
 #define PROBE_MASK (1 << PROBE_BIT)
 
 static inline uint32_t debounce_input(void)
@@ -281,7 +281,7 @@ static inline uint32_t debounce_input(void)
             (gpio_rd(LIMIT_Y) << Y_LIMIT_BIT) |
             (gpio_rd(LIMIT_Z) << Z_LIMIT_BIT) |
             (gpio_rd(LIMIT_A) << A_LIMIT_BIT) |
-            (gpio_rd(SWITCH_E_STOP) << RESET_BIT) |
+            (gpio_rd(SWITCH_E_STOP) << CONTROL_RESET_BIT) |
             (gpio_rd(PUSH_BUTTON) << PUSH_BUTTON_BIT));
 }
 
@@ -290,13 +290,19 @@ static inline uint32_t debounce_input(void)
 
 static inline void coolant_flood_on(void) {}
 static inline void coolant_flood_off(void) {}
+static inline int coolant_flood_is_on(void) {return 0;}
+
 static inline void coolant_mist_on(void) {}
 static inline void coolant_mist_off(void) {}
+static inline int coolant_mist_is_on(void) {return 0;}
+
 static inline void spindle_on(void) {}
 static inline void spindle_off(void) {}
 static inline void spindle_fwd(void) {}
 static inline void spindle_rev(void) {}
 static inline void spindle_rpm(float rpm) {}
+static inline int spindle_is_on(void) {return 0;}
+static inline int spindle_is_fwd(void) {return 0;}
 
 //-----------------------------------------------------------------------------
 // stepper motor enable/disable

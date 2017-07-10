@@ -1,6 +1,6 @@
---- grbl-master/settings.h	2015-07-17 07:19:57.000000000 -0700
-+++ grbl-master/settings.h	2015-07-31 21:42:33.312969516 -0700
-@@ -85,8 +85,8 @@
+--- ./grbl/settings.h	2017-07-09 19:53:55.146275882 -0700
++++ ./grbl/settings.h	2017-07-09 19:55:31.175139558 -0700
+@@ -84,8 +84,8 @@
  
    // Remaining Grbl settings
    uint8_t pulse_microseconds;
@@ -11,8 +11,8 @@
    uint8_t stepper_idle_lock_time; // If max value 255, steppers do not disable.
    uint8_t status_report_mask; // Mask to indicate desired report data.
    float junction_deviation;
-@@ -94,7 +94,7 @@
-   
+@@ -96,7 +96,7 @@
+ 
    uint8_t flags;  // Contains default boolean settings
  
 -  uint8_t homing_dir_mask;
@@ -20,7 +20,7 @@
    float homing_feed_rate;
    float homing_seek_rate;
    uint16_t homing_debounce_delay;
-@@ -130,13 +130,13 @@
+@@ -132,13 +132,13 @@
  uint8_t settings_read_coord_data(uint8_t coord_select, float *coord_data);
  
  // Returns the step pin mask according to Grbl's internal axis numbering
@@ -37,9 +37,9 @@
  
  
  #endif
---- grbl-master/settings.c	2015-07-31 21:40:43.699147955 -0700
-+++ grbl-master/settings.c	2015-07-31 21:42:12.168534345 -0700
-@@ -297,7 +297,7 @@
+--- ./grbl/settings.c	2017-07-09 19:54:03.982357372 -0700
++++ ./grbl/settings.c	2017-07-09 19:57:09.131976329 -0700
+@@ -317,7 +317,7 @@
  
  
  // Returns step pin mask according to Grbl internal axis indexing.
@@ -48,7 +48,7 @@
  {
    if ( axis_idx == X_AXIS ) { return((1<<X_STEP_BIT)); }
    if ( axis_idx == Y_AXIS ) { return((1<<Y_STEP_BIT)); }
-@@ -306,7 +306,7 @@
+@@ -326,7 +326,7 @@
  
  
  // Returns direction pin mask according to Grbl internal axis indexing.
@@ -57,7 +57,7 @@
  {
    if ( axis_idx == X_AXIS ) { return((1<<X_DIRECTION_BIT)); }
    if ( axis_idx == Y_AXIS ) { return((1<<Y_DIRECTION_BIT)); }
-@@ -315,7 +315,7 @@
+@@ -335,7 +335,7 @@
  
  
  // Returns limit pin mask according to Grbl internal axis indexing.

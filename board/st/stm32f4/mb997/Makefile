@@ -3,6 +3,8 @@ include $(TOP)/mk/common.mk
 
 OUTPUT = grbl
 
+GRBL_DIR = $(TOP)/grbl/grbl-1.1f.20170131
+
 #USB_SERIAL = 1
 
 # hal sources
@@ -64,7 +66,7 @@ OBJ += $(BOARD_DIR)/start.o
 # include paths
 INCLUDE += -I$(TOP)/board/st/stm32f4/hal/inc
 INCLUDE += -I$(TOP)/board/st/stm32f4/cmsis
-INCLUDE += -I$(TOP)/grbl/grbl-master
+INCLUDE += -I$(GRBL_DIR)/grbl
 INCLUDE += -I$(BOARD_DIR)
 INCLUDE += -I$(RTT_DIR)
 INCLUDE += -I$(COMMON_DIR)
@@ -83,7 +85,7 @@ endif
 # linker flags
 LDSCRIPT = stm32f407vg_flash.ld
 X_LDFLAGS = -T$(LDSCRIPT) -Wl,-Map,$(OUTPUT).map -Wl,--gc-sections
-X_LDFLAGS += -L$(TOP)/grbl/grbl-master
+X_LDFLAGS += -L$(GRBL_DIR)
 
 # unused parameters in the HAL code
 X_CFLAGS += -Wno-unused-parameter

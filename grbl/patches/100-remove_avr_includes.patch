@@ -1,8 +1,8 @@
 Remove AVR specific include files.
---- grbl-master/grbl.h	2015-07-17 07:19:57.000000000 -0700
-+++ grbl-master/grbl.h	2015-07-31 21:01:13.953484990 -0700
+--- ./grbl/grbl.h	2017-07-09 10:15:23.439678589 -0700
++++ ./grbl/grbl.h	2017-07-09 10:17:11.712435811 -0700
 @@ -26,11 +26,6 @@
- #define GRBL_VERSION_BUILD "20150717"
+ #define GRBL_VERSION_BUILD "20170131"
  
  // Define standard libraries used by Grbl.
 -#include <avr/io.h>
@@ -11,12 +11,13 @@ Remove AVR specific include files.
 -#include <avr/wdt.h>
 -#include <util/delay.h>
  #include <math.h>
- #include <inttypes.h>    
+ #include <inttypes.h>
  #include <string.h>
-@@ -58,5 +53,6 @@
- #include "serial.h"
+@@ -60,6 +55,7 @@
  #include "spindle_control.h"
  #include "stepper.h"
+ #include "jog.h"
 +#include "delay.h"
  
- #endif
+ // ---------------------------------------------------------------------------------------
+ // COMPILE-TIME ERROR CHECKING OF DEFINE VALUES:

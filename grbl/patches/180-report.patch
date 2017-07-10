@@ -1,65 +1,53 @@
---- grbl-master/report.c	2015-07-17 07:19:57.000000000 -0700
-+++ grbl-master/report.c	2015-08-02 09:26:38.703483149 -0700
+--- ./grbl/report.c	2017-01-31 17:46:20.000000000 -0800
++++ ./grbl/report.c	2017-07-09 22:19:31.936143155 -0700
 @@ -28,6 +28,7 @@
  
  #include "grbl.h"
  
 +#define PSTR(x) (x)
  
- // Handles the primary confirmation protocol response for streaming interfaces and human-feedback.
- // For every incoming line, this method responds with an 'ok' for a successful command or an 
-@@ -179,8 +180,8 @@
-   #ifdef REPORT_GUI_MODE
-     printPgmString(PSTR("$0=")); print_uint8_base10(settings.pulse_microseconds);
-     printPgmString(PSTR("\r\n$1=")); print_uint8_base10(settings.stepper_idle_lock_time);
--    printPgmString(PSTR("\r\n$2=")); print_uint8_base10(settings.step_invert_mask); 
--    printPgmString(PSTR("\r\n$3=")); print_uint8_base10(settings.dir_invert_mask); 
-+    printPgmString(PSTR("\r\n$2=")); print_uint16_base10(settings.step_invert_mask); 
-+    printPgmString(PSTR("\r\n$3=")); print_uint16_base10(settings.dir_invert_mask); 
-     printPgmString(PSTR("\r\n$4=")); print_uint8_base10(bit_istrue(settings.flags,BITFLAG_INVERT_ST_ENABLE));
-     printPgmString(PSTR("\r\n$5=")); print_uint8_base10(bit_istrue(settings.flags,BITFLAG_INVERT_LIMIT_PINS));
-     printPgmString(PSTR("\r\n$6=")); print_uint8_base10(bit_istrue(settings.flags,BITFLAG_INVERT_PROBE_PIN));
-@@ -191,7 +192,7 @@
-     printPgmString(PSTR("\r\n$20=")); print_uint8_base10(bit_istrue(settings.flags,BITFLAG_SOFT_LIMIT_ENABLE));
-     printPgmString(PSTR("\r\n$21=")); print_uint8_base10(bit_istrue(settings.flags,BITFLAG_HARD_LIMIT_ENABLE));
-     printPgmString(PSTR("\r\n$22=")); print_uint8_base10(bit_istrue(settings.flags,BITFLAG_HOMING_ENABLE));
--    printPgmString(PSTR("\r\n$23=")); print_uint8_base10(settings.homing_dir_mask);
-+    printPgmString(PSTR("\r\n$23=")); print_uint16_base10(settings.homing_dir_mask);
-     printPgmString(PSTR("\r\n$24=")); printFloat_SettingValue(settings.homing_feed_rate);
-     printPgmString(PSTR("\r\n$25=")); printFloat_SettingValue(settings.homing_seek_rate);
-     printPgmString(PSTR("\r\n$26=")); print_uint8_base10(settings.homing_debounce_delay);
-@@ -200,10 +201,10 @@
-   #else      
-     printPgmString(PSTR("$0=")); print_uint8_base10(settings.pulse_microseconds);
-     printPgmString(PSTR(" (step pulse, usec)\r\n$1=")); print_uint8_base10(settings.stepper_idle_lock_time);
--    printPgmString(PSTR(" (step idle delay, msec)\r\n$2=")); print_uint8_base10(settings.step_invert_mask); 
--    printPgmString(PSTR(" (step port invert mask:")); print_uint8_base2(settings.step_invert_mask);  
--    printPgmString(PSTR(")\r\n$3=")); print_uint8_base10(settings.dir_invert_mask); 
--    printPgmString(PSTR(" (dir port invert mask:")); print_uint8_base2(settings.dir_invert_mask);  
-+    printPgmString(PSTR(" (step idle delay, msec)\r\n$2=")); print_uint16_base10(settings.step_invert_mask); 
-+    printPgmString(PSTR(" (step port invert mask:")); print_uint16_base2(settings.step_invert_mask);  
-+    printPgmString(PSTR(")\r\n$3=")); print_uint16_base10(settings.dir_invert_mask); 
-+    printPgmString(PSTR(" (dir port invert mask:")); print_uint16_base2(settings.dir_invert_mask);  
-     printPgmString(PSTR(")\r\n$4=")); print_uint8_base10(bit_istrue(settings.flags,BITFLAG_INVERT_ST_ENABLE));
-     printPgmString(PSTR(" (step enable invert, bool)\r\n$5=")); print_uint8_base10(bit_istrue(settings.flags,BITFLAG_INVERT_LIMIT_PINS));
-     printPgmString(PSTR(" (limit pins invert, bool)\r\n$6=")); print_uint8_base10(bit_istrue(settings.flags,BITFLAG_INVERT_PROBE_PIN));
-@@ -215,8 +216,8 @@
-     printPgmString(PSTR(" (report inches, bool)\r\n$20=")); print_uint8_base10(bit_istrue(settings.flags,BITFLAG_SOFT_LIMIT_ENABLE));
-     printPgmString(PSTR(" (soft limits, bool)\r\n$21=")); print_uint8_base10(bit_istrue(settings.flags,BITFLAG_HARD_LIMIT_ENABLE));
-     printPgmString(PSTR(" (hard limits, bool)\r\n$22=")); print_uint8_base10(bit_istrue(settings.flags,BITFLAG_HOMING_ENABLE));
--    printPgmString(PSTR(" (homing cycle, bool)\r\n$23=")); print_uint8_base10(settings.homing_dir_mask);
--    printPgmString(PSTR(" (homing dir invert mask:")); print_uint8_base2(settings.homing_dir_mask);  
-+    printPgmString(PSTR(" (homing cycle, bool)\r\n$23=")); print_uint16_base10(settings.homing_dir_mask);
-+    printPgmString(PSTR(" (homing dir invert mask:")); print_uint16_base2(settings.homing_dir_mask);  
-     printPgmString(PSTR(")\r\n$24=")); printFloat_SettingValue(settings.homing_feed_rate);
-     printPgmString(PSTR(" (homing feed, mm/min)\r\n$25=")); printFloat_SettingValue(settings.homing_seek_rate);
-     printPgmString(PSTR(" (homing seek, mm/min)\r\n$26=")); print_uint8_base10(settings.homing_debounce_delay);
-@@ -498,7 +499,7 @@
-   
-   if (bit_istrue(settings.status_report_mask,BITFLAG_RT_STATUS_LIMIT_PINS)) {
-     printPgmString(PSTR(",Lim:"));
--    print_unsigned_int8(limits_get_state(),2,N_AXIS);
-+    print_base2(limits_get_state(), N_AXIS);
-   }
-   
-   #ifdef REPORT_CONTROL_PIN_STATE 
+ // Internal report utilities to reduce flash with repetitive tasks turned into functions.
+ void report_util_setting_prefix(uint8_t n) { serial_write('$'); print_uint8_base10(n); serial_write('='); }
+@@ -96,6 +97,11 @@
+   print_uint8_base10(val); 
+   report_util_line_feed(); // report_util_setting_string(n); 
+ }
++static void report_util_uint16_setting(uint8_t n, int val) { 
++  report_util_setting_prefix(n); 
++  print_uint16_base10(val); 
++  report_util_line_feed(); // report_util_setting_string(n); 
++}
+ static void report_util_float_setting(uint8_t n, float val, uint8_t n_decimal) { 
+   report_util_setting_prefix(n); 
+   printFloat(val,n_decimal);
+@@ -184,8 +190,8 @@
+   // Print Grbl settings.
+   report_util_uint8_setting(0,settings.pulse_microseconds);
+   report_util_uint8_setting(1,settings.stepper_idle_lock_time);
+-  report_util_uint8_setting(2,settings.step_invert_mask);
+-  report_util_uint8_setting(3,settings.dir_invert_mask);
++  report_util_uint16_setting(2,settings.step_invert_mask);
++  report_util_uint16_setting(3,settings.dir_invert_mask);
+   report_util_uint8_setting(4,bit_istrue(settings.flags,BITFLAG_INVERT_ST_ENABLE));
+   report_util_uint8_setting(5,bit_istrue(settings.flags,BITFLAG_INVERT_LIMIT_PINS));
+   report_util_uint8_setting(6,bit_istrue(settings.flags,BITFLAG_INVERT_PROBE_PIN));
+@@ -196,7 +202,7 @@
+   report_util_uint8_setting(20,bit_istrue(settings.flags,BITFLAG_SOFT_LIMIT_ENABLE));
+   report_util_uint8_setting(21,bit_istrue(settings.flags,BITFLAG_HARD_LIMIT_ENABLE));
+   report_util_uint8_setting(22,bit_istrue(settings.flags,BITFLAG_HOMING_ENABLE));
+-  report_util_uint8_setting(23,settings.homing_dir_mask);
++  report_util_uint16_setting(23,settings.homing_dir_mask);
+   report_util_float_setting(24,settings.homing_feed_rate,N_DECIMAL_SETTINGVALUE);
+   report_util_float_setting(25,settings.homing_seek_rate,N_DECIMAL_SETTINGVALUE);
+   report_util_uint8_setting(26,settings.homing_debounce_delay);
+@@ -437,8 +443,8 @@
+   // NOTE: Compiled values, like override increments/max/min values, may be added at some point later.
+   serial_write(',');
+   print_uint8_base10(BLOCK_BUFFER_SIZE-1);
+-  serial_write(',');
+-  print_uint8_base10(RX_BUFFER_SIZE);
++  //serial_write(',');
++  //print_uint8_base10(RX_BUFFER_SIZE);
+ 
+   report_util_feedback_line_feed();
+ }

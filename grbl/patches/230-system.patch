@@ -1,8 +1,13 @@
---- grbl-master/system.c	2015-07-17 07:19:57.000000000 -0700
-+++ grbl-master/system.c	2015-08-01 07:45:08.404865939 -0700
-@@ -23,14 +23,6 @@
+--- ./grbl/system.c	2017-01-31 17:46:20.000000000 -0800
++++ ./grbl/system.c	2017-07-09 22:02:27.679812608 -0700
+@@ -19,18 +19,10 @@
+ */
  
- void system_init() 
+ #include "grbl.h"
+-
++#include "irq.h"
+ 
+ void system_init()
  {
 -  CONTROL_DDR &= ~(CONTROL_MASK); // Configure as input pins
 -  #ifdef DISABLE_CONTROL_PIN_PULL_UP
@@ -15,15 +20,95 @@
  }
  
  
-@@ -38,9 +30,9 @@
- // only the realtime command execute variable to have the main program execute these when 
- // its ready. This works exactly like the character-based realtime commands when picked off
- // directly from the incoming serial data stream.
--ISR(CONTROL_INT_vect) 
-+void control_isr(void) 
+@@ -40,7 +32,7 @@
+ uint8_t system_control_get_state()
  {
+   uint8_t control_state = 0;
 -  uint8_t pin = (CONTROL_PIN & CONTROL_MASK);
 +  uint32_t pin = debounce_rd() & CONTROL_MASK;
-   #ifndef INVERT_CONTROL_PIN
-     pin ^= CONTROL_MASK;
+   #ifdef INVERT_CONTROL_PIN_MASK
+     pin ^= INVERT_CONTROL_PIN_MASK;
    #endif
+@@ -60,7 +52,7 @@
+ // only the realtime command execute variable to have the main program execute these when
+ // its ready. This works exactly like the character-based realtime commands when picked off
+ // directly from the incoming serial data stream.
+-ISR(CONTROL_INT_vect)
++void control_isr(void)
+ {
+   uint8_t pin = system_control_get_state();
+   if (pin) {
+@@ -351,57 +343,49 @@
+ 
+ // Special handlers for setting and clearing Grbl's real-time execution flags.
+ void system_set_exec_state_flag(uint8_t mask) {
+-  uint8_t sreg = SREG;
+-  cli();
++  uint32_t saved = disable_irq();
+   sys_rt_exec_state |= (mask);
+-  SREG = sreg;
++  restore_irq(saved);
+ }
+ 
+ void system_clear_exec_state_flag(uint8_t mask) {
+-  uint8_t sreg = SREG;
+-  cli();
++  uint32_t saved = disable_irq();
+   sys_rt_exec_state &= ~(mask);
+-  SREG = sreg;
++  restore_irq(saved);
+ }
+ 
+ void system_set_exec_alarm(uint8_t code) {
+-  uint8_t sreg = SREG;
+-  cli();
++  uint32_t saved = disable_irq();
+   sys_rt_exec_alarm = code;
+-  SREG = sreg;
++  restore_irq(saved);
+ }
+ 
+ void system_clear_exec_alarm() {
+-  uint8_t sreg = SREG;
+-  cli();
++  uint32_t saved = disable_irq();
+   sys_rt_exec_alarm = 0;
+-  SREG = sreg;
++  restore_irq(saved);
+ }
+ 
+ void system_set_exec_motion_override_flag(uint8_t mask) {
+-  uint8_t sreg = SREG;
+-  cli();
++  uint32_t saved = disable_irq();
+   sys_rt_exec_motion_override |= (mask);
+-  SREG = sreg;
++  restore_irq(saved);
+ }
+ 
+ void system_set_exec_accessory_override_flag(uint8_t mask) {
+-  uint8_t sreg = SREG;
+-  cli();
++  uint32_t saved = disable_irq();
+   sys_rt_exec_accessory_override |= (mask);
+-  SREG = sreg;
++  restore_irq(saved);
+ }
+ 
+ void system_clear_exec_motion_overrides() {
+-  uint8_t sreg = SREG;
+-  cli();
++  uint32_t saved = disable_irq();
+   sys_rt_exec_motion_override = 0;
+-  SREG = sreg;
++  restore_irq(saved);
+ }
+ 
+ void system_clear_exec_accessory_overrides() {
+-  uint8_t sreg = SREG;
+-  cli();
++  uint32_t saved = disable_irq();
+   sys_rt_exec_accessory_override = 0;
+-  SREG = sreg;
++  restore_irq(saved);
+ }

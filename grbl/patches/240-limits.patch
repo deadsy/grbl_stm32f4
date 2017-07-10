@@ -1,8 +1,8 @@
---- grbl-master/limits.c	2015-08-01 08:04:42.366293426 -0700
-+++ grbl-master/limits.c	2015-08-01 08:07:29.815268600 -0700
+--- ./grbl/limits.c	2017-07-09 10:51:34.966865453 -0700
++++ ./grbl/limits.c	2017-07-09 11:02:47.079565962 -0700
 @@ -32,34 +32,18 @@
  
- void limits_init() 
+ void limits_init()
  {
 -  LIMIT_DDR &= ~(LIMIT_MASK); // Set as input pins
 -
@@ -17,9 +17,9 @@
 -    PCICR |= (1 << LIMIT_INT); // Enable Pin Change Interrupt
 +    limits_enabled = 1;
    } else {
-     limits_disable(); 
+     limits_disable();
    }
--  
+-
 -  #ifdef ENABLE_SOFTWARE_DEBOUNCE
 -    MCUSR &= ~(1<<WDRF);
 -    WDTCSR |= (1<<WDCE) | (1<<WDE);
@@ -43,36 +43,36 @@
    uint8_t limit_state = 0;
 -  uint8_t pin = (LIMIT_PIN & LIMIT_MASK);
 +  uint32_t pin = debounce_rd() & LIMIT_MASK;
-   if (bit_isfalse(settings.flags,BITFLAG_INVERT_LIMIT_PINS)) { pin ^= LIMIT_MASK; }
-   if (pin) {  
- 	uint8_t idx;
-@@ -92,47 +76,28 @@
+   #ifdef INVERT_LIMIT_PIN_MASK
+     pin ^= INVERT_LIMIT_PIN_MASK;
+   #endif
+@@ -95,46 +79,28 @@
  // homing cycles and will not respond correctly. Upon user request or need, there may be a
  // special pinout for an e-stop, but it is generally recommended to just directly connect
  // your e-stop switch to the Arduino reset pin, since it is the most correct way to do this.
 -#ifndef ENABLE_SOFTWARE_DEBOUNCE
--  ISR(LIMIT_INT_vect) // DEFAULT: Limit pin change interrupt process. 
+-  ISR(LIMIT_INT_vect) // DEFAULT: Limit pin change interrupt process.
 -  {
 -    // Ignore limit switches if already in an alarm state or in-process of executing an alarm.
--    // When in the alarm state, Grbl should have been reset or will force a reset, so any pending 
--    // moves in the planner and serial buffers are all cleared and newly sent blocks will be 
+-    // When in the alarm state, Grbl should have been reset or will force a reset, so any pending
+-    // moves in the planner and serial buffers are all cleared and newly sent blocks will be
 -    // locked out until a homing cycle or a kill lock command. Allows the user to disable the hard
 -    // limit setting if their limits are constantly triggering after a reset and move their axes.
--    if (sys.state != STATE_ALARM) { 
--      if (!(sys.rt_exec_alarm)) {
+-    if (sys.state != STATE_ALARM) {
+-      if (!(sys_rt_exec_alarm)) {
 -        #ifdef HARD_LIMIT_FORCE_STATE_CHECK
--          // Check limit pin state. 
+-          // Check limit pin state.
 -          if (limits_get_state()) {
 -            mc_reset(); // Initiate system kill.
--            bit_true_atomic(sys.rt_exec_alarm, (EXEC_ALARM_HARD_LIMIT|EXEC_CRITICAL_EVENT)); // Indicate hard limit critical event
+-            system_set_exec_alarm(EXEC_ALARM_HARD_LIMIT); // Indicate hard limit critical event
 -          }
 -        #else
 -          mc_reset(); // Initiate system kill.
--          bit_true_atomic(sys.rt_exec_alarm, (EXEC_ALARM_HARD_LIMIT|EXEC_CRITICAL_EVENT)); // Indicate hard limit critical event
+-          system_set_exec_alarm(EXEC_ALARM_HARD_LIMIT); // Indicate hard limit critical event
 -        #endif
 -      }
 -    }
--  }  
+-  }
 -#else // OPTIONAL: Software debounce limit pin routine.
 -  // Upon limit pin change, enable watchdog timer to create a short delay. 
 -  ISR(LIMIT_INT_vect) { if (!(WDTCSR & (1<<WDIE))) { WDTCSR |= (1<<WDIE); } }
@@ -80,32 +80,32 @@
 -  {
 -    WDTCSR &= ~(1<<WDIE); // Disable watchdog timer. 
 -    if (sys.state != STATE_ALARM) {  // Ignore if already in alarm state. 
--      if (!(sys.rt_exec_alarm)) {
-+void limits_isr(void) // DEFAULT: Limit pin change interrupt process. 
+-      if (!(sys_rt_exec_alarm)) {
+-        // Check limit pin state. 
++void limits_isr(void) // DEFAULT: Limit pin change interrupt process.
 +{
 +  // Ignore limit switches if already in an alarm state or in-process of executing an alarm.
-+  // When in the alarm state, Grbl should have been reset or will force a reset, so any pending 
-+  // moves in the planner and serial buffers are all cleared and newly sent blocks will be 
++  // When in the alarm state, Grbl should have been reset or will force a reset, so any pending
++  // moves in the planner and serial buffers are all cleared and newly sent blocks will be
 +  // locked out until a homing cycle or a kill lock command. Allows the user to disable the hard
 +  // limit setting if their limits are constantly triggering after a reset and move their axes.
-+  if (sys.state != STATE_ALARM) { 
-+    if (!(sys.rt_exec_alarm)) {
++  if (sys.state != STATE_ALARM) {
++    if (!(sys_rt_exec_alarm)) {
 +      #ifdef HARD_LIMIT_FORCE_STATE_CHECK
-         // Check limit pin state. 
++        // Check limit pin state.
          if (limits_get_state()) {
            mc_reset(); // Initiate system kill.
-           bit_true_atomic(sys.rt_exec_alarm, (EXEC_ALARM_HARD_LIMIT|EXEC_CRITICAL_EVENT)); // Indicate hard limit critical event
+           system_set_exec_alarm(EXEC_ALARM_HARD_LIMIT); // Indicate hard limit critical event
          }
 -      }  
 +      #else
 +        mc_reset(); // Initiate system kill.
-+        bit_true_atomic(sys.rt_exec_alarm, (EXEC_ALARM_HARD_LIMIT|EXEC_CRITICAL_EVENT)); // Indicate hard limit critical event
++        system_set_exec_alarm(EXEC_ALARM_HARD_LIMIT); // Indicate hard limit critical event
 +      #endif
      }
    }
 -#endif
--
 +}
-  
+ 
  // Homes the specified cycle axes, sets the machine position, and performs a pull-off motion after
  // completing. Homing is a special motion case, which involves rapid uncontrolled stops to locate

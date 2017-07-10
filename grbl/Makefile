@@ -1,6 +1,6 @@
-GRBL = grbl-master
+GRBL = grbl-1.1f.20170131
 WORK_DIR = $(GRBL)
-TARFILE = $(GRBL).tar.bz2
+TARFILE = $(GRBL).tar.gz
 
 PATCHFILES = $(sort $(wildcard patches/*.patch))
 
@@ -11,7 +11,7 @@ PATCH_CMD = \
         done
 
 all:
-	tar jxf $(TARFILE)
+	tar zxf $(TARFILE)
 	$(PATCH_CMD)
 	cd files; tar -c -f - * | (cd ../$(WORK_DIR) ; tar xfp -)
 	make -C $(WORK_DIR) libgrbl.a

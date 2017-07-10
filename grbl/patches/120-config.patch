@@ -1,47 +1,40 @@
---- grbl-master/config.h	2015-07-17 07:19:57.000000000 -0700
-+++ grbl-master/config.h	2015-08-02 09:57:32.628588606 -0700
-@@ -31,14 +31,14 @@
+--- ./grbl/config.h	2017-01-31 17:46:20.000000000 -0800
++++ ./grbl/config.h	2017-07-09 20:45:03.833097936 -0700
+@@ -27,15 +27,14 @@
+ 
+ #ifndef config_h
+ #define config_h
+-#include "grbl.h" // For Arduino IDE compatibility.
  
  
- // Default settings. Used when resetting EEPROM. Change to desired name in defaults.h
+ // Define CPU pin map and default settings.
+ // NOTE: OEMs can avoid the need to maintain/update the defaults.h and cpu_map.h files and use only
+ // one configuration file by placing their specific defaults and pin map at the bottom of this file.
+ // If doing so, simply comment out these two defines and see instructions below.
 -#define DEFAULTS_GENERIC
-+#define DEFAULTS_KRMX01
- 
- // Serial baud rate
- #define BAUD_RATE 115200
- 
- // Default cpu mappings. Grbl officially supports the Arduino Uno only. Other processor types
- // may exist from user-supplied templates or directly user-defined in cpu_map.h
 -#define CPU_MAP_ATMEGA328P // Arduino Uno CPU
++#define DEFAULTS_KRMX01
 +#define CPU_MAP_STM32F4_DISCOVERY
  
- // Define realtime command special characters. These characters are 'picked-off' directly from the
- // serial read data stream and are not passed to the grbl line execution parser. Select characters
-@@ -200,7 +200,7 @@
- // frequencies below 10kHz, where the aliasing between axes of multi-axis motions can cause audible 
- // noise and shake your machine. At even lower step frequencies, AMASS adapts and provides even better
- // step smoothing. See stepper.c for more details on the AMASS system works.
--#define ADAPTIVE_MULTI_AXIS_STEP_SMOOTHING  // Default enabled. Comment to disable.
-+#define ADAPTIVE_MULTI_AXIS_STEP_SMOOTHING  // Default enabled. Comment to disable.
- 
- // Sets the maximum step rate allowed to be written as a Grbl setting. This option enables an error 
- // check in the settings module to prevent settings values that will exceed this limitation. The maximum
-@@ -316,7 +316,7 @@
+ // Serial baud rate
+ // #define BAUD_RATE 230400
+@@ -422,7 +421,7 @@
  // NOTE: Uncomment to enable. The recommended delay must be > 3us, and, when added with the
  // user-supplied step pulse time, the total time must not exceed 127us. Reported successful
  // values for certain setups have ranged from 5 to 20us.
 -// #define STEP_PULSE_DELAY 10 // Step pulse delay in microseconds. Default disabled.
-+#define STEP_PULSE_DELAY 5 // Step pulse delay in microseconds. Default disabled.
++#define STEP_PULSE_DELAY 5 // Step pulse delay in microseconds.
  
  // The number of linear motions in the planner buffer to be planned at any give time. The vast
- // majority of RAM that Grbl uses is based on this buffer size. Only increase if there is extra 
-@@ -382,6 +382,9 @@
- // NOTE: This option has no effect if SOFTWARE_DEBOUNCE is enabled.
- // #define HARD_LIMIT_FORCE_STATE_CHECK // Default disabled. Uncomment to enable.
+ // majority of RAM that Grbl uses is based on this buffer size. Only increase if there is extra
+@@ -586,6 +585,10 @@
+ // to ensure the laser doesn't inadvertently remain powered while at a stop and cause a fire.
+ #define DISABLE_LASER_DURING_HOLD // Default enabled. Comment to disable.
  
 +// Uncomment to make the A-axis of a 4-axis/XYZA controller match the Y axis.
 +// That is: Two steppers are used to drive the Y-axis.
 +#define AXES_XYZY
++
+ /* ---------------------------------------------------------------------------------------
+    OEM Single File Configuration Option
  
- // ---------------------------------------------------------------------------------------
- // COMPILE-TIME ERROR CHECKING OF DEFINE VALUES:

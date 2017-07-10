@@ -1,7 +1,7 @@
---- grbl-master/defaults.h	2015-07-31 21:16:37.422492892 -0700
-+++ grbl-master/defaults.h	2015-07-31 21:20:24.549292100 -0700
-@@ -83,6 +83,11 @@
-   #include "defaults/defaults_oxcnc.h"
+--- ./grbl/defaults.h	2017-07-09 20:02:10.738698306 -0700
++++ ./grbl/defaults.h	2017-07-09 20:03:05.835164669 -0700
+@@ -452,4 +452,9 @@
+   #define DEFAULT_HOMING_PULLOFF 1.0 // mm
  #endif
  
 +#ifdef DEFAULTS_KRMX01
@@ -9,6 +9,4 @@
 +  #include "defaults/defaults_krmx01.h"
 +#endif
 +
- #ifdef DEFAULTS_SIMULATOR
-   // Settings only for Grbl Simulator (www.github.com/grbl/grbl-sim)
-   #include "defaults/defaults_simulator.h"
+ #endif

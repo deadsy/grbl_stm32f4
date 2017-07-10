@@ -1,8 +1,8 @@
---- grbl-master/probe.c	2015-08-01 06:58:20.918072137 -0700
-+++ grbl-master/probe.c	2015-08-01 07:07:07.931469381 -0700
+--- ./grbl/probe.c	2017-07-09 11:25:49.517234223 -0700
++++ ./grbl/probe.c	2017-07-09 11:27:24.321897254 -0700
 @@ -28,13 +28,6 @@
  // Probe pin initialization routine.
- void probe_init() 
+ void probe_init()
  {
 -  PROBE_DDR &= ~(PROBE_MASK); // Configure as input pins
 -  #ifdef DISABLE_PROBE_PIN_PULL_UP
@@ -10,21 +10,22 @@
 -  #else
 -    PROBE_PORT |= PROBE_MASK;    // Enable internal pull-up resistors. Normal high operation.
 -  #endif
--  // probe_configure_invert_mask(false); // Initialize invert mask. Not required. Updated when in-use.
+-  probe_configure_invert_mask(false); // Initialize invert mask.
  }
  
  
-@@ -50,7 +43,7 @@
+@@ -50,8 +43,7 @@
  
  
  // Returns the probe pin state. Triggered = true. Called by gcode parser and probe state monitor.
 -uint8_t probe_get_state() { return((PROBE_PIN & PROBE_MASK) ^ probe_invert_mask); }
+-
 +uint32_t probe_get_state() { return (debounce_rd() & PROBE_MASK) ^ probe_invert_mask; }
  
- 
  // Monitors probe pin state and records the system position when detected. Called by the
---- grbl-master/probe.h	2015-08-01 08:02:33.697250831 -0700
-+++ grbl-master/probe.h	2015-08-01 08:02:46.605367557 -0700
+ // stepper ISR per ISR tick.
+--- ./grbl/probe.h	2017-07-09 11:27:37.173987136 -0700
++++ ./grbl/probe.h	2017-07-09 11:27:52.102091537 -0700
 @@ -34,7 +34,7 @@
  void probe_configure_invert_mask(uint8_t is_probe_away);
  
