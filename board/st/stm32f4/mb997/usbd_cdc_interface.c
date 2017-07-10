@@ -50,8 +50,7 @@ static USBD_CDC_LineCodingTypeDef LineCoding = {
 
 //-----------------------------------------------------------------------------
 
-static int8_t CDC_Itf_Init(void)
-{
+static int8_t CDC_Itf_Init(void) {
     tx_wr = 0;
     tx_rd = 0;
     tx_overflow = 0;
@@ -67,15 +66,13 @@ static int8_t CDC_Itf_Init(void)
     return USBD_OK;
 }
 
-static int8_t CDC_Itf_DeInit(void)
-{
+static int8_t CDC_Itf_DeInit(void) {
     return USBD_OK;
 }
 
 //-----------------------------------------------------------------------------
 
-static int8_t CDC_Itf_Control (uint8_t cmd, uint8_t* pbuf, uint16_t length)
-{
+static int8_t CDC_Itf_Control (uint8_t cmd, uint8_t* pbuf, uint16_t length) {
     switch (cmd) {
         case CDC_SET_LINE_CODING: {
             LineCoding.bitrate = (uint32_t)(pbuf[0] | (pbuf[1] << 8) | (pbuf[2] << 16) | (pbuf[3] << 24));
@@ -109,8 +106,7 @@ static int8_t CDC_Itf_Control (uint8_t cmd, uint8_t* pbuf, uint16_t length)
 
 //-----------------------------------------------------------------------------
 
-static int8_t CDC_Itf_Receive(uint8_t* pbuf, uint32_t *Len)
-{
+static int8_t CDC_Itf_Receive(uint8_t* pbuf, uint32_t *Len) {
     uint32_t n = *Len;
     uint32_t i;
 
@@ -136,8 +132,7 @@ static int8_t CDC_Itf_Receive(uint8_t* pbuf, uint32_t *Len)
 
 //-----------------------------------------------------------------------------
 
-USBD_CDC_ItfTypeDef USBD_CDC_fops =
-{
+USBD_CDC_ItfTypeDef USBD_CDC_fops = {
   CDC_Itf_Init,
   CDC_Itf_DeInit,
   CDC_Itf_Control,
@@ -146,8 +141,7 @@ USBD_CDC_ItfTypeDef USBD_CDC_fops =
 
 //-----------------------------------------------------------------------------
 
-void cdc_timer_isr(void)
-{
+void cdc_timer_isr(void) {
     uint32_t n;
 
     if(tx_wr != tx_rd) {
@@ -173,58 +167,52 @@ void cdc_timer_isr(void)
 
 //-----------------------------------------------------------------------------
 
-void serial_init(void)
-{
-    // do nothing
+void serial_init(void) {
+  // do nothing
 }
 
 // write a character to the tx fifo ring buffer
-void serial_write(uint8_t data)
-{
-    uint32_t tx_wr_inc = (tx_wr == (TX_FIFO_SIZE - 1)) ? 0 : tx_wr + 1;
-    int timeout = 50;
+void serial_write(uint8_t data) {
+  uint32_t tx_wr_inc = (tx_wr == (TX_FIFO_SIZE - 1)) ? 0 : tx_wr + 1;
+  int timeout = 50;
 
-    while ((tx_wr_inc == tx_rd) && (timeout > 0)) {
-        HAL_Delay(1);
-        timeout -= 1;
-    }
+  while ((tx_wr_inc == tx_rd) && (timeout > 0)) {
+    HAL_Delay(1);
+    timeout -= 1;
+  }
 
-    if (timeout == 0) {
-        tx_overflow += 1;
-    } else {
-        tx_fifo[tx_wr] = data;
-        tx_wr = tx_wr_inc;
-    }
+  if (timeout == 0) {
+    tx_overflow += 1;
+  } else {
+    tx_fifo[tx_wr] = data;
+    tx_wr = tx_wr_inc;
+  }
 }
 
 // hook up stdio output to the serial port
-int __io_putchar(int ch)
-{
-    serial_write(ch);
-    return 0;
+int __io_putchar(int ch) {
+  serial_write(ch);
+  return 0;
 }
 
 // read a character from the rx fifo ring buffer
-uint8_t serial_read(void)
-{
-    uint8_t data = SERIAL_NO_DATA;
-    if (rx_wr != rx_rd) {
-        data = rx_fifo[rx_rd];
-        rx_rd = (rx_rd == (RX_FIFO_SIZE - 1)) ? 0 : rx_rd + 1;
-    }
-    return data;
+uint8_t serial_read(void) {
+  uint8_t data = SERIAL_NO_DATA;
+  if (rx_wr != rx_rd) {
+    data = rx_fifo[rx_rd];
+    rx_rd = (rx_rd == (RX_FIFO_SIZE - 1)) ? 0 : rx_rd + 1;
+  }
+  return data;
 }
 
 // Reset and empty data in read buffer. Used by e-stop and reset.
-void serial_reset_read_buffer(void)
-{
-    rx_wr = 0;
-    rx_rd = 0;
+void serial_reset_read_buffer(void) {
+  rx_wr = 0;
+  rx_rd = 0;
 }
 
 // Returns the number of bytes used in the RX serial buffer.
-uint8_t serial_get_rx_buffer_count(void)
-{
+int serial_get_rx_buffer_count(void) {
   // TODO
   return 0;
 }

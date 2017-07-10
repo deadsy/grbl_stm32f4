@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This a port of the grbl 0.9j g-code interpreter to the STM32F4 SoC
+This a port of the grbl 1.1f g-code interpreter to the STM32F4 SoC
 
 The STM32F4 SoC has attractive features for a realtime G-Code interpreter and machine controller.
 
@@ -12,9 +12,10 @@ The STM32F4 SoC has attractive features for a realtime G-Code interpreter and ma
 
 ## Target Platform
 
-STM32F4Discovery Board
+STM32F4Discovery Board (MB997)
 * http://www.st.com/web/catalog/tools/FM116/SC959/SS1532/PF252419
 * http://www.digikey.com/short/504hf
+* STM32CubeF4 Version 1.16.0
 
 ## Build tools:
 
