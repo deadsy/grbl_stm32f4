@@ -296,6 +296,11 @@ static inline void coolant_mist_on(void) {}
 static inline void coolant_mist_off(void) {}
 static inline int coolant_mist_is_on(void) {return 0;}
 
+//-----------------------------------------------------------------------------
+// spindle control
+
+#define SPINDLE_PWM_OFF_VALUE 0
+
 static inline void spindle_on(void) {}
 static inline void spindle_off(void) {}
 static inline void spindle_fwd(void) {}
