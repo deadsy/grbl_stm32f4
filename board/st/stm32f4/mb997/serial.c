@@ -49,6 +49,11 @@ int serial_get_rx_buffer_count(void) {
   return usart_rxbuf_used();
 }
 
+// Return the size in bytes of the RX serial buffer.
+int serial_get_rx_buffer_size(void) {
+  return usart_rxbuf_size();
+}
+
 // Returns the number of bytes used in the TX serial buffer.
 int serial_get_tx_buffer_count(void) {
   return usart_txbuf_used();

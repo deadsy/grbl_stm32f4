@@ -143,12 +143,20 @@ int usart_rxbuf_avail(void) {
   return RXBUF_SIZE - rx_n - 1;
 }
 
+int usart_rxbuf_size(void) {
+  return RXBUF_SIZE;
+}
+
 int usart_txbuf_used(void) {
   return tx_n;
 }
 
 int usart_txbuf_avail(void) {
   return TXBUF_SIZE - tx_n - 1;
+}
+
+int usart_txbuf_size(void) {
+  return TXBUF_SIZE;
 }
 
 #endif

@@ -1,5 +1,5 @@
 --- ./grbl/serial.h	2017-01-31 17:46:20.000000000 -0800
-+++ ./grbl/serial.h	2017-07-10 07:48:42.350534914 -0700
++++ ./grbl/serial.h	2017-07-10 20:55:30.688110452 -0700
 @@ -22,21 +22,8 @@
  #ifndef serial_h
  #define serial_h
@@ -22,7 +22,7 @@
  void serial_init();
  
  // Writes one byte to the TX serial buffer. Called by main program.
-@@ -49,14 +36,16 @@
+@@ -49,14 +36,19 @@
  void serial_reset_read_buffer();
  
  // Returns the number of bytes available in the RX serial buffer.
@@ -33,6 +33,9 @@
  // NOTE: Deprecated. Not used unless classic status reports are enabled in config.h.
 -uint8_t serial_get_rx_buffer_count();
 +int serial_get_rx_buffer_count();
++
++// Return the size in bytes of the RX serial buffer.
++int serial_get_rx_buffer_size(void);
  
  // Returns the number of bytes used in the TX serial buffer.
  // NOTE: Not used except for debugging and ensuring no TX bottlenecks.
