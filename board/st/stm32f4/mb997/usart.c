@@ -41,6 +41,13 @@ char usart_getc(void) {
   return usart->DR & 255;
 }
 
+int usart_rxbuf_used(void) {return 0;}
+int usart_rxbuf_avail(void) {return 1;}
+int usart_rxbuf_size(void) {return 1;}
+int usart_txbuf_used(void) {return 0;}
+int usart_txbuf_avail(void) {return 1;}
+int usart_txbuf_size(void) {return 1;}
+
 //-----------------------------------------------------------------------------
 // interrupt driven driver
 
@@ -135,29 +142,12 @@ char usart_getc(void) {
   return c;
 }
 
-int usart_rxbuf_used(void) {
-  return rx_n;
-}
-
-int usart_rxbuf_avail(void) {
-  return RXBUF_SIZE - rx_n - 1;
-}
-
-int usart_rxbuf_size(void) {
-  return RXBUF_SIZE;
-}
-
-int usart_txbuf_used(void) {
-  return tx_n;
-}
-
-int usart_txbuf_avail(void) {
-  return TXBUF_SIZE - tx_n - 1;
-}
-
-int usart_txbuf_size(void) {
-  return TXBUF_SIZE;
-}
+int usart_rxbuf_used(void) {return rx_n;}
+int usart_rxbuf_avail(void) {return RXBUF_SIZE - rx_n - 1;}
+int usart_rxbuf_size(void) {return RXBUF_SIZE;}
+int usart_txbuf_used(void) {return tx_n;}
+int usart_txbuf_avail(void) {return TXBUF_SIZE - tx_n - 1;}
+int usart_txbuf_size(void) {return TXBUF_SIZE;}
 
 #endif
 
