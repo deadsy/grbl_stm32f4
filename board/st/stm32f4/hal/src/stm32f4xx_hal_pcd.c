@@ -1270,7 +1270,7 @@ static HAL_StatusTypeDef PCD_WriteEmptyTxFifo(PCD_HandleTypeDef *hpcd, uint32_t 
   ep = &hpcd->IN_ep[epnum];
   len = ep->xfer_len - ep->xfer_count;
   
-  if (len > ep->maxpacket)
+  if (len > (int32_t)ep->maxpacket)
   {
     len = ep->maxpacket;
   }
@@ -1285,7 +1285,7 @@ static HAL_StatusTypeDef PCD_WriteEmptyTxFifo(PCD_HandleTypeDef *hpcd, uint32_t 
     /* Write the FIFO */
     len = ep->xfer_len - ep->xfer_count;
     
-    if (len > ep->maxpacket)
+    if (len > (int32_t)ep->maxpacket)
     {
       len = ep->maxpacket;
     }
@@ -1297,7 +1297,7 @@ static HAL_StatusTypeDef PCD_WriteEmptyTxFifo(PCD_HandleTypeDef *hpcd, uint32_t 
     ep->xfer_count += len;
   }
   
-  if(len <= 0U)
+  if(len <= 0)
   {
     fifoemptymsk = 0x1U << epnum;
     USBx_DEVICE->DIEPEMPMSK &= ~fifoemptymsk;
