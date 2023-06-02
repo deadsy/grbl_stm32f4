@@ -18,7 +18,7 @@ static char eeprom_data[EEPROM_LEN];
 
 static void eeprom_init(void)
 {
-    memset(eeprom_data, 0xff, sizeof(EEPROM_LEN));
+    memset(eeprom_data, 0xff, EEPROM_LEN);
     eeprom_ready = 1;
 }
 
